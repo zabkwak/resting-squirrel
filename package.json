@@ -20,5 +20,9 @@
     "url": "https://github.com/zabkwak/resting-squirrel/issues"
   },
   "homepage": "https://github.com/zabkwak/resting-squirrel#readme",
-  "description": ""
+  "description": "Simple REST server with json input data.",
+  "keywords": [
+    "rest",
+    "express"
+  ]
 }
