@@ -15,10 +15,10 @@ rs = require "resting-squirrel"
 app = rs()
 
 app.get "/", (req, res, next) ->
-	res.sendData "I'm running"
+	next no, "I'm running"
 
 app.post "/", no, ["name"], (req, res, next) ->
-	res.sendData "I'm running"
+	next no, "I'm running"
 
 app.listen()
 ```
@@ -28,11 +28,11 @@ var rs = require("resting-squirrel");
 var app = rs();
 
 app.get("/", function (req, res, next) {
-	res.sendData("I'm running");
+	next(false, "I'm running");
 });
 
 app.post("/", false, ["name"], function (req, res, next) {
-	res.sendData("I'm running");
+	next(false, "I'm running");
 });
 
 app.listen()
@@ -55,9 +55,9 @@ This usage will create the app with default options.
 **head(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the HEAD method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
 **listen()** Starts listening on the port from options.  
 
-All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in response.  
+All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in response.
 
 #### Response methods in the callback  
 **send401(message = "Unauthorized request")** Sets 401 http code and sends the message.  
 **send404(message = "Page not found")** Sets 404 http code and sends the message.  
-**sendData(data)** Sends the data to the *options.dataKey* in response.
+**sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods
