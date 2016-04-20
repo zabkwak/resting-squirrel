@@ -20,6 +20,9 @@ app.get "/", (req, res, next) ->
 app.post "/", no, ["name"], (req, res, next) ->
 	next no, "I'm running"
 
+app.get "/documented", no, [], "I am documented endpoint.", (req, res, next) ->
+	next no, "I'm running'"
+
 app.listen()
 ```
 ### Javascript
@@ -35,6 +38,10 @@ app.post("/", false, ["name"], function (req, res, next) {
 	next(false, "I'm running");
 });
 
+app.get("/", false, [], "I am documented endpoint.", function (req, res, next) {
+	next(false, "I'm running");
+});
+
 app.listen()
 ```
 This usage will create the app with default options. 
@@ -44,6 +51,11 @@ This usage will create the app with default options.
 **dataKey** Key in the output where the data are sent. Default: data  
 **errorKey** Key in the output where the error is sent. Default: error  
 **meta** If true metadata are in the response. Default: true  
+**docs** Object for setting up the documentation for the API.
+- **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
+- **endpoint** On this endpoint is shown documentation. Default: /docs  
+- **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
+
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
 
 ### Functions  
