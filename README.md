@@ -38,7 +38,7 @@ app.post("/", false, ["name"], function (req, res, next) {
 	next(false, "I'm running");
 });
 
-app.get("/", false, [], "I am documented endpoint.", function (req, res, next) {
+app.get("/documented", false, [], "I am documented endpoint.", function (req, res, next) {
 	next(false, "I'm running");
 });
 
