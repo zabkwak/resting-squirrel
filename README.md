@@ -52,6 +52,7 @@ This usage will create the app with default options.
 **errorKey** Key in the output where the error is sent. Default: error  
 **requestLimit** Limit for input data. Default: 1mb  
 **meta** If true metadata are in the response. Default: true  
+**log** If true access log and error log are written in stdout. Default: true  
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
