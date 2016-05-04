@@ -50,6 +50,7 @@ This usage will create the app with default options.
 **port** Port where the app listens. Default: 8080  
 **dataKey** Key in the output where the data are sent. Default: data  
 **errorKey** Key in the output where the error is sent. Default: error  
+**requestLimit** Limit for input data. Default: 1mb
 **meta** If true metadata are in the response. Default: true  
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
