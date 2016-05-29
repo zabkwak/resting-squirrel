@@ -60,6 +60,19 @@ This usage will create the app with default options.
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
 
+### Errors
+Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 
+### Coffeescript
+```coffeescript
+rs = require "resting-squirrel"
+console.log new rs.Error "Some error", "some_code"
+```
+### Javascript
+```coffeescript
+var rs = require("resting-squirrel");
+console.log(new rs.Error("Some error", "some_code"));
+```
+
 ### Functions  
 **use(route, callback)** Registers express middleware. Route can be callback.  
 **get(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the GET method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
