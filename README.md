@@ -75,11 +75,11 @@ console.log(new rs.Error("Some error", "some_code"));
 
 ### Functions  
 **use(route, callback)** Registers express middleware. Route can be callback.  
-**get(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the GET method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**post(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the POST method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**put(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the PUT method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**delete(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the DELETE method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**head(route, requiredAuth = false, requiredParams = [], callback)** Registers route on the HEAD method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**get(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the GET method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**post(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the POST method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**put(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the PUT method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**delete(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the DELETE method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**head(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the HEAD method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
 **listen()** Starts listening on the port from options.  
 
 All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in response.
