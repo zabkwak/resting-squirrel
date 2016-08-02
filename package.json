@@ -1,6 +1,6 @@
 {
   "name": "resting-squirrel",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
