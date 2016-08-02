@@ -53,6 +53,7 @@ This usage will create the app with default options.
 **requestLimit** Limit for input data. Default: 1mb  
 **meta** If true metadata are in the response. Default: true  
 **log** If true access log and error log are written in stdout. Default: true  
+**logStack** If true and log is enabled the stack trace is written in stdout. Default: true  
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
