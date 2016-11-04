@@ -88,4 +88,9 @@ All http methods are using the same function for handling data. First parameter 
 #### Response methods in the callback  
 **send401(message = "Unauthorized request")** Sets 401 http code and sends the message.  
 **send404(message = "Page not found")** Sets 404 http code and sends the message.  
-**sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods
+**sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods  
+
+#### Reserved GET parameters
+This parameters are updating behaviour of the current request.  
+**nometa** If meta is enabled in config this parameter will disable it.  
+**pretty** JSON response is printed for human reading.  
