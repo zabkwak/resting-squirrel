@@ -51,7 +51,10 @@ This usage will create the app with default options.
 **dataKey** Key in the output where the data are sent. Default: data  
 **errorKey** Key in the output where the error is sent. Default: error  
 **requestLimit** Limit for input data. Default: 1mb  
-**meta** If true metadata are in the response. Default: true  
+**meta** Object for setting up the behaviour of meta data. 
+- **enabled** If true meta data are showed in every request. Default: true  
+- **data** Custom meta data for the application. This data are set for all endpoints. Default: {}
+
 **log** If true access log and error log are written in stdout. Default: true  
 **logStack** If true and log is enabled the stack trace is written in stdout. Default: true  
 **docs** Object for setting up the documentation for the API.
@@ -88,6 +91,7 @@ All http methods are using the same function for handling data. First parameter 
 #### Response methods in the callback  
 **send401(message = "Unauthorized request")** Sets 401 http code and sends the message.  
 **send404(message = "Page not found")** Sets 404 http code and sends the message.  
+**addMeta(key, value)** Adds custom meta key and value for current request.  
 **sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods  
 
 #### Reserved GET parameters
