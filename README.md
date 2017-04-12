@@ -2,6 +2,8 @@
 
 Simple REST server with json input data. It uses [express](https://www.npmjs.com/package/express) functions for register endpoints. Non-existing routes are automatically handled and return 404 status.
 
+0.5.x version is experimental. It should be compatible with previous versions but it can have some issues. Last stable version is 0.4.6. 
+
 ## Installation
 
 ```bash
