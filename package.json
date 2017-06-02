@@ -4,7 +4,7 @@
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "coffee -c . && mocha tests --recursive --watch"
   },
   "license": "MIT",
   "dependencies": {
@@ -24,5 +24,9 @@
   "keywords": [
     "rest",
     "express"
-  ]
+  ],
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "request": "^2.81.0"
+  }
 }
