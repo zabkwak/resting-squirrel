@@ -1,10 +1,10 @@
 {
   "name": "resting-squirrel",
-  "version": "0.5.5",
+  "version": "1.0.0",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "coffee -c . && mocha tests --recursive --watch"
+    "test": "mocha __tests__ --recursive --compilers coffee:coffee-script/register --timeout 5000"
   },
   "license": "MIT",
   "dependencies": {
