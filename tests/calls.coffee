@@ -16,6 +16,8 @@ app.post "/params", no, ["param"], (req, res, next) -> next no, success: yes
 
 app.get "/204", (req, res, next) -> res.send204()
 
+app.get "/501", (req, res, next) -> res.send501()
+
 app.listen()
 
 describe "Base calls", ->
@@ -128,4 +130,16 @@ describe "Response codes", ->
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.be.equal "ERR_PAGE_NOT_FOUND"
+			done()
+	it "calls endpoint with 501 error code", (done) ->
+		request.get
+			url: "http://localhost:8080/501?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.statusCode).to.be.equal 501
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.be.equal "ERR_NOT_IMPLEMENTED"
 			done()
