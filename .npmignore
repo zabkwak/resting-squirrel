@@ -1,1 +1,9 @@
 src
+.npmignore
+.gitignore
+.vs
+bin
+obj
+tests
+Resting Squirrel*
+test.coffee
