@@ -7,13 +7,13 @@ Endpoint = require "./endpoint"
 
 pkg = require "../package"
 
-__options = 
+__options =
 	port: 8080
 	dataKey: "data"
 	errorKey: "error"
 	log: yes
 	logStack: yes
-	meta: 
+	meta:
 		enabled: yes
 		data: {}
 	requestLimit: "1mb"
@@ -46,7 +46,7 @@ Route.add = (method, name, endpoint) ->
 	key = "#{method}#{name}"
 	@routes[key] = new Route method, name unless @routes[key]
 	route = @routes[key]
-	route.addEndpoint endpoint	
+	route.addEndpoint endpoint
 	endpoint
 
 __hasObjectValue = (o, path) ->
@@ -68,7 +68,7 @@ __checkParams = (params, req, res, next) ->
 			unless req.body[p]
 				return next new Err "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
 				return next new Err "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
-	next()	
+	next()
 
 __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
 	return cb() unless requiredAuth
@@ -115,7 +115,7 @@ module.exports = (options = {}) ->
 		d = new Date
 		res.send204 = ->
 			res.status 204
-			next()
+			res.end()
 		res.send404 = (message = "Page not found", code = "page_not_found") ->
 			res.sendError 404, message, code
 		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
@@ -139,10 +139,10 @@ module.exports = (options = {}) ->
 				deprecated = yes
 				r.warning = "This endpoint is deprecated. It could be removed in the future."
 			if o.meta.enabled and req.query.nometa is undefined
-				r._meta = 
+				r._meta =
 					took: took
 					deprecated: deprecated or undefined
-					rs: 
+					rs:
 						version: pkg.version
 						module: "https://www.npmjs.com/package/#{pkg.name}"
 					request:
