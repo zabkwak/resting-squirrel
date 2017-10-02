@@ -113,15 +113,20 @@ module.exports = (options = {}) ->
 	app.use (req, res, next) ->
 		app.set "json spaces", if req.query.pretty is undefined then 0 else 4
 		d = new Date
-		res.send404 = (message = "Page not found") ->
-			res.status 404
-			next new Err message, "page_not_found"
-		res.send401 = (message = "Unauthorized request") ->
-			res.status 401
-			next new Err message, "unauthorized_request"
+		res.send204 = ->
+			res.status 204
+			next()
+		res.send404 = (message = "Page not found", code = "page_not_found") ->
+			res.sendError 404, message, code
+		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
+			res.sendError 401, message, code
+			next new Err message, code
 		res.addMeta = (key, value) ->
 			res.__meta ?= {}
 			res.__meta[key] = value
+		res.sendError = (code = 500, message = "Server error", errorCode = "unknown") ->
+			res.status code
+			next new Err message, errorCode
 		res.sendData = (data, key = o.dataKey) ->
 			r = {}
 			r[key] = data

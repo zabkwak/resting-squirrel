@@ -4,7 +4,9 @@
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests --recursive --compilers coffee:coffee-script/register --timeout 5000"
+    "test": "mocha tests --recursive --compilers coffee:coffee-script/register --timeout 5000",
+    "prepublish": "coffee -c -o ./dist ./src && echo module.exports = require('./dist'); > index.js",
+    "postpublish": "rm -rf ./dist && rm -f ./index.js"
   },
   "license": "MIT",
   "dependencies": {
