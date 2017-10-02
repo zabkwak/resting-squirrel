@@ -117,3 +117,15 @@ describe "Response codes", ->
 			expect(res.statusCode).to.be.equal 204
 			expect(body).to.be.undefined
 			done()
+	it "calls not existing endpoint", (done) ->
+		request.get
+			url: "http://localhost:8080/404?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.statusCode).to.be.equal 404
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.be.equal "ERR_PAGE_NOT_FOUND"
+			done()

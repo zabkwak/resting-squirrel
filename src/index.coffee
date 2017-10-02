@@ -120,7 +120,6 @@ module.exports = (options = {}) ->
 			res.sendError 404, message, code
 		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
 			res.sendError 401, message, code
-			next new Err message, code
 		res.addMeta = (key, value) ->
 			res.__meta ?= {}
 			res.__meta[key] = value
