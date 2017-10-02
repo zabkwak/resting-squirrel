@@ -3,13 +3,6 @@ request = require "request"
 chai = require "chai"
 expect = chai.expect
 
-check = (done, cb) ->
-	try
-		cb()
-		done()
-	catch e
-		done e
-
 app = rs
 	log: no
 
@@ -25,92 +18,93 @@ app.get "/204", (req, res, next) -> res.send204()
 
 app.listen()
 
-describe "Docs call test", ->
-	it "data key found in /docs endpoint", (done) ->
+describe "Base calls", ->
+	it "calls the documentation endpoint", (done) ->
 		request.get
 			url: "http://localhost:8080/docs"
 			gzip: yes
 			json: yes
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys ["data", "_meta"]
-
-describe "No meta call test", ->
-	it "no meta data in the call", (done) ->
+			expect(err).to.be.null
+			expect(body).to.have.all.keys ["data", "_meta"]
+			done()
+	it "calls the endpoint with nometa parameter", (done) ->
 		request.get
 			url: "http://localhost:8080/?nometa"
 			gzip: yes
 			json: yes
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys ["data"]
+			expect(err).to.be.null
+			expect(body).to.have.all.keys ["data"]
+			done()
 
-describe "No auth call test", ->
-	it "401 error", (done) ->
+describe "Authorization", ->
+	it "calls the endpoint which requires authorization without token", (done) ->
 		request.get
-			url: "http://localhost:8080/auth"
+			url: "http://localhost:8080/auth?nometa"
 			gzip: yes
 			json: yes
 		, (err, res, body) ->
-			check done, ->
-				expect(res.statusCode).to.equal 401
-
-describe "Auth call test", ->
-	it "data key found in /auth endpoint", (done) ->
+			expect(err).to.be.null
+			expect(res.statusCode).to.equal 401
+			done()
+	it "calls the endpoint which requires authorization with token", (done) ->
 		request.get
 			url: "http://localhost:8080/auth?nometa"
 			gzip: yes
 			json: yes
 			headers: "x-token": "baf"
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys ["data"]
+			expect(err).to.be.null
+			expect(body).to.have.all.keys ["data"]
+			done()
 
 describe "GET parameter validation", ->
-	it "data key found in /params endpoint", (done) ->
+	it "calls the GET endpoint with parameters", (done) ->
 		request.get
 			url: "http://localhost:8080/params?nometa"
 			gzip: yes
 			json: yes
 			qs: param: 1
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys "data"
-
-describe "GET parameter validation", ->
-	it "missing parameter error in /params endpoint", (done) ->
+			expect(err).to.be.null
+			expect(body).to.have.all.keys "data"
+			done()
+	it "calls the GET endpoint without parameters", (done) ->
 		request.get
 			url: "http://localhost:8080/params?nometa"
 			gzip: yes
 			json: yes
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys "error"
-				expect(body.error).to.have.keys ["message", "code"]
-				expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			expect(err).to.be.null
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			done()
 
 describe "POST parameter validation", ->
-	it "data key found in /params endpoint", (done) ->
+	it "calls the POST endpoint with parameters", (done) ->
 		request.post
 			url: "http://localhost:8080/params?nometa"
 			gzip: yes
 			json: yes
 			body: param: 1
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys "data"
-
-describe "POST parameter validation", ->
-	it "missing parameter error in /params endpoint", (done) ->
+			expect(err).to.be.null
+			expect(body).to.have.all.keys "data"
+			done()
+	
+	it "calls the POST endpoint without parameters", (done) ->
 		request.post
 			url: "http://localhost:8080/params?nometa"
 			gzip: yes
 			json: yes
 		, (err, res, body) ->
-			check done, ->
-				expect(body).to.have.keys "error"
-				expect(body.error).to.have.keys ["message", "code"]
-				expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			expect(err).to.be.null
+			expect(body).to.have.all.keys "error"
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			done()
 
 describe "Response codes", ->
 	it "calls endpoint with 204 response code", (done) ->
