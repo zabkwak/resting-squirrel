@@ -165,7 +165,7 @@ module.exports = (options = {}) ->
 	app.use compression()
 	app.use bodyParser.json limit: o.requestLimit
 
-	squirrel = 
+	squirrel =
 		use: (route, callback) ->
 			return app.use route unless callback
 			app.use route, callback
@@ -189,7 +189,7 @@ module.exports = (options = {}) ->
 			docs = {}
 			for key, route of Route.routes
 				for v, endpoint of route.routes
-					docs["#{route.method.toUpperCase()} #{endpoint.getEndpoint()}"] = 
+					docs["#{route.method.toUpperCase()} #{endpoint.getEndpoint()}"] =
 						docs: endpoint.docs
 						#params: endpoint.params
 						required_params: endpoint.requiredParams
@@ -204,7 +204,7 @@ module.exports = (options = {}) ->
 				__checkAuth req, res, endpoint.requiredAuth, o.auth, (err) ->
 					return next err if err
 					__checkParams endpoint.requiredParams, req, res, (err) ->
-						return next err if err 
+						return next err if err
 						endpoint.callback req, res, (err, data) ->
 							return next err if err
 							res.sendData data
@@ -223,14 +223,14 @@ module.exports = (options = {}) ->
 				if o.logStack
 					console.error err.stack
 			res.status 500 if res.statusCode is 200
-			res.sendData 
+			res.sendData
 				message: err.message
 				code: err.code
 			, o.errorKey
 		app.listen o.port
 		console.log new Date, "Listening on #{o.port}" if o.log
 
-	squirrel	
+	squirrel
 
 module.exports.Error = Err
 module.exports.Endpoint = Endpoint

@@ -1,5 +1,5 @@
 ﻿class Endpoint
-	constructor: (@version, @requiredAuth, @requiredParams, @docs, @callback) -> 
+	constructor: (@version, @requiredAuth, @requiredParams, @docs, @callback) ->
 		@route = null
 		@deprecated = no
 		@params = {}
@@ -10,9 +10,9 @@
 
 	isDeprecated: ->
 		return no unless @route
-		@deprecated or @route.getMaxVersion() isnt @version		
+		@deprecated or @route.getMaxVersion() isnt @version
 
-	deprecate: -> 
+	deprecate: ->
 		@deprecated = yes
 		@
 
@@ -25,7 +25,7 @@
 			@addParam param
 
 	addParam: (param) ->
-		@params[param.key] = 
+		@params[param.key] =
 			required: param.required
 			type: param.type
 			description: param.description
