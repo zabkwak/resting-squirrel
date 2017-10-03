@@ -24,6 +24,8 @@ __options =
 	auth: (req, res, next) ->
 		return res.send401() unless req.headers["x-token"]
 		next()
+	before: (req, res, next) -> next()
+	after: (err, data, req, res, next) -> next()
 
 __methods = ["get", "post", "put", "delete", "head"]
 
@@ -73,6 +75,12 @@ __checkParams = (params, req, res, next) ->
 __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
 	return cb() unless requiredAuth
 	authMethod req, res, cb
+
+__beforeCallback = (req, res, method, cb) ->
+	method req, res, cb
+
+__afterCallback = (err, data, req, res, method, cb) ->
+	method err, data, req, res, cb
 
 __handle = (app, options, method, version, route, requiredAuth, requiredParams, docs, callback) ->
 	if typeof requiredAuth is "function"
@@ -206,9 +214,13 @@ module.exports = (options = {}) ->
 					return next err if err
 					__checkParams endpoint.requiredParams, req, res, (err) ->
 						return next err if err
-						endpoint.callback req, res, (err, data) ->
+						__beforeCallback req, res, o.before, (err) ->
 							return next err if err
-							res.sendData data
+							endpoint.callback req, res, (err, data) ->
+								return next err if err
+								__afterCallback err, data, req, res, o.after, (err) ->
+									return next err if err
+									res.sendData data
 				
 		for key, route of Route.routes
 			for v, endpoint of route.routes
