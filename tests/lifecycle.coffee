@@ -14,7 +14,7 @@ describe "Endpoint lifecycle", ->
 		before: (req, res, next) ->
 			res.__meta.lifecycle.before = yes
 			next()
-		after: (err, data, req, res, next) ->
+		after: (isError, data, req, res, next) ->
 			res.__meta.lifecycle.after = yes
 			next()
 	# Force __meta key to the res for add meta data for counting callbacks

@@ -79,9 +79,8 @@ __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
 __beforeCallback = (req, res, method, cb) ->
 	method req, res, cb
 
-__afterCallback = (data, req, res, method, cb) ->
-	# TODO remove the err in the major release
-	method null, data, req, res, cb
+__afterCallback = (err, data, req, res, method, cb) ->
+	method err, data, req, res, cb
 
 __handle = (app, options, method, version, route, requiredAuth, requiredParams, docs, callback) ->
 	if typeof requiredAuth is "function"
@@ -141,7 +140,7 @@ module.exports = (options = {}) ->
 			console.warn "res.sendData is deprecated"
 			res._sendData data, key
 		res._sendData = (data, key = o.dataKey) ->
-			__afterCallback data, req, res, o.after, (err) ->
+			__afterCallback key is o.errorKey, data, req, res, o.after, (err) ->
 				return next err if err
 				r = {}
 				r[key] = data
