@@ -79,8 +79,9 @@ __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
 __beforeCallback = (req, res, method, cb) ->
 	method req, res, cb
 
-__afterCallback = (err, data, req, res, method, cb) ->
-	method err, data, req, res, cb
+__afterCallback = (data, req, res, method, cb) ->
+	# TODO remove the err in the major release
+	method null, data, req, res, cb
 
 __handle = (app, options, method, version, route, requiredAuth, requiredParams, docs, callback) ->
 	if typeof requiredAuth is "function"
@@ -137,36 +138,41 @@ module.exports = (options = {}) ->
 			res.status code
 			next new Err message, errorCode
 		res.sendData = (data, key = o.dataKey) ->
-			r = {}
-			r[key] = data
-			body = req.body
-			body = "Body too long" if JSON.stringify(body).length > 1024
-			took = Date.now() - d.getTime()
-			endpoint = "#{req.method} #{req.path}"
-			deprecated = no
-			if req.__endpoint and req.__endpoint.isDeprecated()
-				deprecated = yes
-				r.warning = "This endpoint is deprecated. It could be removed in the future."
-			if o.meta.enabled and req.query.nometa is undefined
-				r._meta =
-					took: took
-					deprecated: deprecated or undefined
-					rs:
-						version: pkg.version
-						module: "https://www.npmjs.com/package/#{pkg.name}"
-					request:
-						endpoint: endpoint
-						body: body
-						query: req.query
-						headers: req.headers
-				if res.__meta
-					r._meta[k] = v for k, v of res.__meta
-						
-			if o.log
-				error = ""
-				console.log new Date, "#{res.statusCode} #{req.method} #{req.path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify req.query} HEADERS: #{JSON.stringify req.headers} TOOK: #{took} ms"
-				console.log ""
-			res.json r
+			console.warn "res.sendData is deprecated"
+			res._sendData data, key
+		res._sendData = (data, key = o.dataKey) ->
+			__afterCallback data, req, res, o.after, (err) ->
+				return next err if err
+				r = {}
+				r[key] = data
+				body = req.body
+				body = "Body too long" if JSON.stringify(body).length > 1024
+				took = Date.now() - d.getTime()
+				endpoint = "#{req.method} #{req.path}"
+				deprecated = no
+				if req.__endpoint and req.__endpoint.isDeprecated()
+					deprecated = yes
+					r.warning = "This endpoint is deprecated. It could be removed in the future."
+				if o.meta.enabled and req.query.nometa is undefined
+					r._meta =
+						took: took
+						deprecated: deprecated or undefined
+						rs:
+							version: pkg.version
+							module: "https://www.npmjs.com/package/#{pkg.name}"
+						request:
+							endpoint: endpoint
+							body: body
+							query: req.query
+							headers: req.headers
+					if res.__meta
+						r._meta[k] = v for k, v of res.__meta
+							
+				if o.log
+					error = ""
+					console.log new Date, "#{res.statusCode} #{req.method} #{req.path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify req.query} HEADERS: #{JSON.stringify req.headers} TOOK: #{took} ms"
+					console.log ""
+				res.json r
 		
 		res.addMeta k, v for k, v of o.meta.data
 			
@@ -218,9 +224,7 @@ module.exports = (options = {}) ->
 							return next err if err
 							endpoint.callback req, res, (err, data) ->
 								return next err if err
-								__afterCallback err, data, req, res, o.after, (err) ->
-									return next err if err
-									res.sendData data
+								res._sendData data
 				
 		for key, route of Route.routes
 			for v, endpoint of route.routes
@@ -236,7 +240,7 @@ module.exports = (options = {}) ->
 				if o.logStack
 					console.error err.stack
 			res.status 500 if res.statusCode is 200
-			res.sendData
+			res._sendData
 				message: err.message
 				code: err.code
 			, o.errorKey
