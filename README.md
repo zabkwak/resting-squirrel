@@ -74,7 +74,7 @@ rs = require "resting-squirrel"
 console.log new rs.Error "Some error", "some_code"
 ```
 ### Javascript
-```coffeescript
+```javascript
 var rs = require("resting-squirrel");
 console.log(new rs.Error("Some error", "some_code"));
 ```
