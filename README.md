@@ -26,7 +26,7 @@ app.get "/documented", no, [], "I am documented endpoint.", (req, res, next) ->
 app.listen()
 ```
 ### Javascript
-```coffeescript
+```javascript
 var rs = require("resting-squirrel");
 var app = rs();
 
@@ -63,6 +63,8 @@ This usage will create the app with default options.
 - **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
+**before(req, res, next)** Function called before the endpoint execution. Default function just calls next().  
+**after(err, data, req, res, next)** Function called after the endpoint execution. Default function just calls next().  
 
 ### Errors
 Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 
@@ -79,20 +81,23 @@ console.log(new rs.Error("Some error", "some_code"));
 
 ### Functions  
 **use(route, callback)** Registers express middleware. Route can be callback.  
-**get(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the GET method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**post(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the POST method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**put(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the PUT method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**delete(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the DELETE method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
-**head(route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the HEAD method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**get(version, route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the GET method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**post(version, route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the POST method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**put(version, route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the PUT method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**delete(version, route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the DELETE method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
+**head(version, route, requiredAuth = false, requiredParams = [], docs = null, callback)** Registers route on the HEAD method. requiredAuth and requiredParams can be callback. Callback is taken from express.  
 **listen()** Starts listening on the port from options.  
 
 All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in response.
 
 #### Response methods in the callback  
-**send401(message = "Unauthorized request")** Sets 401 http code and sends the message.  
-**send404(message = "Page not found")** Sets 404 http code and sends the message.  
+**send204()** Sets 204 http code and sends empty response.  
+**send401(message = "Unauthorized request", code = "unauthorized_request")** Sets 401 http code and sends the Error instance.  
+**send404(message = "Page not found", code = "page_not_found")** Sets 404 http code and sends the Error instance.   
+**send501(message = "Not implemented", code = "not_implemented")** Sets 501 http code and sends Error instance.  
 **addMeta(key, value)** Adds custom meta key and value for current request.  
 **sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods  
+**sendError(code = 500, message = "Server error", errorCode = "unknown")** Sets the code as http code and sends the Error instance.  
 
 #### Reserved GET parameters
 This parameters are updating behaviour of the current request.  
