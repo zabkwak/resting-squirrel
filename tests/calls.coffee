@@ -100,6 +100,7 @@ describe "POST parameter validation", ->
 			body: param: 1
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys "data"
 			done()
 	
@@ -110,6 +111,7 @@ describe "POST parameter validation", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys "error"
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
