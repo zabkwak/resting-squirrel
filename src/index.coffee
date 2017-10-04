@@ -119,11 +119,12 @@ module.exports = (options = {}) ->
 			
 	app = express()
 	app.use (req, res, next) ->
-		app.set "json spaces", if req.query.pretty is undefined then 0 else 4
 		d = new Date
 		res.send204 = ->
-			res.status 204
-			res.end()
+			__afterCallback no, undefined, req, res, o.after, (err) ->
+				return next err if err
+				res.status 204
+				res._end()
 		res.send404 = (message = "Page not found", code = "page_not_found") ->
 			res.sendError 404, message, code
 		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
@@ -144,16 +145,19 @@ module.exports = (options = {}) ->
 				return next err if err
 				r = {}
 				r[key] = data
-				body = req.body
-				body = "Body too long" if JSON.stringify(body).length > 1024
-				took = Date.now() - d.getTime()
-				endpoint = "#{req.method} #{req.path}"
-				deprecated = no
+				res._end r
+		res._end = (data) ->
+			body = req.body
+			body = "Body too long" if JSON.stringify(body).length > 1024
+			took = Date.now() - d.getTime()
+			endpoint = "#{req.method} #{req.path}"
+			deprecated = no
+			if data
 				if req.__endpoint and req.__endpoint.isDeprecated()
 					deprecated = yes
-					r.warning = "This endpoint is deprecated. It could be removed in the future."
+					data.warning = "This endpoint is deprecated. It could be removed in the future."
 				if o.meta.enabled and req.query.nometa is undefined
-					r._meta =
+					data._meta =
 						took: took
 						deprecated: deprecated or undefined
 						rs:
@@ -165,13 +169,15 @@ module.exports = (options = {}) ->
 							query: req.query
 							headers: req.headers
 					if res.__meta
-						r._meta[k] = v for k, v of res.__meta
-							
-				if o.log
-					error = ""
-					console.log new Date, "#{res.statusCode} #{req.method} #{req.path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify req.query} HEADERS: #{JSON.stringify req.headers} TOOK: #{took} ms"
-					console.log ""
-				res.json r
+						data._meta[k] = v for k, v of res.__meta
+				res.header "content-type", "application/json; charset=utf-8"
+				res.write JSON.stringify data, null, if req.query.pretty is undefined then 0 else 4
+			res.end()
+
+			if o.log
+				error = ""
+				console.log new Date, "#{res.statusCode} #{req.method} #{req.path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify req.query} HEADERS: #{JSON.stringify req.headers} TOOK: #{took} ms"
+				console.log ""
 		
 		res.addMeta k, v for k, v of o.meta.data
 			

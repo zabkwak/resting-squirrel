@@ -5,6 +5,7 @@ expect = chai.expect
 
 app = rs
 	log: no
+	logStack: no
 
 app.get "/", (req, res, next) -> next no, success: yes
 
@@ -28,6 +29,7 @@ describe "Base calls", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys ["data", "_meta"]
 			done()
 	it "calls the endpoint with nometa parameter", (done) ->
@@ -37,6 +39,7 @@ describe "Base calls", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys ["data"]
 			done()
 
@@ -48,6 +51,7 @@ describe "Authorization", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(res.statusCode).to.equal 401
 			done()
 	it "calls the endpoint which requires authorization with token", (done) ->
@@ -58,6 +62,7 @@ describe "Authorization", ->
 			headers: "x-token": "baf"
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys ["data"]
 			done()
 
@@ -70,7 +75,8 @@ describe "GET parameter validation", ->
 			qs: param: 1
 		, (err, res, body) ->
 			expect(err).to.be.null
-			expect(body).to.have.all.keys "data"
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(body).to.have.all.keys ["data"]
 			done()
 	it "calls the GET endpoint without parameters", (done) ->
 		request.get
@@ -79,6 +85,7 @@ describe "GET parameter validation", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
@@ -116,6 +123,7 @@ describe "Response codes", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal undefined
 			expect(res.statusCode).to.be.equal 204
 			expect(body).to.be.undefined
 			done()
@@ -126,6 +134,7 @@ describe "Response codes", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(res.statusCode).to.be.equal 404
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
@@ -138,6 +147,7 @@ describe "Response codes", ->
 			json: yes
 		, (err, res, body) ->
 			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(res.statusCode).to.be.equal 501
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]

@@ -27,6 +27,7 @@ describe "Endpoint lifecycle", ->
 		next()
 	app.get "/", (req, res, next) -> next no, success: yes
 	app.get "/auth", yes, (req, res, next) -> next no, success: yes
+	app.get "/204", (req, res, next) -> res.send204()
 	app.listen()
 
 	it "calls all functions of the lifecycle on the not auth endpoint", (done) ->
