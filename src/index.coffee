@@ -1,8 +1,8 @@
 ﻿express = require "express"
 compression = require "compression"
 bodyParser = require "body-parser"
+Err = require "smart-error"
 
-Err = require "./error"
 Endpoint = require "./endpoint"
 
 pkg = require "../package"
