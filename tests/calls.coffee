@@ -19,6 +19,8 @@ app.get "/204", (req, res, next) -> res.send204()
 
 app.get "/501", (req, res, next) -> res.send501()
 
+app.get "/error", (req, res, next) -> next new rs.Error "Custom error", "test"
+
 app.listen()
 
 describe "Base calls", ->
@@ -141,6 +143,20 @@ describe "Response codes", ->
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.be.equal "ERR_PAGE_NOT_FOUND"
+			done()
+	it "calls endpoint with custom error", (done) ->
+		request.get
+			url: "http://localhost:8080/error?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 500
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.message).to.be.equal "Custom error"
+			expect(body.error.code).to.be.equal "ERR_TEST"
 			done()
 	it "calls endpoint with 501 error code", (done) ->
 		request.get
