@@ -21,6 +21,8 @@ app.get "/501", (req, res, next) -> res.send501()
 
 app.get "/error", (req, res, next) -> next new rs.Error "Custom error", "test"
 
+app.get "/error/custom", (req, res, next) -> next new rs.Error "Custom error", "test", field: "test"
+
 app.listen()
 
 describe "Base calls", ->
@@ -170,4 +172,21 @@ describe "Response codes", ->
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.be.equal "ERR_NOT_IMPLEMENTED"
+			done()
+
+describe "Errors", ->
+	it "calls endpoint with custom error with payload", (done) ->
+		request.get
+			url: "http://localhost:8080/error/custom?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 500
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code", "field"]
+			expect(body.error.message).to.be.equal "Custom error"
+			expect(body.error.code).to.be.equal "ERR_TEST"
+			expect(body.error.field).to.be.equal "test"
 			done()

@@ -245,10 +245,7 @@ module.exports = (options = {}) ->
 				if o.logStack
 					console.error err.stack
 			res.status 500 if res.statusCode is 200
-			res._sendData
-				message: err.message
-				code: err.code
-			, o.errorKey
+			res._sendData err.toJSON(), o.errorKey
 		app.listen o.port
 		console.log new Date, "Listening on #{o.port}" if o.log
 
