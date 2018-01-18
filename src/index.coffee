@@ -13,6 +13,9 @@ __options =
 	errorKey: "error"
 	log: yes
 	logStack: yes
+	logger: ({ statusCode, method, path, spec, body, params, query, headers, took }) ->
+		console.log new Date, "#{statusCode} #{method} #{path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify query} HEADERS: #{JSON.stringify headers} TOOK: #{took} ms"
+		console.log ""
 	meta:
 		enabled: yes
 		data: {}
@@ -174,10 +177,17 @@ module.exports = (options = {}) ->
 				res.write JSON.stringify data, null, if req.query.pretty is undefined then 0 else 4
 			res.end()
 
-			if o.log
-				error = ""
-				console.log new Date, "#{res.statusCode} #{req.method} #{req.path} BODY: #{JSON.stringify body} QUERY: #{JSON.stringify req.query} HEADERS: #{JSON.stringify req.headers} TOOK: #{took} ms"
-				console.log ""
+			if o.log and typeof o.logger is "function"
+				o.logger
+					statusCode: res.statusCode
+					method: req.method
+					path: req.path
+					spec: if req.route then req.route.path or req.path
+					body: req.body
+					params: req.params
+					query: req.query
+					headers: req.headers
+					took: took
 		
 		res.addMeta k, v for k, v of o.meta.data
 			
