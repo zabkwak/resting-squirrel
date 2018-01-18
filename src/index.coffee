@@ -182,7 +182,7 @@ module.exports = (options = {}) ->
 					statusCode: res.statusCode
 					method: req.method
 					path: req.path
-					spec: if req.route then req.route.path or req.path
+					spec: if req.route then req.route.path else req.path
 					body: req.body
 					params: req.params
 					query: req.query
