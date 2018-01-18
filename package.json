@@ -9,6 +9,9 @@
     "postpublish": "rm -rf ./dist && rm -f ./index.js"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=4"
+  },
   "dependencies": {
     "body-parser": "^1.14.2",
     "compression": "^1.6.0",
