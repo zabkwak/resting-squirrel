@@ -66,6 +66,10 @@ This usage will create the app with default options.
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
 **before(req, res, next)** Function called before the endpoint execution. Default function just calls next().  
 **after(isError, data, req, res, next)** Function called after the endpoint execution. Default function just calls next().  
+**defaultError** Default error for response if no error is defined  
+- **statusCode** Default HTTP status code on error. Default: 500
+- **message** Default error message. Default: Server error  
+- **code** Default error code. Default: unknown  
 
 ### Errors
 Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 

@@ -2,6 +2,8 @@
 compression = require "compression"
 bodyParser = require "body-parser"
 Err = require "smart-error"
+RouteParser = require "route-parser"
+async = require "async"
 
 Endpoint = require "./endpoint"
 
@@ -27,8 +29,12 @@ __options =
 	auth: (req, res, next) ->
 		return res.send401() unless req.headers["x-token"]
 		next()
-	before: (req, res, next) -> next()
+	before: "*": (req, res, next) -> next()
 	after: (err, data, req, res, next) -> next()
+	defaultError:
+		statusCode: 500
+		message: "Server error"
+		code: "unknown"
 
 __methods = ["get", "post", "put", "delete", "head"]
 
@@ -79,8 +85,15 @@ __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
 	return cb() unless requiredAuth
 	authMethod req, res, cb
 
-__beforeCallback = (req, res, method, cb) ->
-	method req, res, cb
+__beforeCallback = (req, res, map, cb) ->
+	async.eachSeries Object.keys(map), (spec, callback) ->
+		if spec is "*"
+			return map[spec] req, res, callback
+		r = new RouteParser spec
+		match = r.match req.path
+		return callback() unless match
+		map[spec] req, res, callback
+	, cb
 
 __afterCallback = (err, data, req, res, method, cb) ->
 	method err, data, req, res, cb
@@ -101,7 +114,7 @@ __handle = (app, options, method, version, route, requiredAuth, requiredParams, 
 
 	Route.add method, route, new Endpoint version, requiredAuth, requiredParams, docs, callback
 
-__mergeObjects = (o1, o2) ->
+__mergeObjects = (o1, o2, strict = yes) ->
 	o = {}
 	for k, v of o2
 		if o1[k] is undefined
@@ -110,10 +123,17 @@ __mergeObjects = (o1, o2) ->
 		unless typeof v is "object"
 			o[k] = o1[k]
 			continue
-		o[k] = __mergeObjects o1[k], v
+		o[k] = __mergeObjects o1[k], v, k not in ["before"]
+	unless strict
+		for k, v of o1
+			if o2[k] is undefined
+				o[k] = v
 	o
 		
 module.exports = (options = {}) ->
+	if typeof options.before is "function"
+		console.warn "Using 'before' option as a function is deprecated"
+		options.before = "*": options.before
 	o = __mergeObjects options, __options
 
 	# Object merge cannot merge not existing keys, so this adds custom meta data to the options.
@@ -137,7 +157,7 @@ module.exports = (options = {}) ->
 		res.addMeta = (key, value) ->
 			res.__meta ?= {}
 			res.__meta[key] = value
-		res.sendError = (code = 500, message = "Server error", errorCode = "unknown") ->
+		res.sendError = (code = o.statusCode, message = o.message, errorCode = o.code) ->
 			res.status code
 			next new Err message, errorCode
 		res.sendData = (data, key = o.dataKey) ->
