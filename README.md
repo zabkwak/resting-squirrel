@@ -64,8 +64,8 @@ This usage will create the app with default options.
 - **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
-**before(req, res, next)** Function called before the endpoint execution. Default function just calls next().  
-**after(isError, data, req, res, next)** Function called after the endpoint execution. Default function just calls next().  
+**before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
+**after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
 **defaultError** Default error for response if no error is defined  
 - **statusCode** Default HTTP status code on error. Default: 500
 - **message** Default error message. Default: Server error  
@@ -102,7 +102,7 @@ All http methods are using the same function for handling data. First parameter 
 **send501(message = "Not implemented", code = "not_implemented")** Sets 501 http code and sends Error instance.  
 **addMeta(key, value)** Adds custom meta key and value for current request.  
 **sendData(data)** Sends the data to the *options.dataKey* in response. DEPRECATED: You should use the callback in http methods  
-**sendError(code = 500, message = "Server error", errorCode = "unknown")** Sets the code as http code and sends the Error instance.  
+**sendError(code = options.defaultError.statusCode, message = options.defaultError.message, errorCode = options.defaultError.code)** Sets the code as http code and sends the Error instance.  
 
 #### Reserved GET parameters
 This parameters are updating behaviour of the current request.  
