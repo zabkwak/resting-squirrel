@@ -30,7 +30,7 @@ __options =
 		return res.send401() unless req.headers["x-token"]
 		next()
 	before: "*": (req, res, next) -> next()
-	after: (err, data, req, res, next) -> next()
+	after: "*": (err, data, req, res, next) -> next()
 	defaultError:
 		statusCode: 500
 		message: "Server error"
@@ -95,8 +95,15 @@ __beforeCallback = (req, res, map, cb) ->
 		map[spec] req, res, callback
 	, cb
 
-__afterCallback = (err, data, req, res, method, cb) ->
-	method err, data, req, res, cb
+__afterCallback = (err, data, req, res, map, cb) ->
+	async.eachSeries Object.keys(map), (spec, callback) ->
+		if spec is "*"
+			return map[spec] err, data, req, res, callback
+		r = new RouteParser spec
+		match = r.match req.path
+		return callback() unless match
+		map[spec] err, data, req, res, callback
+	, cb
 
 __handle = (app, options, method, version, route, requiredAuth, requiredParams, docs, callback) ->
 	if typeof requiredAuth is "function"
@@ -123,7 +130,7 @@ __mergeObjects = (o1, o2, strict = yes) ->
 		unless typeof v is "object"
 			o[k] = o1[k]
 			continue
-		o[k] = __mergeObjects o1[k], v, k not in ["before"]
+		o[k] = __mergeObjects o1[k], v, k not in ["before", "after"]
 	unless strict
 		for k, v of o1
 			if o2[k] is undefined
@@ -134,6 +141,9 @@ module.exports = (options = {}) ->
 	if typeof options.before is "function"
 		console.warn "Using 'before' option as a function is deprecated"
 		options.before = "*": options.before
+	if typeof options.after is "function"
+		console.warn "Using 'after' option as a function is deprecated"
+		options.after = "*": options.after
 	o = __mergeObjects options, __options
 
 	# Object merge cannot merge not existing keys, so this adds custom meta data to the options.
