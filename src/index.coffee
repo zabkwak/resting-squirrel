@@ -123,6 +123,10 @@ __handle = (app, options, method, version, route, requiredAuth, requiredParams, 
 
 __mergeObjects = (o1, o2, strict = yes) ->
 	o = {}
+	unless strict
+		for k, v of o1
+			if o2[k] is undefined
+				o[k] = v
 	for k, v of o2
 		if o1[k] is undefined
 			o[k] = v
@@ -131,10 +135,7 @@ __mergeObjects = (o1, o2, strict = yes) ->
 			o[k] = o1[k]
 			continue
 		o[k] = __mergeObjects o1[k], v, k not in ["before", "after"]
-	unless strict
-		for k, v of o1
-			if o2[k] is undefined
-				o[k] = v
+	
 	o
 		
 module.exports = (options = {}) ->
@@ -145,7 +146,6 @@ module.exports = (options = {}) ->
 		console.warn "Using 'after' option as a function is deprecated"
 		options.after = "*": options.after
 	o = __mergeObjects options, __options
-
 	# Object merge cannot merge not existing keys, so this adds custom meta data to the options.
 	if options.meta and options.meta.data
 		o.meta.data[k] = v for k, v of options.meta.data
