@@ -19,6 +19,7 @@ describe "Endpoint lifecycle", ->
 				req.lifecycle.before_custom = yes
 				next()
 			"/model/*modelData": (req, res, next) ->
+				return next() if req.route.path.indexOf("/model/:id") < 0
 				req.lifecycle.before_custom = yes
 				next()
 		after:
@@ -45,6 +46,7 @@ describe "Endpoint lifecycle", ->
 	app.get "/204/auth", yes, (req, res, next) -> res.send204()
 	app.get "/param/:param", yes, (req, res, next) -> next no, success: yes
 	app.get "/param/:param/param", yes, (req, res, next) -> next no, success: yes
+	app.get "/model/list", yes, (req, res, next) -> next no, success: yes
 	app.get "/model/:id", yes, (req, res, next) -> next no, success: yes
 	app.get "/model/:id/relation/:relationId", yes, (req, res, next) -> next no, success: yes
 	app.listen()
@@ -225,7 +227,7 @@ describe "Endpoint lifecycle", ->
 			expect(lifecycle.after_custom).to.be.false
 			done()
 
-	it "calls all functions of the lifecycle on the model endpoints", (done) ->
+	it "calls all functions of the lifecycle on the model endpoints with relation", (done) ->
 		request.get
 			url: "http://localhost:8081/model/1/relation/1"
 			gzip: yes
@@ -241,6 +243,26 @@ describe "Endpoint lifecycle", ->
 			expect(lifecycle.auth).to.be.true
 			expect(lifecycle.before).to.be.true
 			expect(lifecycle.before_custom).to.be.true
+			expect(lifecycle.after).to.be.true
+			expect(lifecycle.after_custom).to.be.false
+			done()
+
+	it "calls all functions of the lifecycle on the model endpoints with non-id endpoint", (done) ->
+		request.get
+			url: "http://localhost:8081/model/list"
+			gzip: yes
+			json: yes
+			headers: "x-token": "token"
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(body).to.have.all.keys ["data", "_meta"]
+			expect(body.data).to.have.all.keys ["success"]
+			lifecycle = JSON.parse res.headers.lifecycle
+			expect(lifecycle).to.be.an "object"
+			expect(lifecycle).to.have.all.keys ["auth", "before", "before_custom", "after", "after_custom"]
+			expect(lifecycle.auth).to.be.true
+			expect(lifecycle.before).to.be.true
+			expect(lifecycle.before_custom).to.be.false
 			expect(lifecycle.after).to.be.true
 			expect(lifecycle.after_custom).to.be.false
 			done()
