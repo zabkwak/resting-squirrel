@@ -1,8 +1,20 @@
 ﻿class Endpoint
-	constructor: (@version, @requiredAuth, @requiredParams, @docs, @callback) ->
+	constructor: (@version, @requiredAuth, params, @docs, @callback) ->
 		@route = null
 		@deprecated = no
-		@params = {}
+		@requiredParams = []
+		@params = []
+		for param in params
+			if typeof param is "string"
+				@params.push
+					name: param
+					type: "any"
+					required: yes
+					description: null
+				continue
+			@params.push param
+		for param in @params
+			@requiredParams.push param.name if param.required
 
 	getEndpoint: ->
 		return @route.route if @version is null

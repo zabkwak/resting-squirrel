@@ -11,9 +11,13 @@ app.get "/", (req, res, next) -> next no, success: yes
 
 app.get "/auth", yes, (req, res, next) -> next no, success: yes
 
-app.get "/params", no, ["param"], (req, res, next) -> next no, success: yes
+app.get "/params", no, [{ name: "param", type: "any", required: yes }], (req, res, next) -> next no, success: yes
 
-app.post "/params", no, ["param"], (req, res, next) -> next no, success: yes
+app.get "/params/type", no, [{ name: "param", type: "integer", required: yes }], (req, res, next) -> next no, success: yes
+
+app.post "/params", no, [{ name: "param", type: "any", required: yes }], (req, res, next) -> next no, success: yes
+
+app.post "/params/type", no, [{ name: "param", type: "integer", required: yes }], (req, res, next) -> next no, success: yes
 
 app.get "/204", (req, res, next) -> res.send204()
 
@@ -95,6 +99,20 @@ describe "GET parameter validation", ->
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
 			done()
+	it "calls the GET endpoint with parameter's invalid type", (done) ->
+		request.get
+			url: "http://localhost:8080/params/type?nometa"
+			gzip: yes
+			json: yes
+			qs: param: "test"
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 400
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_INVALID_TYPE"
+			done()
 
 describe "POST parameter validation", ->
 	it "calls the POST endpoint with parameters", (done) ->
@@ -108,7 +126,6 @@ describe "POST parameter validation", ->
 			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys "data"
 			done()
-	
 	it "calls the POST endpoint without parameters", (done) ->
 		request.post
 			url: "http://localhost:8080/params?nometa"
@@ -121,6 +138,20 @@ describe "POST parameter validation", ->
 			expect(body).to.have.all.keys "error"
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			done()
+	it "calls the POST endpoint with parameter's invalid type", (done) ->
+		request.post
+			url: "http://localhost:8080/params/type?nometa"
+			gzip: yes
+			json: yes
+			body: param: "test"
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 400
+			expect(body).to.have.all.keys ["error"]
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_INVALID_TYPE"
 			done()
 
 describe "Response codes", ->

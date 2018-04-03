@@ -4,6 +4,7 @@ bodyParser = require "body-parser"
 Err = require "smart-error"
 RouteParser = require "route-parser"
 async = require "async"
+{ Type } = require "simple-smart-model"
 
 Endpoint = require "./endpoint"
 HttpError = require "./http-error"
@@ -71,15 +72,16 @@ __hasObjectValue = (o, path) ->
 
 __checkParams = (params, req, res, next) ->
 	return next() if params.length is 0
-	for p in params
-		if req.method is "GET"
-			unless req.query[p]
-				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
-				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.query, p.split "."
-		else
-			unless req.body[p]
+	mergedParams = Object.assign req.query, req.body
+	for param in params
+		p = param.name
+		if param.required
+			requiredParam = if req.method is "GET" then req.query[p] else req.body[p]
+			unless requiredParam
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
+		unless Type[param.type].isValid mergedParams[p]
+			return next HttpError.create 400, "Parameter '#{p}' has invalid type. It should be '#{param.type}'", "invalid_type"
 	next()
 
 __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
@@ -106,21 +108,21 @@ __afterCallback = (err, data, req, res, map, cb) ->
 		map[spec] err, data, req, res, callback
 	, cb
 
-__handle = (app, options, method, version, route, requiredAuth, requiredParams, docs, callback) ->
+__handle = (app, options, method, version, route, requiredAuth, params, docs, callback) ->
 	if typeof requiredAuth is "function"
 		callback = requiredAuth
 		requiredAuth = no
-		requiredParams = []
+		params = []
 		docs = null
-	else if typeof requiredParams is "function"
-		callback = requiredParams
-		requiredParams = []
+	else if typeof params is "function"
+		callback = params
+		params = []
 		docs = null
 	else if typeof docs is "function"
 		callback = docs
 		docs = null
 
-	Route.add method, route, new Endpoint version, requiredAuth, requiredParams, docs, callback
+	Route.add method, route, new Endpoint version, requiredAuth, params, docs, callback
 
 __mergeObjects = (o1, o2, strict = yes) ->
 	o = {}
@@ -235,15 +237,15 @@ module.exports = (options = {}) ->
 			app.use route, callback
 
 	cb = (method) ->
-		(version, route, requiredAuth, requiredParams, docs, callback) ->
+		(version, route, requiredAuth, params, docs, callback) ->
 			if isNaN parseFloat version
 				callback = docs
-				docs = requiredParams
-				requiredParams = requiredAuth
+				docs = params
+				params = requiredAuth
 				requiredAuth = route
 				route = version
 				version = null
-			__handle app, o, method, version, route, requiredAuth, requiredParams, docs, callback
+			__handle app, o, method, version, route, requiredAuth, params, docs, callback
 	
 	for method in __methods
 		squirrel[method] = cb method
@@ -255,7 +257,7 @@ module.exports = (options = {}) ->
 				for v, endpoint of route.routes
 					docs["#{route.method.toUpperCase()} #{endpoint.getEndpoint()}"] =
 						docs: endpoint.docs
-						#params: endpoint.params
+						params: endpoint.params
 						required_params: endpoint.requiredParams
 						required_auth: endpoint.requiredAuth
 						deprecated: endpoint.isDeprecated()
@@ -267,7 +269,7 @@ module.exports = (options = {}) ->
 				req.__endpoint = endpoint
 				__checkAuth req, res, endpoint.requiredAuth, o.auth, (err) ->
 					return next err if err
-					__checkParams endpoint.requiredParams, req, res, (err) ->
+					__checkParams endpoint.params, req, res, (err) ->
 						return next err if err
 						__beforeCallback req, res, o.before, (err) ->
 							return next err if err
