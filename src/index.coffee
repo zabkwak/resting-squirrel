@@ -160,9 +160,9 @@ module.exports = (options = {}) ->
 				res.status 204
 				res._end()
 		res.send404 = (message = "Page not found", code = "page_not_found") ->
-			res.sendError 404, message, code
-		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
-			res.sendError 401, message, code
+			res.sendError HttpError.create 404, message, code
+		res.send401 = (message, code) ->
+			res.sendError HttpError.create 401, message, code
 		res.send501 = (message, code) ->
 			res.sendError HttpError.create 501, message, code
 		res.addMeta = (key, value) ->
@@ -175,7 +175,7 @@ module.exports = (options = {}) ->
 			res.status code
 			next new Err message, errorCode
 		res.sendData = (data, key = o.dataKey) ->
-			console.warn "res.sendData is deprecated"
+			console.warn "res.sendData is deprecated. Use next callback in route."
 			res._sendData data, key
 		res._sendData = (data, key = o.dataKey) ->
 			__afterCallback key is o.errorKey, data, req, res, o.after, (err) ->

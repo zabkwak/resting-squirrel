@@ -119,7 +119,7 @@ describe "Endpoint lifecycle", ->
 			expect(err).to.be.null
 			expect(body).to.have.all.keys ["error", "_meta"]
 			expect(body.error).to.have.all.keys ["code", "message"]
-			expect(body.error.code).to.be.equal "ERR_UNAUTHORIZED_REQUEST"
+			expect(body.error.code).to.be.equal "ERR_UNAUTHORIZED"
 			lifecycle = JSON.parse res.headers.lifecycle
 			expect(lifecycle).to.be.an "object"
 			expect(lifecycle).to.have.all.keys ["auth", "before", "before_custom", "after", "after_custom"]
