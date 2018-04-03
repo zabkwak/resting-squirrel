@@ -6,6 +6,7 @@ RouteParser = require "route-parser"
 async = require "async"
 
 Endpoint = require "./endpoint"
+HttpError = require "./http-error"
 
 pkg = require "../package"
 
@@ -73,12 +74,12 @@ __checkParams = (params, req, res, next) ->
 	for p in params
 		if req.method is "GET"
 			unless req.query[p]
-				return next new Err "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
-				return next new Err "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.query, p.split "."
+				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
+				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.query, p.split "."
 		else
 			unless req.body[p]
-				return next new Err "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
-				return next new Err "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
+				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
+				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
 	next()
 
 __checkAuth = (req, res, requiredAuth, authMethod, cb) ->
@@ -162,12 +163,15 @@ module.exports = (options = {}) ->
 			res.sendError 404, message, code
 		res.send401 = (message = "Unauthorized request", code = "unauthorized_request") ->
 			res.sendError 401, message, code
-		res.send501 = (message = "Not implemented", code = "not_implemented") ->
-			res.sendError 501, message, code
+		res.send501 = (message, code) ->
+			res.sendError HttpError.create 501, message, code
 		res.addMeta = (key, value) ->
 			res.__meta ?= {}
 			res.__meta[key] = value
-		res.sendError = (code = o.statusCode, message = o.message, errorCode = o.code) ->
+		res.sendError = (code = o.defaultError.statusCode, message = o.defaultError.message, errorCode = o.defaultError.code) ->
+			if code instanceof HttpError
+				return next code
+			console.warn "res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance."
 			res.status code
 			next new Err message, errorCode
 		res.sendData = (data, key = o.dataKey) ->
@@ -284,7 +288,11 @@ module.exports = (options = {}) ->
 				console.error err.message
 				if o.logStack
 					console.error err.stack
-			res.status 500 if res.statusCode is 200
+			if err instanceof HttpError
+				res.status err.statusCode
+				delete err.statusCode
+			else
+				res.status 500 if res.statusCode is 200
 			res._sendData err.toJSON(), o.errorKey
 		app.listen o.port
 		console.log new Date, "Listening on #{o.port}" if o.log
@@ -292,4 +300,5 @@ module.exports = (options = {}) ->
 	squirrel
 
 module.exports.Error = Err
+module.exports.HttpError = HttpError
 module.exports.Endpoint = Endpoint

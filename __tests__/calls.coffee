@@ -90,7 +90,7 @@ describe "GET parameter validation", ->
 		, (err, res, body) ->
 			expect(err).to.be.null
 			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
-			expect(res.statusCode).to.be.equal 500
+			expect(res.statusCode).to.be.equal 400
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
@@ -117,7 +117,7 @@ describe "POST parameter validation", ->
 		, (err, res, body) ->
 			expect(err).to.be.null
 			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
-			expect(res.statusCode).to.be.equal 500
+			expect(res.statusCode).to.be.equal 400
 			expect(body).to.have.all.keys "error"
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
