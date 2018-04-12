@@ -77,7 +77,7 @@ __checkParams = (params, req, res, next) ->
 		p = param.name
 		if param.required
 			requiredParam = if req.method is "GET" then req.query[p] else req.body[p]
-			unless requiredParam
+			if requiredParam is null or requiredParam is undefined
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
 		unless Type[param.type].isValid mergedParams[p]
@@ -171,8 +171,7 @@ module.exports = (options = {}) ->
 			res.__meta ?= {}
 			res.__meta[key] = value
 		res.sendError = (code = o.defaultError.statusCode, message = o.defaultError.message, errorCode = o.defaultError.code) ->
-			if code instanceof HttpError
-				return next code
+			return next code if code instanceof HttpError
 			console.warn "res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance."
 			res.status code
 			next new Err message, errorCode

@@ -86,6 +86,17 @@ describe "GET parameter validation", ->
 			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys ["data"]
 			done()
+	it "calls the GET endpoint with integer parameter with 0 value", (done) ->
+		request.get
+			url: "http://localhost:8080/params?nometa"
+			gzip: yes
+			json: yes
+			qs: param: 0
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(body).to.have.all.keys ["data"]
+			done()
 	it "calls the GET endpoint without parameters", (done) ->
 		request.get
 			url: "http://localhost:8080/params?nometa"
@@ -125,6 +136,17 @@ describe "POST parameter validation", ->
 			expect(err).to.be.null
 			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
 			expect(body).to.have.all.keys "data"
+			done()
+	it "calls the POST endpoint with integer parameter with 0 value", (done) ->
+		request.post
+			url: "http://localhost:8080/params?nometa"
+			gzip: yes
+			json: yes
+			body: param: 0
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(body).to.have.all.keys ["data"]
 			done()
 	it "calls the POST endpoint without parameters", (done) ->
 		request.post
