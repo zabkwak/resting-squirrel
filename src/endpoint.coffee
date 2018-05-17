@@ -1,4 +1,6 @@
-﻿class Endpoint
+﻿Type = require "runtime-type"
+
+class Endpoint
 	constructor: (@version, @requiredAuth, params, @docs, @callback) ->
 		@route = null
 		@deprecated = no
@@ -8,7 +10,7 @@
 			if typeof param is "string"
 				@params.push
 					name: param
-					type: "any"
+					type: Type.any
 					required: yes
 					description: null
 				continue

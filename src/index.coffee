@@ -80,7 +80,8 @@ __checkParams = (params, req, res, next) ->
 			if requiredParam is null or requiredParam is undefined
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" if p.indexOf(".") < 0
 				return next HttpError.create 400, "Parameter '#{p}' is missing", "missing_parameter" unless __hasObjectValue req.body, p.split "."
-		unless Type[param.type].isValid mergedParams[p]
+		type = if param.type instanceof Type.Type then param.type else Type[param.type]
+		unless type.isValid mergedParams[p]
 			return next HttpError.create 400, "Parameter '#{p}' has invalid type. It should be '#{param.type}'", "invalid_type"
 	next()
 
