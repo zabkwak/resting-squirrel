@@ -4,7 +4,7 @@ bodyParser = require "body-parser"
 Err = require "smart-error"
 RouteParser = require "route-parser"
 async = require "async"
-{ Type } = require "simple-smart-model"
+Type = require "runtime-type"
 
 Endpoint = require "./endpoint"
 HttpError = require "./http-error"

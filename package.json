@@ -4,7 +4,7 @@
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "mocha __tests__ --recursive --compilers coffee:coffee-script/register --timeout 5000",
+    "test": "mocha __tests__/endpoint.coffee __tests__/http-error.coffee __tests__/calls.coffee __tests__/lifecycle.coffee --compilers coffee:coffee-script/register --timeout 5000",
     "prepublish": "coffee -c -b -o ./dist ./src && echo module.exports = require('./dist'); > index.js",
     "postpublish": "rm -rf ./dist && rm -f ./index.js"
   },
@@ -18,7 +18,7 @@
     "compression": "^1.6.0",
     "express": "^4.13.3",
     "route-parser": "0.0.5",
-    "simple-smart-model": "^0.3.0",
+    "runtime-type": "^0.1.0",
     "smart-error": "^1.1.0"
   },
   "repository": {

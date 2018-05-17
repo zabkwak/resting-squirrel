@@ -15,9 +15,13 @@ app.get "/params", no, [{ name: "param", type: "any", required: yes }], (req, re
 
 app.get "/params/type", no, [{ name: "param", type: "integer", required: yes }], (req, res, next) -> next no, success: yes
 
+app.get "/params/back", no, ["param"], (req, res, next) -> next no, success: yes
+
 app.post "/params", no, [{ name: "param", type: "any", required: yes }], (req, res, next) -> next no, success: yes
 
 app.post "/params/type", no, [{ name: "param", type: "integer", required: yes }], (req, res, next) -> next no, success: yes
+
+app.post "/params/back", no, ["param"], (req, res, next) -> next no, success: yes
 
 app.get "/204", (req, res, next) -> res.send204()
 
@@ -124,6 +128,30 @@ describe "GET parameter validation", ->
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_INVALID_TYPE"
 			done()
+	it "calls the GET endpoint with parameters for back compatibility", (done) ->
+		request.get
+			url: "http://localhost:8080/params/back?nometa"
+			gzip: yes
+			json: yes
+			body: param: 1
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(body).to.have.all.keys ["data"]
+			done()
+	it "calls the GET endpoint without parameters for back compatibility", (done) ->
+		request.get
+			url: "http://localhost:8080/params/back?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 400
+			expect(body).to.have.all.keys "error"
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
+			done()
 
 describe "POST parameter validation", ->
 	it "calls the POST endpoint with parameters", (done) ->
@@ -174,6 +202,31 @@ describe "POST parameter validation", ->
 			expect(body).to.have.all.keys ["error"]
 			expect(body.error).to.have.all.keys ["message", "code"]
 			expect(body.error.code).to.equal "ERR_INVALID_TYPE"
+			done()
+	it "calls the POST endpoint with parameters for back compatibility", (done) ->
+		request.post
+			url: "http://localhost:8080/params/back?nometa"
+			gzip: yes
+			json: yes
+			body: param: 1
+		, (err, res, body) ->
+			expect(err).to.be.null
+			console.log body
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(body).to.have.all.keys ["data"]
+			done()
+	it "calls the POST endpoint without parameters for back compatibility", (done) ->
+		request.post
+			url: "http://localhost:8080/params/back?nometa"
+			gzip: yes
+			json: yes
+		, (err, res, body) ->
+			expect(err).to.be.null
+			expect(res.headers["content-type"]).to.be.equal "application/json; charset=utf-8"
+			expect(res.statusCode).to.be.equal 400
+			expect(body).to.have.all.keys "error"
+			expect(body.error).to.have.all.keys ["message", "code"]
+			expect(body.error.code).to.equal "ERR_MISSING_PARAMETER"
 			done()
 
 describe "Response codes", ->
