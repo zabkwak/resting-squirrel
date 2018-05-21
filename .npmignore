@@ -1,9 +1,5 @@
-src
-.npmignore
-.gitignore
-.vs
-bin
-obj
-tests
-Resting Squirrel*
-test.coffee
+/src
+/.npmignore
+/.gitignore
+/.babelrc
+/__tests__

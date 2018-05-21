@@ -4,9 +4,14 @@
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "mocha __tests__/endpoint.coffee __tests__/http-error.coffee __tests__/calls.coffee __tests__/lifecycle.coffee --compilers coffee:coffee-script/register --timeout 5000",
-    "prepublish": "coffee -c -b -o ./dist ./src && echo module.exports = require('./dist'); > index.js",
-    "postpublish": "rm -rf ./dist && rm -f ./index.js"
+    "test": "mocha ./__tests__ --recursive --compilers js:babel-core/register --timeout 5000",
+    "create_index": "run-script-os",
+    "create_index:win32": "echo module.exports = require('./dist'); > index.js",
+    "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",
+    "build": "./node_modules/.bin/babel ./src --out-dir ./dist --copy-files && npm run create_index",
+    "clear": "rm -rf ./dist && rm -f ./index.js",
+    "prepublish": "npm run build",
+    "postpublish": "npm run clear"
   },
   "license": "MIT",
   "engines": {
@@ -18,7 +23,7 @@
     "compression": "^1.6.0",
     "express": "^4.13.3",
     "route-parser": "0.0.5",
-    "runtime-type": "^0.1.0",
+    "runtime-type": "^1.0.0",
     "smart-error": "^1.1.0"
   },
   "repository": {
@@ -35,7 +40,13 @@
     "express"
   ],
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "chai": "^3.5.0",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "run-script-os-fix": "^1.0.4"
   }
 }

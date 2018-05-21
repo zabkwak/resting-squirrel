@@ -139,7 +139,6 @@ __mergeObjects = (o1, o2, strict = yes) ->
 			o[k] = o1[k]
 			continue
 		o[k] = __mergeObjects o1[k], v, k not in ["before", "after"]
-	
 	o
 		
 module.exports = (options = {}) ->
