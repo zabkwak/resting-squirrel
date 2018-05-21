@@ -25,6 +25,10 @@ app.get('/204', (req, res, next) => next());
 
 app.get('/error/custom', (req, res, next) => next(new Error('Custom error', 'test', { field: 'test' })));
 
+app.get(1, '/version', (req, res, next) => next(null, { success: true }));
+
+app.get(2, '/version', (req, res, next) => next(null, { success: true }));
+
 describe('Server start', () => {
 
     it('starts the server', (done) => {
@@ -401,6 +405,8 @@ describe('Docs', () => {
                 'POST /params/back',
                 'GET /204',
                 'GET /error/custom',
+                'GET /1/version',
+                'GET /2/version',
                 'GET /docs',
             ]);
             validateDocs(data['GET /']);
@@ -413,6 +419,8 @@ describe('Docs', () => {
             validateDocs(data['POST /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
+            validateDocs(data['GET /1/version'], null, [], [], false, true);
+            validateDocs(data['GET /2/version']);
             validateDocs(data['GET /docs'], 'Documentation of this API.');
             done();
         });

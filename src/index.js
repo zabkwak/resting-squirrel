@@ -217,6 +217,24 @@ class Application {
         });
     }
 
+    docs() {
+        const docs = {};
+        Object.keys(this._routes).forEach((key) => {
+            const route = this._routes[key];
+            Object.keys(route.routes).forEach((v) => {
+                const endpoint = route.routes[v];
+                docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
+                    docs: endpoint.docs,
+                    params: endpoint.params,
+                    required_params: endpoint.requiredParams,
+                    required_auth: endpoint.requiredAuth,
+                    deprecated: endpoint.isDeprecated(),
+                };
+            });
+        });
+        return docs;
+    }
+
     _registerRoute(method, version, route, requiredAuth, params, docs, callback) {
         if (typeof requiredAuth === 'function') {
             callback = requiredAuth;
@@ -470,24 +488,8 @@ class Application {
 const m = (options = {}) => {
     const app = new Application(options);
     const { docs } = app._options;
-    if (app._options.docs.enabled) {
-        app.get(docs.route, docs.auth, [], 'Documentation of this API.', (req, res, next) => {
-            const doc = {};
-            Object.keys(app._routes).forEach((key) => {
-                const route = app._routes[key];
-                Object.keys(route.routes).forEach((v) => {
-                    const endpoint = route.routes[v];
-                    doc[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
-                        docs: endpoint.docs,
-                        params: endpoint.params,
-                        required_params: endpoint.requiredParams,
-                        required_auth: endpoint.requiredAuth,
-                        deprecated: endpoint.isDeprecated(),
-                    };
-                });
-            });
-            next(null, doc);
-        });
+    if (docs.enabled) {
+        app.get(docs.route, docs.auth, [], 'Documentation of this API.', (req, res, next) => next(null, app.docs()));
     }
     return app;
 };
