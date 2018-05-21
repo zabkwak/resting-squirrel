@@ -9,40 +9,18 @@ $ npm install resting-squirrel
 ```
 
 ## Usage
-### Coffeescript
-```coffeescript
-rs = require "resting-squirrel"
-app = rs()
-
-app.get "/", (req, res, next) ->
-	next no, "I'm running"
-
-app.post "/", no, ["name"], (req, res, next) ->
-	next no, "I'm running"
-
-app.get "/documented", no, [], "I am documented endpoint.", (req, res, next) ->
-	next no, "I'm running'"
-
-app.listen()
-```
-### Javascript
 ```javascript
-var rs = require("resting-squirrel");
-var app = rs();
+import rs, { Param, Type } from 'resting-squirrel';
 
-app.get("/", function (req, res, next) {
-	next(false, "I'm running");
-});
+const app = rs();
 
-app.post("/", false, ["name"], function (req, res, next) {
-	next(false, "I'm running");
-});
+app.get("/", (req, res, next) => next(null, 'I\'m running'));
 
-app.get("/documented", false, [], "I am documented endpoint.", function (req, res, next) {
-	next(false, "I'm running");
-});
+app.post("/", false, [new Param('name', true, Type.string)], (req, res, next) => next(null, 'I\'m running'));
 
-app.listen()
+app.get("/documented", false, [], 'I am documented endpoint.', (req, res, next) => next(null, 'I\'m running'));
+
+app.start();
 ```
 This usage will create the app with default options. 
 
@@ -73,15 +51,10 @@ This usage will create the app with default options.
 
 ### Errors
 Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 
-### Coffeescript
-```coffeescript
-rs = require "resting-squirrel"
-console.log new rs.Error "Some error", "some_code"
-```
-### Javascript
 ```javascript
-var rs = require("resting-squirrel");
-console.log(new rs.Error("Some error", "some_code"));
+import { Error } from 'resting-squirrel';
+
+console.log(new Error("Some error", "some_code"));
 ```
 
 ### Functions  

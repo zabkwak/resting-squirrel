@@ -372,3 +372,49 @@ describe('Errors', () => {
         });
     });
 });
+
+describe('Docs', () => {
+
+    const validateDocs = (doc, docs = null, params = [], required_params = [], required_auth = false, deprecated = false) => {
+        expect(doc.docs).to.be.equal(docs);
+        expect(doc.params).to.deep.equal(params);
+        expect(doc.required_params).to.deep.equal(required_params);
+        expect(doc.required_auth).to.be.equal(required_auth);
+        expect(doc.deprecated).to.be.equal(deprecated);
+    }
+
+    it('validates the docs data', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/docs' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys([
+                'GET /',
+                'GET /auth',
+                'GET /params',
+                'GET /params/type',
+                'GET /params/back',
+                'POST /params',
+                'POST /params/type',
+                'POST /params/back',
+                'GET /204',
+                'GET /error/custom',
+                'GET /docs',
+            ]);
+            validateDocs(data['GET /']);
+            validateDocs(data['GET /auth'], null, [], [], true);
+            validateDocs(data['GET /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
+            validateDocs(data['GET /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['POST /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['POST /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
+            validateDocs(data['POST /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /204']);
+            validateDocs(data['GET /error/custom']);
+            validateDocs(data['GET /docs'], 'Documentation of this API.');
+            done();
+        });
+    });
+});

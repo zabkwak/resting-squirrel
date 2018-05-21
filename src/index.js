@@ -93,6 +93,9 @@ class Application {
     /** @type {AppOptions} */
     _options = {};
 
+    /** @type {Object.<string, Route>} */
+    _routes = {};
+
     /**
      * 
      * @param {AppOptions} options 
@@ -160,8 +163,8 @@ class Application {
 
     start(cb = () => { }) {
         const { port, auth, before, log, logStack, errorKey } = this._options;
-        Object.keys(Route.routes).forEach((key) => {
-            const route = Route.routes[key];
+        Object.keys(this._routes).forEach((key) => {
+            const route = this._routes[key];
             Object.keys(route.routes).forEach((v) => {
                 const endpoint = route.routes[v];
                 this._app[route.method](endpoint.getEndpoint(), (req, res, next) => {
@@ -230,7 +233,13 @@ class Application {
             callback = docs;
             docs = null;
         }
-        return Route.add(method, route, new Endpoint(version, requiredAuth, params, docs, callback));
+        const endpoint = new Endpoint(version, requiredAuth, params, docs, callback);
+        const key = `${method}${route}`;
+        if (!this._routes[key]) {
+            this._routes[key] = new Route(method, route);
+        }
+        this._routes[key].addEndpoint(endpoint);
+        return endpoint;
     }
 
     _checkAuth(req, res, requiredAuth, authMethod, cb) {
@@ -464,11 +473,11 @@ const m = (options = {}) => {
     if (app._options.docs.enabled) {
         app.get(docs.route, docs.auth, [], 'Documentation of this API.', (req, res, next) => {
             const doc = {};
-            Object.keys(Route.routes).forEach((key) => {
-                const route = Route.routes[key];
+            Object.keys(app._routes).forEach((key) => {
+                const route = app._routes[key];
                 Object.keys(route.routes).forEach((v) => {
                     const endpoint = route.routes[v];
-                    docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
+                    doc[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
                         docs: endpoint.docs,
                         params: endpoint.params,
                         required_params: endpoint.requiredParams,
@@ -477,7 +486,7 @@ const m = (options = {}) => {
                     };
                 });
             });
-            next(null, docs);
+            next(null, doc);
         });
     }
     return app;

@@ -24,7 +24,7 @@ class Param {
      * @param {string} name 
      * @param {boolean} required 
      * @param {Type.Type|string} type 
-     * @param {*} description 
+     * @param {string} description 
      */
     constructor(name, required = false, type = Type.any, description = null) {
         this.key = name;
@@ -35,6 +35,16 @@ class Param {
         if (!(this.type instanceof Type.Type)) {
             throw new Error('Invalid type.');
         }
+    }
+
+    toJSON() {
+        return {
+            name: this.name,
+            key: this.key,
+            required: this.required,
+            description: this.description,
+            type: this.type.toString(),
+        };
     }
 }
 
