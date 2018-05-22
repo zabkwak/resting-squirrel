@@ -13,10 +13,15 @@ class Param {
         return new this(param.name, param.required, param.type, param.description);
     }
 
+    /** @type {string} */
     key = null;
+    /** @type {string} */
     name = null;
+    /** @type {boolean} */
     required = false;
+    /** @type {Type.Type} */
     type = null;
+    /** @type {string} */
     description = null;
 
     /**

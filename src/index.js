@@ -235,6 +235,16 @@ class Application {
         return docs;
     }
 
+    /**
+     * 
+     * @param {string} method 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {boolean} requiredAuth 
+     * @param {Param[]|string[]} params 
+     * @param {string} docs 
+     * @param {function} callback 
+     */
     _registerRoute(method, version, route, requiredAuth, params, docs, callback) {
         if (typeof requiredAuth === 'function') {
             callback = requiredAuth;
@@ -273,7 +283,7 @@ class Application {
      * @param {Param[]} params 
      * @param {*} req 
      * @param {*} res 
-     * @param {*} next 
+     * @param {function} next 
      */
     _checkParams(params, req, res, next) {
         if (!params.length) {

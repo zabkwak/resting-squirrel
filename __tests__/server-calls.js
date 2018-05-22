@@ -37,7 +37,7 @@ describe('Server start', () => {
             done();
         });
     });
-})
+});
 
 describe('Base calls', () => {
 

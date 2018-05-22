@@ -1,17 +1,5 @@
 export default class Route {
 
-    static routes = {};
-
-    static add(method, name, endpoint) {
-        const key = `${method}${name}`;
-        if (!this.routes[key]) {
-            this.routes[key] = new this(method, name);
-        }
-        const route = this.routes[key];
-        route.addEndpoint(endpoint);
-        return endpoint;
-    }
-
     method = null;
     route = null;
     routes = {};
