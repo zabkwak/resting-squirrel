@@ -15,11 +15,15 @@ app.get('/params/type', false, [new Param('param', true, Type.integer)], (req, r
 
 app.get('/params/back', false, ['param'], (req, res, next) => next(null, { success: true }));
 
+app.get('/params/cast', false, [new Param('int', true, Type.integer), new Param('float', true, Type.float)], (req, res, next) => next(null, req.query));
+
 app.post('/params', false, [new Param('param', true, Type.any)], (req, res, next) => next(null, { success: true }));
 
 app.post('/params/type', false, [new Param('param', true, Type.integer)], (req, res, next) => next(null, { success: true }));
 
 app.post('/params/back', false, ['param'], (req, res, next) => next(null, { success: true }));
+
+app.post('/params/cast', false, [new Param('int', true, Type.integer), new Param('float', true, Type.float)], (req, res, next) => next(null, req.body));
 
 app.get('/204', (req, res, next) => next());
 
@@ -232,6 +236,26 @@ describe('GET parameter validation', () => {
             done();
         });
     });
+
+    it('calls the GET endpoint with params response', (done) => {
+        request.get({
+            url: 'http://localhost:8080/params/cast',
+            gzip: true,
+            json: true,
+            qs: { int: 1, float: 1.1, not_defined_param: 'not defined' },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['int', 'float', 'not_defined_param']);
+            expect(data.int).to.be.equal(1);
+            expect(data.float).to.be.equal(1.1);
+            expect(data.not_defined_param).to.be.equal('not defined');
+            done();
+        });
+    });
 });
 
 describe('POST parameter validation', () => {
@@ -344,6 +368,26 @@ describe('POST parameter validation', () => {
             done();
         });
     });
+
+    it('calls the POST endpoint with params response', (done) => {
+        request.post({
+            url: 'http://localhost:8080/params/cast',
+            gzip: true,
+            json: true,
+            body: { int: '1', float: '1.1', not_defined_param: 'not defined' },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['int', 'float', 'not_defined_param']);
+            expect(data.int).to.be.equal(1);
+            expect(data.float).to.be.equal(1.1);
+            expect(data.not_defined_param).to.be.equal('not defined');
+            done();
+        });
+    });
 });
 
 describe('Special responses', () => {
@@ -400,9 +444,11 @@ describe('Docs', () => {
                 'GET /params',
                 'GET /params/type',
                 'GET /params/back',
+                'GET /params/cast',
                 'POST /params',
                 'POST /params/type',
                 'POST /params/back',
+                'POST /params/cast',
                 'GET /204',
                 'GET /error/custom',
                 'GET /1/version',
@@ -414,9 +460,17 @@ describe('Docs', () => {
             validateDocs(data['GET /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['GET /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
             validateDocs(data['GET /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /params/cast'], null, [
+                { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
+                { name: 'float', description: null, key: 'float', required: true, type: 'float' },
+            ], ['int', 'float']);
             validateDocs(data['POST /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['POST /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
             validateDocs(data['POST /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['POST /params/cast'], null, [
+                { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
+                { name: 'float', description: null, key: 'float', required: true, type: 'float' },
+            ], ['int', 'float']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
             validateDocs(data['GET /1/version'], null, [], [], false, true);

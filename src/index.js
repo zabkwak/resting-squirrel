@@ -291,17 +291,21 @@ class Application {
             return;
         }
         const mergedParams = { ...req.query, ...req.body };
+        const castedParams = {};
+        const paramsKey = req.method === 'GET' ? 'query' : 'body';
         try {
             params.forEach((param) => {
                 const p = param.name;
                 if (param.required) {
-                    const requiredParam = req.method === 'GET' ? req.query[p] : req.body[p];
+                    const requiredParam = req[paramsKey][p];
                     if (requiredParam === null || requiredParam === undefined) {
                         throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
                     }
                 }
                 if (!param.type.isValid(mergedParams[p])) {
                     throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
+                } else {
+                    castedParams[p] = param.type.cast(mergedParams[p]);
                 }
             });
         } catch (e) {
@@ -311,6 +315,7 @@ class Application {
             }
             throw e;
         }
+        req[paramsKey] = { ...req[paramsKey], ...castedParams };
         next();
     }
 
