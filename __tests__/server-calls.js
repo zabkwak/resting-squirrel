@@ -11,7 +11,7 @@ app.get('/auth', true, (req, res, next) => next(null, { success: true }));
 
 app.get('/params', false, [new Param('param', true, Type.any)], (req, res, next) => next(null, { success: true }));
 
-app.get('/params/type', false, [new Param('param', true, Type.integer)], (req, res, next) => next(null, { success: true }));
+app.get('/params/type', false, [new Param('param', true, Type.integer), new Param('date', false, Type.date)], (req, res, next) => next(null, { success: true }));
 
 app.get('/params/back', false, ['param'], (req, res, next) => next(null, { success: true }));
 
@@ -19,7 +19,7 @@ app.get('/params/cast', false, [new Param('int', true, Type.integer), new Param(
 
 app.post('/params', false, [new Param('param', true, Type.any)], (req, res, next) => next(null, { success: true }));
 
-app.post('/params/type', false, [new Param('param', true, Type.integer)], (req, res, next) => next(null, { success: true }));
+app.post('/params/type', false, [new Param('param', true, Type.integer), new Param('date', false, Type.date)], (req, res, next) => next(null, { success: true }));
 
 app.post('/params/back', false, ['param'], (req, res, next) => next(null, { success: true }));
 
@@ -201,6 +201,61 @@ describe('GET parameter validation', () => {
         });
     });
 
+    it('calls the GET endpoint without an optional parameter of defined type', (done) => {
+        request.get({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            qs: { param: 1 },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['success']);
+            expect(data.success).to.be.true;
+            done();
+        });
+    });
+
+    it('calls the GET endpoint with optional parameter of invalid type', (done) => {
+        request.get({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            qs: { param: 1, date: 'date' },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the GET endpoint with optional parameter of correct type', (done) => {
+        request.get({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            qs: { param: 1, date: new Date() },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['success']);
+            expect(data.success).to.be.true;
+            done();
+        });
+    });
+
     it('calls the GET endpoint with parameters for back compatibility', (done) => {
         request.get({
             url: 'http://localhost:8080/params/back',
@@ -333,6 +388,61 @@ describe('POST parameter validation', () => {
         });
     });
 
+    it('calls the POST endpoint without an optional parameter of defined type', (done) => {
+        request.post({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            body: { param: 1 },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['success']);
+            expect(data.success).to.be.true;
+            done();
+        });
+    });
+
+    it('calls the POST endpoint with optional parameter of invalid type', (done) => {
+        request.post({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            body: { param: 1, date: 'date' },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the POST endpoint with optional parameter of correct type', (done) => {
+        request.post({
+            url: 'http://localhost:8080/params/type',
+            gzip: true,
+            json: true,
+            body: { param: 1, date: new Date() },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['success']);
+            expect(data.success).to.be.true;
+            done();
+        });
+    });
+
     it('calls the POST endpoint with parameters for back compatibility', (done) => {
         request.post({
             url: 'http://localhost:8080/params/back',
@@ -458,14 +568,20 @@ describe('Docs', () => {
             validateDocs(data['GET /']);
             validateDocs(data['GET /auth'], null, [], [], true);
             validateDocs(data['GET /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['GET /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
+            validateDocs(data['GET /params/type'], null, [
+                { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
+                { name: 'date', description: null, key: 'date', required: false, type: 'date' },
+            ], ['param']);
             validateDocs(data['GET /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['GET /params/cast'], null, [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
             ], ['int', 'float']);
             validateDocs(data['POST /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['POST /params/type'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'integer' }], ['param']);
+            validateDocs(data['POST /params/type'], null, [
+                { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
+                { name: 'date', description: null, key: 'date', required: false, type: 'date' },
+            ], ['param']);
             validateDocs(data['POST /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['POST /params/cast'], null, [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },

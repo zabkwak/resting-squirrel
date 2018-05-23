@@ -301,6 +301,8 @@ class Application {
                     if (requiredParam === null || requiredParam === undefined) {
                         throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
                     }
+                } else if (mergedParams[p] === undefined) {
+                    return;
                 }
                 if (!param.type.isValid(mergedParams[p])) {
                     throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
