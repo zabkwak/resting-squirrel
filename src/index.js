@@ -112,7 +112,7 @@ class Application {
         this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
         // Object merge cannot merge not existing keys, so this adds custom meta data to the options.
         if (options.meta && options.meta.data) {
-            Object.key(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
+            Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
         }
         this._createApp();
     }
