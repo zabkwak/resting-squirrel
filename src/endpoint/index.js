@@ -38,6 +38,15 @@ class Endpoint {
         return `/${this.version}${this.route.route}`;
     }
 
+    getParams(array = false) {
+        if (array) {
+            return this.params;
+        }
+        const o = {};
+        this.params.forEach(p => o[p.name] = p);
+        return o;
+    }
+
     isDeprecated() {
         if (!this.route) {
             return false;

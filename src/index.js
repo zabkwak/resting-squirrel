@@ -44,6 +44,7 @@ import pkg from '../package.json';
  * @property {boolean} enabled
  * @property {string} route
  * @property {boolean} auth
+ * @property {boolean} paramsAsArray
  */
 
 /** @type {AppOptions} */
@@ -66,6 +67,7 @@ const DEFAULT_OPTIONS = {
         enabled: true,
         route: '/docs',
         auth: false,
+        paramsAsArray: false,
     },
     auth: (req, res, next) => {
         if (!req.headers['x-token']) {
@@ -225,7 +227,7 @@ class Application {
                 const endpoint = route.routes[v];
                 docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
                     docs: endpoint.docs,
-                    params: endpoint.params,
+                    params: endpoint.getParams(this._options.docs.paramsAsArray),
                     required_params: endpoint.requiredParams,
                     required_auth: endpoint.requiredAuth,
                     deprecated: endpoint.isDeprecated(),

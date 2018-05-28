@@ -40,6 +40,7 @@ This usage will create the app with default options.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
 - **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
+- **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
 **before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  

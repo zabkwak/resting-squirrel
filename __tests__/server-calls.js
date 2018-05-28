@@ -535,7 +535,9 @@ describe('Docs', () => {
 
     const validateDocs = (doc, docs = null, params = [], required_params = [], required_auth = false, deprecated = false) => {
         expect(doc.docs).to.be.equal(docs);
-        expect(doc.params).to.deep.equal(params);
+        const o = {};
+        params.forEach(p => o[p.name] = p);
+        expect(doc.params).to.deep.equal(o);
         expect(doc.required_params).to.deep.equal(required_params);
         expect(doc.required_auth).to.be.equal(required_auth);
         expect(doc.deprecated).to.be.equal(deprecated);
