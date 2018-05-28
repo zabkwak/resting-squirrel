@@ -23,12 +23,15 @@ class Endpoint {
         return this.params.filter(param => param.required).map(param => param.name);
     }
 
-    constructor(version = null, requiredAuth = false, params = [], docs = null, callback = null) {
+    constructor(version = null, requiredAuth = false, params = [], docs = null, callback = null, validateParams = true) {
         this.version = version;
         this.requiredAuth = requiredAuth;
         this.params = ParamParser.parse(params);
         this.docs = docs;
         this.callback = callback;
+        if (validateParams) {
+            this._validateParams();
+        }
     }
 
     getEndpoint() {
@@ -67,6 +70,18 @@ class Endpoint {
     setDocs(docs) {
         this.docs = docs;
         return this;
+    }
+
+    _validateParams() {
+        const names = [];
+        this.params.forEach((param) => {
+            if (names.indexOf(param.name) >= 0) {
+                console.warn(`Param with name '${name}' already exists. It can cause unpredictable effects.`);
+            }
+            if (param.type.toString() === 'any') {
+                console.warn(`Param with name '${param.name}' is type of 'any'. It can cause unpredictable effects.`);
+            }
+        });
     }
 }
 

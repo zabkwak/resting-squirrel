@@ -7,8 +7,8 @@ describe('Base app creation', () => {
 
     it('checks if the app has default values', () => {
         const app = rs();
-        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError']);
-        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams']);
+        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams } = app._options;
         expect(port).to.be.equal(8080);
         expect(dataKey).to.be.equal('data');
         expect(errorKey).to.be.equal('error');
@@ -34,6 +34,7 @@ describe('Base app creation', () => {
         expect(defaultError.message).to.be.equal('Server error');
         expect(defaultError.code).to.be.equal('unknown');
         expect(defaultError.statusCode).to.be.equal(500);
+        expect(validateParams).to.be.true;
     });
 
     it('checks if the custom options are properly set', () => {
@@ -63,9 +64,10 @@ describe('Base app creation', () => {
                 code: 'some',
                 statusCode: 400
             },
+            validateParams: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError']);
-        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams']);
+        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams } = app._options;
         expect(port).to.be.equal(9000);
         expect(dataKey).to.be.equal('_data');
         expect(errorKey).to.be.equal('_error');
@@ -93,5 +95,6 @@ describe('Base app creation', () => {
         expect(defaultError.message).to.be.equal('Some error');
         expect(defaultError.code).to.be.equal('some');
         expect(defaultError.statusCode).to.be.equal(400);
+        expect(validateParams).to.be.false;
     })
 });

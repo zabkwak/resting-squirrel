@@ -75,7 +75,7 @@ class ParamParser {
                 if (this._isShape(param)) {
                     return;
                 }
-                this._parsed.push(Param.create(param));
+                this._addParam(Param.create(param));
             } catch (e) {
                 if (e.code === 'ERR_NO_SHAPE') {
                     const name = this._getShapeName(param);
@@ -92,7 +92,7 @@ class ParamParser {
         Object.keys(this._shapes).forEach((name) => {
             const shape = {};
             this._shapes[name].forEach(field => shape[field] = Type.any);
-            this._parsed.push(Param.create({ name, type: Type.shape(shape), required: true }));
+            this._addParam(Param.create({ name, type: Type.shape(shape), required: true }));
         });
         return this._parsed;
     }
@@ -114,6 +114,10 @@ class ParamParser {
 
     _getShapeName(shape) {
         return shape.split('.').shift();
+    }
+
+    _addParam(param) {
+        this._parsed.push(param);
     }
 }
 

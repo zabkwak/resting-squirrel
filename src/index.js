@@ -27,6 +27,7 @@ import pkg from '../package.json';
  * @property {Object.<string, function>} before
  * @property {Object.<string, function>} after
  * @property {AppOptions.Error} defaultError
+ * @property {boolean} validateParams
  */
 /**
  * @typedef AppOptions.Error
@@ -87,6 +88,7 @@ const DEFAULT_OPTIONS = {
         message: 'Server error',
         code: 'unknown',
     },
+    validateParams: true,
 };
 
 class Application {
@@ -263,7 +265,7 @@ class Application {
             callback = docs;
             docs = null;
         }
-        const endpoint = new Endpoint(version, requiredAuth, params, docs, callback);
+        const endpoint = new Endpoint(version, requiredAuth, params, docs, callback, this._options.validateParams);
         const key = `${method}${route}`;
         if (!this._routes[key]) {
             this._routes[key] = new Route(method, route);
