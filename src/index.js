@@ -6,7 +6,7 @@ import RouteParser from 'route-parser';
 import async from 'async';
 import Type from 'runtime-type';
 
-import Endpoint, { Param } from './endpoint';
+import Endpoint, { Param, Field } from './endpoint';
 import HttpError from './http-error';
 import Route from './route';
 
@@ -28,6 +28,7 @@ import pkg from '../package.json';
  * @property {Object.<string, function>} after
  * @property {AppOptions.Error} defaultError
  * @property {boolean} validateParams
+ * @property {boolean} responseStrictValidation
  */
 /**
  * @typedef AppOptions.Error
@@ -46,6 +47,13 @@ import pkg from '../package.json';
  * @property {string} route
  * @property {boolean} auth
  * @property {boolean} paramsAsArray
+ */
+/**
+ * @typedef RouteOptions
+ * @property {boolean} requireAuth
+ * @property {Param[]|string[]} params
+ * @property {Field[]} response
+ * @property {string} description
  */
 
 /** @type {AppOptions} */
@@ -89,6 +97,7 @@ const DEFAULT_OPTIONS = {
         code: 'unknown',
     },
     validateParams: true,
+    responseStrictValidation: false,
 };
 
 class Application {
@@ -129,36 +138,64 @@ class Application {
         this._app.use(route, callback);
     }
 
-    get(version, route, requiredAuth, params, docs, callback) {
-        return this.registerRoute('get', version, route, requiredAuth, params, docs, callback);
+    get(version, route, requireAuth, params, docs, callback) {
+        return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
     }
 
-    post(version, route, requiredAuth, params, docs, callback) {
-        return this.registerRoute('post', version, route, requiredAuth, params, docs, callback);
+    post(version, route, requireAuth, params, docs, callback) {
+        return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
     }
 
-    put(version, route, requiredAuth, params, docs, callback) {
-        return this.registerRoute('put', version, route, requiredAuth, params, docs, callback);
+    put(version, route, requireAuth, params, docs, callback) {
+        return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
     }
 
-    delete(version, route, requiredAuth, params, docs, callback) {
-        return this.registerRoute('delete', version, route, requiredAuth, params, docs, callback);
+    delete(version, route, requireAuth, params, docs, callback) {
+        return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
     }
 
-    head(version, route, requiredAuth, params, docs, callback) {
-        return this.registerRoute('head', version, route, requiredAuth, params, docs, callback);
+    head(version, route, requireAuth, params, docs, callback) {
+        return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
     }
 
-    registerRoute(method, version, route, requiredAuth, params, docs, callback) {
+    /**
+     * 
+     * @param {string} method 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
+    registerRoute(method, version, route, requireAuth, params, description, callback) {
         if (isNaN(parseFloat(version))) {
-            callback = docs;
-            docs = params;
-            params = requiredAuth;
-            requiredAuth = route;
+            callback = description;
+            description = params;
+            params = requireAuth;
+            requireAuth = route;
             route = version;
             version = null;
         }
-        return this._registerRoute(method, version, route, requiredAuth, params, docs, callback);
+        if (typeof requireAuth === 'function') {
+            callback = requireAuth;
+            requireAuth = false;
+            params = [];
+            description = null;
+        }
+        if (typeof requireAuth === 'object') {
+            return this._registerRoute(method, version, route, requireAuth, params);
+        }
+        if (typeof params === 'function') {
+            callback = params;
+            params = [];
+            description = null;
+        }
+        if (typeof description === 'function') {
+            callback = description;
+            description = null;
+        }
+        return this._registerRoute(method, version, route, { requireAuth, params, description }, callback);
     }
 
     listen(cb = () => { }) {
@@ -192,6 +229,18 @@ class Application {
                                         next(err);
                                         return;
                                     }
+                                    endpoint.response.forEach((field) => {
+                                        const { type, key } = field;
+                                        if (type.isValid(data[key])) {
+                                            data[key] = type.cast(data[key]);
+                                        } else {
+                                            const message = `Response on key '${key}' has invalid type. It should be ${type}`;
+                                            if (this._options.responseStrictValidation) {
+                                                throw new Err(message);
+                                            }
+                                            console.warn(message);
+                                        }
+                                    });
                                     res._sendData(data);
                                 });
                             });
@@ -232,6 +281,7 @@ class Application {
                     params: endpoint.getParams(this._options.docs.paramsAsArray),
                     required_params: endpoint.requiredParams,
                     required_auth: endpoint.requiredAuth,
+                    response: endpoint.getResponse(),
                     deprecated: endpoint.isDeprecated(),
                 };
             });
@@ -244,28 +294,16 @@ class Application {
      * @param {string} method 
      * @param {number} version 
      * @param {string} route 
-     * @param {boolean} requiredAuth 
-     * @param {Param[]|string[]} params 
-     * @param {string} docs 
+     * @param {RouteOptions} options
      * @param {function} callback 
      */
-    _registerRoute(method, version, route, requiredAuth, params, docs, callback) {
-        if (typeof requiredAuth === 'function') {
-            callback = requiredAuth;
-            requiredAuth = false;
-            params = [];
-            docs = null;
+    _registerRoute(method, version, route, options, callback) {
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
         }
-        if (typeof params === 'function') {
-            callback = params;
-            params = [];
-            docs = null;
-        }
-        if (typeof docs === 'function') {
-            callback = docs;
-            docs = null;
-        }
-        const endpoint = new Endpoint(version, requiredAuth, params, docs, callback, this._options.validateParams);
+        const { requireAuth, params, response, description } = options;
+        const endpoint = new Endpoint(version, requireAuth, params, response, description, callback, this._options.validateParams);
         const key = `${method}${route}`;
         if (!this._routes[key]) {
             this._routes[key] = new Route(method, route);
@@ -522,4 +560,5 @@ export {
     Err as Error,
     Param,
     Type,
+    Field,
 };

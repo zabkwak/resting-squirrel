@@ -79,13 +79,14 @@ describe('ParamParser', () => {
 describe('Endpoint', () => {
 
     it('creates the endpoint with params defined on the old version of the module', () => {
-        const endpoint = new Endpoint(0, false, ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'], 'Creates new car record', () => { });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'docs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, docs, callback, route, deprecated } = endpoint;
+        const endpoint = new Endpoint(0, false, ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'], [], 'Creates new car record', () => { });
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'docs', 'callback', 'route', 'deprecated']);
+        const { version, requiredAuth, params, response, docs, callback, route, deprecated } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
         expect(params.length).to.be.equal(3);
+        expect(response).to.be.an.instanceOf(Array);
 
         expect(docs).to.be.equal('Creates new car record');
         expect(callback).to.be.a('function');

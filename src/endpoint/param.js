@@ -1,7 +1,9 @@
 import Type from 'runtime-type';
 import Error from 'smart-error';
 
-class Param {
+import Field from './field';
+
+class Param extends Field {
 
     static create(param) {
         if (typeof param === 'string') {
@@ -13,16 +15,8 @@ class Param {
         return new this(param.name, param.required, param.type, param.description);
     }
 
-    /** @type {string} */
-    key = null;
-    /** @type {string} */
-    name = null;
     /** @type {boolean} */
     required = false;
-    /** @type {Type.Type} */
-    type = null;
-    /** @type {string} */
-    description = null;
 
     /**
      * 
@@ -32,23 +26,14 @@ class Param {
      * @param {string} description 
      */
     constructor(name, required = false, type = Type.any, description = null) {
-        this.key = name;
-        this.name = name;
+        super(name, type, description);
         this.required = required;
-        this.type = typeof type === 'string' ? Type[type] : type;
-        this.description = description;
-        if (!(this.type instanceof Type.Type)) {
-            throw new Error('Invalid type.');
-        }
     }
 
     toJSON() {
         return {
-            name: this.name,
-            key: this.key,
+            ...super.toJSON(),
             required: this.required,
-            description: this.description,
-            type: this.type.toString(),
         };
     }
 }

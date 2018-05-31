@@ -2,6 +2,7 @@ import Type from 'runtime-type';
 import Error from 'smart-error';
 
 import Param, { ParamParser } from './param';
+import Field from './field';
 
 class Endpoint {
 
@@ -9,6 +10,7 @@ class Endpoint {
     requiredAuth = null;
     /** @type {Param[]} */
     params = null;
+    response = null;
     docs = null;
     callback = null;
     // TODO co to kurva je?
@@ -23,10 +25,11 @@ class Endpoint {
         return this.params.filter(param => param.required).map(param => param.name);
     }
 
-    constructor(version = null, requiredAuth = false, params = [], docs = null, callback = null, validateParams = true) {
+    constructor(version = null, requiredAuth = false, params = [], response = [], docs = null, callback = null, validateParams = true) {
         this.version = version;
         this.requiredAuth = requiredAuth;
         this.params = ParamParser.parse(params);
+        this.response = response;
         this.docs = docs;
         this.callback = callback;
         if (validateParams) {
@@ -47,6 +50,15 @@ class Endpoint {
         }
         const o = {};
         this.params.forEach(p => o[p.name] = p);
+        return o;
+    }
+
+    getResponse(array = false) {
+        if (array) {
+            return this.response;
+        }
+        const o = {};
+        this.response.forEach(p => o[p.name] = p);
         return o;
     }
 
@@ -88,4 +100,5 @@ class Endpoint {
 export {
     Endpoint as default,
     Param,
+    Field,
 };

@@ -51,6 +51,7 @@ This usage will create the app with default options.
 - **code** Default error code. Default: unknown  
 
 **validateParams** If true the params are validated and the validator message is printed in stdout as warning if something is found. Default: true  
+**responseStrictValidation** If true the Error is thrown if response key has invalid type. Default: false  
 
 ### Errors
 Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 
@@ -119,3 +120,5 @@ This parameters are updating behaviour of the current request.
 ## TODO
 - shape description
 - shape fields required status
+- response type validator
+- timeout option

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import request from 'request';
 
-import rs, { Param, Type, Error } from '../src';
+import rs, { Param, Type, Error, Field } from '../src';
 
 const app = rs({ log: false, logStack: false });
 
@@ -32,6 +32,13 @@ app.get('/error/custom', (req, res, next) => next(new Error('Custom error', 'tes
 app.get(1, '/version', (req, res, next) => next(null, { success: true }));
 
 app.get(2, '/version', (req, res, next) => next(null, { success: true }));
+
+app.get(0, '/options', {
+    requireAuth: false,
+    params: [new Param('param', true, Type.integer, 'Test integer parameter.')],
+    response: [new Field('success', Type.boolean, 'Flag if the execution of the endpoint was successful.')],
+    description: 'Endpoint with options.',
+}, (req, res, next) => next(null, { success: 1 }));
 
 describe('Server start', () => {
 
@@ -513,6 +520,50 @@ describe('Special responses', () => {
     });
 });
 
+describe('Endpoint defined with options', () => {
+
+    it('calls the endpoint with defined response without required param', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/options' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'param\' is missing.');
+            expect(error.code).to.be.equal('ERR_MISSING_PARAMETER');
+            done();
+        });
+    });
+
+    it('calls the endpoint with defined response with required param of invalid type', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/options', qs: { param: 'test' } }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'param\' has invalid type. It should be \'integer\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the endpoint with defined response', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/options', qs: { param: 1 } }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['success']);
+            expect(data.success).to.be.true;
+            done();
+        });
+    });
+});
+
 describe('Errors', () => {
 
     it('calls endpoint with custom error with payload', (done) => {
@@ -533,13 +584,17 @@ describe('Errors', () => {
 
 describe('Docs', () => {
 
-    const validateDocs = (doc, docs = null, params = [], required_params = [], required_auth = false, deprecated = false) => {
+    const validateDocs = (doc, docs = null, params = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
+        expect(doc).to.have.all.keys(['docs', 'params', 'required_params', 'required_auth', 'response', 'deprecated']);
         expect(doc.docs).to.be.equal(docs);
-        const o = {};
+        let o = {};
         params.forEach(p => o[p.name] = p);
         expect(doc.params).to.deep.equal(o);
         expect(doc.required_params).to.deep.equal(required_params);
         expect(doc.required_auth).to.be.equal(required_auth);
+        o = {};
+        response.forEach(p => o[p.name] = p);
+        expect(doc.response).to.deep.equal(o);
         expect(doc.deprecated).to.be.equal(deprecated);
     }
 
@@ -565,6 +620,7 @@ describe('Docs', () => {
                 'GET /error/custom',
                 'GET /1/version',
                 'GET /2/version',
+                'GET /0/options',
                 'GET /docs',
             ]);
             validateDocs(data['GET /']);
@@ -591,8 +647,16 @@ describe('Docs', () => {
             ], ['int', 'float']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
-            validateDocs(data['GET /1/version'], null, [], [], false, true);
+            validateDocs(data['GET /1/version'], null, [], [], false, [], true);
             validateDocs(data['GET /2/version']);
+            validateDocs(
+                data['GET /0/options'],
+                'Endpoint with options.',
+                [{ name: 'param', description: null, key: 'param', required: true, type: 'integer', description: 'Test integer parameter.' }],
+                ['param'],
+                false,
+                [{ name: 'success', key: 'success', type: 'boolean', description: 'Flag if the execution of the endpoint was successful.' }],
+            );
             validateDocs(data['GET /docs'], 'Documentation of this API.');
             done();
         });
