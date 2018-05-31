@@ -10,15 +10,38 @@ $ npm install resting-squirrel
 
 ## Usage
 ```javascript
-import rs, { Param, Type } from 'resting-squirrel';
+import rs, { Param, Type, Field } from 'resting-squirrel';
 
 const app = rs();
 
-app.get("/", (req, res, next) => next(null, 'I\'m running'));
+// Simple definition
+// Simple endpoint
+app.get("/", (req, res, next) => next(null, { success: true }));
+// Endpoint which requires authorization with specified version
+app.get(0, '/user', true, (req, res, next) => next(null, { success: true}));
+// Endpoint which requires authorization with incremented version causing 0 version endpoint is deprecated 
+app.get(1, '/user', true, (req, res, next) => next(null, { success: true}));
+// Endpoint with defined required parameter
+app.put(0, '/user', false, [new Param('name', true, Type.string, 'Name of the user')], (req, res, next) => next(null, { success: true }));
+// Endpoint with description
+app.get('/documented', false, [], 'I am documented endpoint.', (req, res, next) => next(null, { success: true }));
 
-app.post("/", false, [new Param('name', true, Type.string)], (req, res, next) => next(null, 'I\'m running'));
-
-app.get("/documented", false, [], 'I am documented endpoint.', (req, res, next) => next(null, 'I\'m running'));
+// Complex definition
+app.post(0, '/user', {
+    // Endpoint requires authorization
+    requireAuth: true,
+    // Endpoint accepts parameter name which has to be a string
+    params: [
+        new Param('name', false, Type.string, 'Name of the user'),
+    ],
+    // Endpoints returns object with parameters id (casted to integer before rendering data) and name
+    response: [
+        new Field('id', Type.integer, 'Identificator of the user'),
+        new Field('name', Type.string, 'Name of the user'),
+    ],
+    // Description for the documentation
+    description: 'Updates the user informations',
+}, (req, res, next) => User.update(req.user_id, req.body, next));
 
 app.start();
 ```
@@ -120,5 +143,4 @@ This parameters are updating behaviour of the current request.
 ## TODO
 - shape description
 - shape fields required status
-- response type validator
 - timeout option

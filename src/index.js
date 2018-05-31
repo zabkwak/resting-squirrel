@@ -138,22 +138,67 @@ class Application {
         this._app.use(route, callback);
     }
 
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
     get(version, route, requireAuth, params, docs, callback) {
         return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
     }
 
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
     post(version, route, requireAuth, params, docs, callback) {
         return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
     }
 
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
     put(version, route, requireAuth, params, docs, callback) {
         return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
     }
 
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
     delete(version, route, requireAuth, params, docs, callback) {
         return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
     }
 
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
     head(version, route, requireAuth, params, docs, callback) {
         return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
     }
@@ -177,15 +222,16 @@ class Application {
             route = version;
             version = null;
         }
+        // Mismatch for back compatibility. If the requireAuth parameter is a function it means that it's the callback and RouteOptions are empty.
         if (typeof requireAuth === 'function') {
-            callback = requireAuth;
-            requireAuth = false;
-            params = [];
-            description = null;
+            params = requireAuth;
+            requireAuth = {};
         }
         if (typeof requireAuth === 'object') {
+            // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
             return this._registerRoute(method, version, route, requireAuth, params);
         }
+        console.warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
         if (typeof params === 'function') {
             callback = params;
             params = [];
