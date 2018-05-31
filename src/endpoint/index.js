@@ -54,6 +54,9 @@ class Endpoint {
     }
 
     getResponse(array = false) {
+        if (!this.response) {
+            return null;
+        }
         if (array) {
             return this.response;
         }

@@ -275,18 +275,20 @@ class Application {
                                         next(err);
                                         return;
                                     }
-                                    endpoint.response.forEach((field) => {
-                                        const { type, key } = field;
-                                        if (type.isValid(data[key])) {
-                                            data[key] = type.cast(data[key]);
-                                        } else {
-                                            const message = `Response on key '${key}' has invalid type. It should be ${type}`;
-                                            if (this._options.responseStrictValidation) {
-                                                throw new Err(message);
+                                    if (endpoint.response) {
+                                        endpoint.response.forEach((field) => {
+                                            const { type, key } = field;
+                                            if (type.isValid(data[key])) {
+                                                data[key] = type.cast(data[key]);
+                                            } else {
+                                                const message = `Response on key '${key}' has invalid type. It should be ${type}`;
+                                                if (this._options.responseStrictValidation) {
+                                                    throw new Err(message);
+                                                }
+                                                console.warn(message);
                                             }
-                                            console.warn(message);
-                                        }
-                                    });
+                                        });
+                                    }
                                     res._sendData(data);
                                 });
                             });

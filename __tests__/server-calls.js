@@ -40,6 +40,10 @@ app.get(0, '/options', {
     description: 'Endpoint with options.',
 }, (req, res, next) => next(null, { success: 1 }));
 
+app.get(0, '/options/null-response', {
+    response: null,
+}, (req, res, next) => next());
+
 describe('Server start', () => {
 
     it('starts the server', (done) => {
@@ -562,6 +566,16 @@ describe('Endpoint defined with options', () => {
             done();
         });
     });
+
+    it('calls the endpoint with defined response as null', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/options/null-response' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.statusCode).to.equal(204);
+            expect(body).to.be.undefined;
+            done();
+        });
+    });
 });
 
 describe('Errors', () => {
@@ -592,8 +606,12 @@ describe('Docs', () => {
         expect(doc.params).to.deep.equal(o);
         expect(doc.required_params).to.deep.equal(required_params);
         expect(doc.required_auth).to.be.equal(required_auth);
-        o = {};
-        response.forEach(p => o[p.name] = p);
+        if (response) {
+            o = {};
+            response.forEach(p => o[p.name] = p);
+        } else {
+            o = null;
+        }
         expect(doc.response).to.deep.equal(o);
         expect(doc.deprecated).to.be.equal(deprecated);
     }
@@ -621,6 +639,7 @@ describe('Docs', () => {
                 'GET /1/version',
                 'GET /2/version',
                 'GET /0/options',
+                'GET /0/options/null-response',
                 'GET /docs',
             ]);
             validateDocs(data['GET /']);
@@ -657,6 +676,7 @@ describe('Docs', () => {
                 false,
                 [{ name: 'success', key: 'success', type: 'boolean', description: 'Flag if the execution of the endpoint was successful.' }],
             );
+            validateDocs(data['GET /0/options/null-response'], null, [], [], false, null);
             validateDocs(data['GET /docs'], 'Documentation of this API.');
             done();
         });
