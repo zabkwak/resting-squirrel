@@ -115,3 +115,7 @@ The `Param` class uses type definition from the [runtime-type](https://www.npmjs
 This parameters are updating behaviour of the current request.  
 **nometa** If meta is enabled in config this parameter will disable it.  
 **pretty** JSON response is printed for human reading.  
+
+## TODO
+- shape description
+- shape fields required status
