@@ -44,6 +44,20 @@ app.get(0, '/options/null-response', {
     response: null,
 }, (req, res, next) => next());
 
+app.post(0, '/data-types', {
+    params: [
+        new Param('integer', false, Type.integer),
+        new Param('float', false, Type.float),
+        new Param('string', false, Type.string),
+        new Param('array', false, Type.arrayOf(Type.integer)),
+        new Param('date', false, Type.date),
+        new Param('enum', false, Type.enum('a', 'a', 'b', 'c')),
+        new Param('shape', false, Type.shape({
+            integer: Type.integer,
+        })),
+    ],
+}, (req, res, next) => next(null, req.body));
+
 describe('Server start', () => {
 
     it('starts the server', (done) => {
@@ -578,6 +592,190 @@ describe('Endpoint defined with options', () => {
     });
 });
 
+describe('Data types validation', () => {
+
+    it('calls the data-types endpoint with invalid integer value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                integer: 'test',
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'integer\' has invalid type. It should be \'integer\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with invalid float value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                float: 'test',
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'float\' has invalid type. It should be \'float\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with invalid array value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                array: ['test'],
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'array\' has invalid type. It should be \'integer[]\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with invalid date value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                date: 'test',
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with invalid enum value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                enum: 'test',
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'enum\' has invalid type. It should be \'enum(\'a\',\'b\',\'c\')\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with shape as string', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                shape: 'test',
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with invalid shape value', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                shape: { integer: 'test' },
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint with all valid parameters', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                integer: 5,
+                float: 5.5,
+                string: 'string',
+                array: [1, 2, 3, 4, 5],
+                date: new Date('2018-06-01T00:00:00.000Z'),
+                enum: 'a',
+                shape: {
+                    integer: 5,
+                },
+            }
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['integer', 'float', 'string', 'array', 'date', 'enum', 'shape']);
+            expect(data.integer).to.be.equal(5);
+            expect(data.float).to.be.equal(5.5);
+            expect(data.string).to.be.equal('string');
+            expect(data.array).to.deep.equal([1, 2, 3, 4, 5]);
+            expect(data.date).to.be.equal('2018-06-01T00:00:00.000Z');
+            expect(data.enum).to.be.equal('a');
+            expect(data.shape).to.deep.equal({ integer: 5 });
+            done();
+        });
+    });
+});
+
 describe('Errors', () => {
 
     it('calls endpoint with custom error with payload', (done) => {
@@ -640,6 +838,7 @@ describe('Docs', () => {
                 'GET /2/version',
                 'GET /0/options',
                 'GET /0/options/null-response',
+                'POST /0/data-types',
                 'GET /docs',
             ]);
             validateDocs(data['GET /']);
@@ -677,6 +876,15 @@ describe('Docs', () => {
                 [{ name: 'success', key: 'success', type: 'boolean', description: 'Flag if the execution of the endpoint was successful.' }],
             );
             validateDocs(data['GET /0/options/null-response'], null, [], [], false, null);
+            validateDocs(data['POST /0/data-types'], null, [
+                { name: 'integer', description: null, key: 'integer', required: false, type: 'integer' },
+                { name: 'float', description: null, key: 'float', required: false, type: 'float' },
+                { name: 'string', description: null, key: 'string', required: false, type: 'string' },
+                { name: 'array', description: null, key: 'array', required: false, type: 'integer[]' },
+                { name: 'date', description: null, key: 'date', required: false, type: 'date' },
+                { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
+                { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
+            ]);
             validateDocs(data['GET /docs'], 'Documentation of this API.');
             done();
         });
