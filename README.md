@@ -103,7 +103,7 @@ The string array of the parameters is deprecated. It creates `Param` instances f
 ##### Param array
 The `Param` class can by required from the module. 
 ```javascript
-import rs = { Param, Type } from 'resting-squirrel';
+import rs, { Param, Type } from 'resting-squirrel';
 
 const app = rs();
 
@@ -126,6 +126,42 @@ rs.get(0, '/params', false, [p1, p2, p3], 'Test endpoint for param examples', (r
 ```
 The `Param` class uses type definition from the [runtime-type](https://www.npmjs.com/package/runtime-type) for type checking. 
 
+#### Response definition
+The list of response fields in the http methods is array of `Field` instances. Response data sent to `next` function in endpoint callback are validated with type checking to render correct data-types.
+```javascript
+import rs, { Param, Field, Type } from 'resting-squirrel';
+
+const app = rs();
+
+// It creates integer response field with name int_field
+const f1 = new Field('int_field', Type.integer, 'Integer response field');
+
+// It creates float response field with name float_field
+const f2 = Field.create({
+    name: 'float_field',
+    type: Type.float,
+    description: 'Float response field',
+});
+
+// It creates any response field with name any_field
+const f3 = Field.create('any_field');
+
+const doSomeStuff = () => {
+    return {
+        int_field: 666,
+        float_field: 6.66,
+        any_field: 'satan',
+    };
+};
+
+// Registers the GET endpoint which validates the fields before the data render.
+rs.get(0, '/fields', {
+    response: [f1, f2, f3],
+    description: 'Test endpoint for field examples',
+}, (req, res, next) => next(null, doSomeStuff()));
+
+```
+
 #### Response methods in the callback  
 **send204()** Sets 204 http code and sends empty response.  
 **send401(message = "Unauthorized request", code = "unauthorized_request")** Sets 401 http code and sends the Error instance.  
@@ -144,3 +180,5 @@ This parameters are updating behaviour of the current request.
 - shape description
 - shape fields required status
 - timeout option
+- api_key validation
+- HTML docs
