@@ -5,6 +5,7 @@ import Err from 'smart-error';
 import RouteParser from 'route-parser';
 import async from 'async';
 import Type from 'runtime-type';
+import path from 'path';
 
 import Endpoint, { Param, Field } from './endpoint';
 import HttpError from './http-error';
@@ -596,7 +597,22 @@ const m = (options = {}) => {
     const app = new Application(options);
     const { docs } = app._options;
     if (docs.enabled) {
-        app.get(docs.route, docs.auth, [], 'Documentation of this API.', (req, res, next) => next(null, app.docs()));
+        app.get(docs.route, {
+            requireAuth: docs.auth, 
+            description: 'Documentation of this API.',
+        }, (req, res, next) => next(null, app.docs()));
+        app.get(`${docs.route}.html`, {
+            requireAuth: docs.auth,
+        }, (req, res, next) => {
+            res.header('content-type', 'text/html; charset=utf-8');
+            res.sendFile(path.resolve(__dirname, '../assets/docs.html'));
+        });
+        app.get(`${docs.route}.js`, {
+            requireAuth: docs.auth,
+        }, (req, res, next) => {
+            res.header('content-type', 'text/javascript; charset=utf-8');
+            res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
+        });
     }
     return app;
 };

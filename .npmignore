@@ -3,3 +3,4 @@
 /.gitignore
 /.babelrc
 /__tests__
+/test.js

@@ -1,6 +1,6 @@
 {
   "name": "resting-squirrel",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "build_es6": "./node_modules/.bin/babel ./src --out-dir ./dist --copy-files && npm run create_index",
     "clear": "rm -rf ./dist && rm -f ./index.js",
     "prepublish": "npm run build_es6",
-    "postpublish": "npm run clear"
+    "postpublish": "npm run clear",
+    "test_app": "npm run build_es6 && node ./test.js"
   },
   "license": "MIT",
   "engines": {
