@@ -1,5 +1,7 @@
 $(document).ready(() => {
     const $content = $('#content');
+    const $index = $('#index');
+    const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
     const formatParams = (params, response = false) => {
         if (!params) {
             return '';
@@ -17,7 +19,7 @@ $(document).ready(() => {
         return $table.prop('outerHTML');
     };
     const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated }) => {
-        const id = endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
+        const id = getEndpointId(endpoint);
         const { origin, pathname, hash } = location;
         const link = `${origin}${pathname}#${id}`;
         const $docs = $(`
@@ -44,12 +46,6 @@ $(document).ready(() => {
             document.execCommand('copy');
             $link.remove();
         });
-        $docs.find('h2').click(() => {
-            $docsContent.toggle();
-        });
-        if (hash !== `#${id}`) {
-            $docsContent.hide();
-        }
         return $docs;
     };
     $.ajax({
@@ -57,8 +53,11 @@ $(document).ready(() => {
         url: '/docs',
         success: ({ data, _meta }) => {
             $content.html('');
+            $index.html('<div class="list-group list-group-flush"></div>');
+            $ul = $index.find('div.list-group');
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
+                $ul.append(`<a class="list-group-item" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
             });
         },
     });

@@ -1,11 +1,17 @@
-#container {
-    width: 1000px;
-    margin: 0 auto;
+body {
+    overflow: hidden;
+}
+
+#index, #content {
+    overflow-y: auto;
+}
+
+#content {
+    padding: 10px;
 }
 
 #content .endpoint h2 {
     border-bottom: 2px solid grey;
-    cursor: pointer;
 }
 
 #content .endpoint.deprecated h2 {
@@ -27,4 +33,16 @@
 #content .endpoint .description {
     padding: 10px;
     background: lightgray;
+}
+
+.h-90 {
+    height: 90%
+}
+
+.w-20 {
+    width: 20%;
+}
+
+.w-60 {
+    width: 60%;
 }
