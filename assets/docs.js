@@ -10,12 +10,16 @@ $(document).ready(() => {
         return $table.prop('outerHTML');
     };
     const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated }) => {
+        const id = endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
+        const { origin, pathname, hash } = location;
+        const link = `${origin}${pathname}#${id}`;
         const $docs = $(`
-            <div class="endpoint">
-                <h2>${deprecated ? `<del>${endpoint}</del>` : endpoint}</h2>
+            <div id='${id}' class="endpoint${deprecated ? ' deprecated' : ''}">
+                <h2>${endpoint}</h2>
                 <div class="docs">
                     ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
                     ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}
+                    <a class="copy-link" href="#${id}">copy link</a>                    
                     <p class="description rounded">${description || docs}</p>
                     <h3>Params</h3>
                         <div class=".bootstrap-table">
@@ -27,10 +31,20 @@ $(document).ready(() => {
             </div>
         `);
         const $docsContent = $docs.find('.docs');
+        $docs.find('a.copy-link').click((e) => {
+            e.preventDefault();
+            const $link = $(`<input class="link" type="text" value="${link}">`);
+            $docs.append($link);
+            $link[0].select();
+            document.execCommand('copy');
+            $link.remove();
+        });
         $docs.find('h2').click(() => {
             $docsContent.toggle();
         });
-        $docsContent.hide();
+        if (hash !== `#${id}`) {
+            $docsContent.hide();
+        }
         return $docs;
     };
     $.ajax({

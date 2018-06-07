@@ -8,6 +8,10 @@
     cursor: pointer;
 }
 
+#content .endpoint.deprecated h2 {
+    text-decoration: line-through;
+}
+
 #content .endpoint h3 {
     border-bottom: 1px solid grey;
 }

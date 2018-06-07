@@ -182,3 +182,4 @@ This parameters are updating behaviour of the current request.
 - timeout option
 - api_key validation
 - list of error codes in endpoint options
+- try button in docs
