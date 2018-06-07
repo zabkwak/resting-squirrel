@@ -55,6 +55,7 @@ import pkg from '../package.json';
  * @property {Param[]|string[]} params
  * @property {Field[]} response
  * @property {string} description
+ * @property {boolean} hideDocs
  */
 
 /** @type {AppOptions} */
@@ -325,6 +326,9 @@ class Application {
             const route = this._routes[key];
             Object.keys(route.routes).forEach((v) => {
                 const endpoint = route.routes[v];
+                if (endpoint.hideDocs) {
+                    return;
+                }
                 docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
                     docs: endpoint.docs,
                     params: endpoint.getParams(this._options.docs.paramsAsArray),
@@ -351,8 +355,8 @@ class Application {
             callback = options;
             options = {};
         }
-        const { requireAuth, params, response, description } = options;
-        const endpoint = new Endpoint(version, requireAuth, params, response, description, callback, this._options.validateParams);
+        const { requireAuth, params, response, description, hideDocs } = options;
+        const endpoint = new Endpoint(version, requireAuth, params, response, description, hideDocs, callback, this._options.validateParams);
         const key = `${method}${route}`;
         if (!this._routes[key]) {
             this._routes[key] = new Route(method, route);
@@ -600,15 +604,18 @@ const m = (options = {}) => {
         app.get(docs.route, {
             requireAuth: docs.auth, 
             description: 'Documentation of this API.',
+            hideDocs: true,
         }, (req, res, next) => next(null, app.docs()));
         app.get(`${docs.route}.html`, {
             requireAuth: docs.auth,
+            hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/html; charset=utf-8');
             res.sendFile(path.resolve(__dirname, '../assets/docs.html'));
         });
         app.get(`${docs.route}.js`, {
-            requireAuth: docs.auth,
+            requireAuth: false,
+            hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/javascript; charset=utf-8');
             res.sendFile(path.resolve(__dirname, '../assets/docs.js'));

@@ -11,7 +11,8 @@ class Endpoint {
     /** @type {Param[]} */
     params = null;
     response = null;
-    docs = null;
+    description = null;
+    hideDocs = false;
     callback = null;
     // TODO co to kurva je?
     route = null;
@@ -25,12 +26,21 @@ class Endpoint {
         return this.params.filter(param => param.required).map(param => param.name);
     }
 
-    constructor(version = null, requiredAuth = false, params = [], response = [], docs = null, callback = null, validateParams = true) {
+    /**
+     * @type {string}
+     * @deprecated
+     */
+    get docs() {
+        return this.description;
+    }
+
+    constructor(version = null, requiredAuth = false, params = [], response = [], description = null, hideDocs = false, callback = null, validateParams = true) {
         this.version = version;
         this.requiredAuth = requiredAuth;
         this.params = ParamParser.parse(params);
         this.response = response;
-        this.docs = docs;
+        this.description = description;
+        this.hideDocs = hideDocs;
         this.callback = callback;
         if (validateParams) {
             this._validateParams();
@@ -82,8 +92,13 @@ class Endpoint {
         return this;
     }
 
+    /**
+     * 
+     * @param {string} docs 
+     * @deprecated
+     */
     setDocs(docs) {
-        this.docs = docs;
+        this.description = docs;
         return this;
     }
 

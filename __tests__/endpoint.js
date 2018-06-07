@@ -80,29 +80,31 @@ describe('Endpoint', () => {
 
     it('creates the endpoint with null response', () => {
         const endpoint = new Endpoint(0, false, [], null);
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'docs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, docs, callback, route, deprecated } = endpoint;
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
+        const { version, requiredAuth, params, response, description, hideDocs, callback, route, deprecated } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
         expect(params.length).to.be.equal(0);
         expect(response).to.be.null;
-        expect(docs).to.be.null;
+        expect(description).to.be.null;
+        expect(hideDocs).to.be.false;
         expect(route).to.be.nul;
         expect(deprecated).to.be.false;
     });
 
     it('creates the endpoint with params defined on the old version of the module', () => {
-        const endpoint = new Endpoint(0, false, ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'], [], 'Creates new car record', () => { });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'docs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, docs, callback, route, deprecated } = endpoint;
+        const endpoint = new Endpoint(0, false, ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'], [], 'Creates new car record', true, () => { });
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
+        const { version, requiredAuth, params, response, description, hideDocs, callback, route, deprecated } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
         expect(params.length).to.be.equal(3);
         expect(response).to.be.an.instanceOf(Array);
 
-        expect(docs).to.be.equal('Creates new car record');
+        expect(description).to.be.equal('Creates new car record');
+        expect(hideDocs).to.be.true;
         expect(callback).to.be.a('function');
         expect(route).to.be.nul;
         expect(deprecated).to.be.false;

@@ -839,7 +839,6 @@ describe('Docs', () => {
                 'GET /0/options',
                 'GET /0/options/null-response',
                 'POST /0/data-types',
-                'GET /docs',
             ]);
             validateDocs(data['GET /']);
             validateDocs(data['GET /auth'], null, [], [], true);
@@ -885,7 +884,7 @@ describe('Docs', () => {
                 { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
                 { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
             ]);
-            validateDocs(data['GET /docs'], 'Documentation of this API.');
+            expect(data['GET /docs']).to.be.undefined;
             done();
         });
     });
