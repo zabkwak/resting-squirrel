@@ -181,4 +181,4 @@ This parameters are updating behaviour of the current request.
 - shape fields required status
 - timeout option
 - api_key validation
-- HTML docs
+- list of error codes in endpoint options

@@ -620,6 +620,13 @@ const m = (options = {}) => {
             res.header('content-type', 'text/javascript; charset=utf-8');
             res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
         });
+        app.get(`${docs.route}.css`, {
+            requireAuth: false,
+            hideDocs: true,
+        }, (req, res, next) => {
+            res.header('content-type', 'text/css; charset=utf-8');
+            res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
+        });
     }
     return app;
 };

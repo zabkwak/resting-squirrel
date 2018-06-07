@@ -1,0 +1,26 @@
+#container {
+    width: 1000px;
+    margin: 0 auto;
+}
+
+#content .endpoint h2 {
+    border-bottom: 2px solid grey;
+    cursor: pointer;
+}
+
+#content .endpoint h3 {
+    border-bottom: 1px solid grey;
+}
+
+#content .endpoint .docs {
+    margin-left: 10px;
+}
+
+#content .endpoint .docs table.table td {
+    width: 25%;
+}
+
+#content .endpoint .description {
+    padding: 10px;
+    background: lightgray;
+}
