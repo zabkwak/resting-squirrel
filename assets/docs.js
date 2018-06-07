@@ -17,9 +17,9 @@ $(document).ready(() => {
             <div id='${id}' class="endpoint${deprecated ? ' deprecated' : ''}">
                 <h2>${endpoint}</h2>
                 <div class="docs">
+                    <a class="copy-link" href="#${id}">copy link</a>     
                     ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
-                    ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}
-                    <a class="copy-link" href="#${id}">copy link</a>                    
+                    ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}               
                     <p class="description rounded">${description || docs}</p>
                     <h3>Params</h3>
                         <div class=".bootstrap-table">
