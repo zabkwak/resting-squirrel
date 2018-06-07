@@ -30,4 +30,16 @@ app.get(1, '/endpoint', {
     next(null, req.query);
 });
 
+app.get(0, '/empty-params', {
+    description: 'Endpoint with empty params',
+    response: [
+        new Field('success', Type.boolean),
+    ],
+}, (req, res, next) => next(null, { success: true }));
+
+app.get(0, '/empty-response', {
+    description: 'Endpoint with 204 response',
+    response: null,
+}, (req, res, next) => next());
+
 app.start();

@@ -1,9 +1,16 @@
 $(document).ready(() => {
     const $content = $('#content');
     const formatParams = (params, response = false) => {
-        $table = $(`<table class="table"><thead><tr><th>Name</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
+        if (!params) {
+            return '';
+        }
+        const keys = Object.keys(params);
+        if (!keys.length) {
+            return '';
+        }
+        $table = $(`<table class="table"><thead><tr><th>Field</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
         $tbody = $table.find('tbody');
-        Object.keys(params).forEach((key) => {
+        keys.forEach((key) => {
             const { description, type, required } = params[key];
             $tbody.append(`<tr><td>${key}</td><td>${type}</td><td>${description}</td><td>${response ? '' : required}</td></tr>`);
         });
@@ -22,9 +29,7 @@ $(document).ready(() => {
                     ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}               
                     <p class="description rounded">${description || docs}</p>
                     <h3>Params</h3>
-                        <div class=".bootstrap-table">
-                            ${formatParams(params)}
-                        </div>
+                    ${formatParams(params)}
                     <h3>Response</h3>
                     ${formatParams(response, true)}
                 </div>
