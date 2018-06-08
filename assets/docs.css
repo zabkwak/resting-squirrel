@@ -2,8 +2,9 @@ body {
     overflow: hidden;
 }
 
-#index, #content {
+#index, #content, #console {
     overflow-y: auto;
+    padding: 10px;
 }
 
 #content {
@@ -35,12 +36,28 @@ body {
     background: lightgray;
 }
 
+#console .badge {
+    font-size: 100%;
+}
+
 .h-90 {
     height: 90%
 }
 
+.w-10 {
+    width: 10%
+}
+
+.w-15 {
+    width: 15%;
+}
+
 .w-20 {
     width: 20%;
+}
+
+.w-30 {
+    width: 30%;
 }
 
 .w-60 {

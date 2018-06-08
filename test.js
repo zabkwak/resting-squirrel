@@ -42,4 +42,16 @@ app.get(0, '/empty-response', {
     response: null,
 }, (req, res, next) => next());
 
+app.post(0, '/post-data', {
+    description: 'Validates the data and returns it.',
+    params: [
+        new Param('integer', true, Type.integer, 'Integer param'),
+        new Param('float', true, Type.float, 'Float param'),
+    ],
+    response: [
+        new Field('integer', Type.integer, 'Integer field'),
+        new Field('float', Type.float, 'Float field'),
+    ],
+}, (req, res, next) => next(null, req.body));
+
 app.start();
