@@ -257,6 +257,7 @@ class Application {
             Object.keys(route.routes).forEach((v) => {
                 const endpoint = route.routes[v];
                 this._app[route.method](endpoint.getEndpoint(), (req, res, next) => {
+                    req.__endpoint = endpoint;
                     this._checkAuth(req, res, endpoint.requiredAuth, auth, (err) => {
                         if (err) {
                             next(err);
