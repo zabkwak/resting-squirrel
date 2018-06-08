@@ -58,6 +58,14 @@ app.post(0, '/data-types', {
     ],
 }, (req, res, next) => next(null, req.body));
 
+app.get(0, '/args/:id/not-defined', (req, res, next) => next(null, req.params));
+
+app.get(0, '/args/:id/defined', {
+    args: [
+        new Field('id', Type.integer, 'Id of the argument.'),
+    ],
+}, (req, res, next) => next(null, req.params));
+
 describe('Server start', () => {
 
     it('starts the server', (done) => {
@@ -146,6 +154,44 @@ describe('Authorization', () => {
             const { data } = body;
             expect(data).to.have.all.keys(['success']);
             expect(data.success).to.be.true;
+            done();
+        });
+    });
+});
+
+describe('Arguments validation', () => {
+
+    it('calls the GET endpoint with valid arguments', (done) => {
+        request.get({
+            url: 'http://localhost:8080/0/args/5/defined',
+            gzip: true,
+            json: true,
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['id']);
+            expect(data.id).to.be.equal(5);
+            done();
+        });
+    });
+
+    it('calls the GET endpoint with arguments of invalid type', (done) => {
+        request.get({
+            url: 'http://localhost:8080/0/args/invalid/defined',
+            gzip: true,
+            json: true,
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Argument \'id\' has invalid type. It should be \'integer\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
         });
     });
@@ -796,14 +842,18 @@ describe('Errors', () => {
 
 describe('Docs', () => {
 
-    const validateDocs = (doc, docs = null, params = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
-        expect(doc).to.have.all.keys(['docs', 'params', 'required_params', 'required_auth', 'response', 'deprecated']);
+    const validateDocs = (doc, docs = null, args = [], params = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
+        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'deprecated']);
         expect(doc.docs).to.be.equal(docs);
+        expect(doc.docs).to.be.equal(doc.description);
+        expect(doc.required_params).to.deep.equal(required_params);
+        expect(doc.required_auth).to.be.equal(required_auth);
+        expect(doc.deprecated).to.be.equal(deprecated);
+        // Params validation
         let o = {};
         params.forEach(p => o[p.name] = p);
         expect(doc.params).to.deep.equal(o);
-        expect(doc.required_params).to.deep.equal(required_params);
-        expect(doc.required_auth).to.be.equal(required_auth);
+        // Response validation
         if (response) {
             o = {};
             response.forEach(p => o[p.name] = p);
@@ -811,7 +861,10 @@ describe('Docs', () => {
             o = null;
         }
         expect(doc.response).to.deep.equal(o);
-        expect(doc.deprecated).to.be.equal(deprecated);
+        o = {};
+        // Arguments validation
+        args.forEach(p => o[p.name] = p);
+        expect(doc.args).to.deep.equal(o);
     }
 
     it('validates the docs data', (done) => {
@@ -839,43 +892,46 @@ describe('Docs', () => {
                 'GET /0/options',
                 'GET /0/options/null-response',
                 'POST /0/data-types',
+                'GET /0/args/:id/not-defined',
+                'GET /0/args/:id/defined',
             ]);
             validateDocs(data['GET /']);
-            validateDocs(data['GET /auth'], null, [], [], true);
-            validateDocs(data['GET /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['GET /params/type'], null, [
+            validateDocs(data['GET /auth'], null, [], [], [], true);
+            validateDocs(data['GET /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /params/type'], null, [], [
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
             ], ['param']);
-            validateDocs(data['GET /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['GET /params/cast'], null, [
+            validateDocs(data['GET /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /params/cast'], null, [], [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
             ], ['int', 'float']);
-            validateDocs(data['POST /params'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['POST /params/type'], null, [
+            validateDocs(data['POST /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['POST /params/type'], null, [], [
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
             ], ['param']);
-            validateDocs(data['POST /params/back'], null, [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
-            validateDocs(data['POST /params/cast'], null, [
+            validateDocs(data['POST /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['POST /params/cast'], null, [], [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
             ], ['int', 'float']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
-            validateDocs(data['GET /1/version'], null, [], [], false, [], true);
+            validateDocs(data['GET /1/version'], null, [], [], [], false, [], true);
             validateDocs(data['GET /2/version']);
             validateDocs(
                 data['GET /0/options'],
                 'Endpoint with options.',
+                [],
                 [{ name: 'param', description: null, key: 'param', required: true, type: 'integer', description: 'Test integer parameter.' }],
                 ['param'],
                 false,
                 [{ name: 'success', key: 'success', type: 'boolean', description: 'Flag if the execution of the endpoint was successful.' }],
             );
-            validateDocs(data['GET /0/options/null-response'], null, [], [], false, null);
-            validateDocs(data['POST /0/data-types'], null, [
+            validateDocs(data['GET /0/options/null-response'], null, [], [], [], false, null);
+            validateDocs(data['POST /0/data-types'], null, [], [
                 { name: 'integer', description: null, key: 'integer', required: false, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: false, type: 'float' },
                 { name: 'string', description: null, key: 'string', required: false, type: 'string' },
@@ -884,7 +940,12 @@ describe('Docs', () => {
                 { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
                 { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
             ]);
+            validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }]);
+            validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }]);
             expect(data['GET /docs']).to.be.undefined;
+            expect(data['GET /docs.html']).to.be.undefined;
+            expect(data['GET /docs.js']).to.be.undefined;
+            expect(data['GET /docs.css']).to.be.undefined;
             done();
         });
     });

@@ -75,6 +75,13 @@ class Endpoint {
         return o;
     }
 
+    getRouteArguments() {
+        if (!this.route) {
+            return {};
+        }
+        return this.route.args;
+    }
+
     isDeprecated() {
         if (!this.route) {
             return false;

@@ -56,6 +56,7 @@ import pkg from '../package.json';
  * @property {Field[]} response
  * @property {string} description
  * @property {boolean} hideDocs
+ * @property {Field[]} args
  */
 
 /** @type {AppOptions} */
@@ -263,36 +264,38 @@ class Application {
                             next(err);
                             return;
                         }
-                        this._checkParams(endpoint.params, req, res, (err) => {
-                            if (err) {
-                                next(err);
-                                return;
-                            }
-                            this._beforeCallback(req, res, before, (err) => {
+                        this._checkArguments(endpoint.getRouteArguments(), req, res, (err) => {
+                            this._checkParams(endpoint.params, req, res, (err) => {
                                 if (err) {
                                     next(err);
                                     return;
                                 }
-                                endpoint.callback(req, res, (err, data) => {
+                                this._beforeCallback(req, res, before, (err) => {
                                     if (err) {
                                         next(err);
                                         return;
                                     }
-                                    if (endpoint.response) {
-                                        endpoint.response.forEach((field) => {
-                                            const { type, key } = field;
-                                            if (type.isValid(data[key])) {
-                                                data[key] = type.cast(data[key]);
-                                            } else {
-                                                const message = `Response on key '${key}' has invalid type. It should be ${type}`;
-                                                if (this._options.responseStrictValidation) {
-                                                    throw new Err(message);
+                                    endpoint.callback(req, res, (err, data) => {
+                                        if (err) {
+                                            next(err);
+                                            return;
+                                        }
+                                        if (endpoint.response) {
+                                            endpoint.response.forEach((field) => {
+                                                const { type, key } = field;
+                                                if (type.isValid(data[key])) {
+                                                    data[key] = type.cast(data[key]);
+                                                } else {
+                                                    const message = `Response on key '${key}' has invalid type. It should be ${type}`;
+                                                    if (this._options.responseStrictValidation) {
+                                                        throw new Err(message);
+                                                    }
+                                                    console.warn(message);
                                                 }
-                                                console.warn(message);
-                                            }
-                                        });
-                                    }
-                                    res._sendData(data);
+                                            });
+                                        }
+                                        res._sendData(data);
+                                    });
                                 });
                             });
                         });
@@ -332,6 +335,8 @@ class Application {
                 }
                 docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
                     docs: endpoint.docs,
+                    description: endpoint.description,
+                    args: endpoint.getRouteArguments(),
                     params: endpoint.getParams(this._options.docs.paramsAsArray),
                     required_params: endpoint.requiredParams,
                     required_auth: endpoint.requiredAuth,
@@ -360,7 +365,7 @@ class Application {
         const endpoint = new Endpoint(version, requireAuth, params, response, description, hideDocs, callback, this._options.validateParams);
         const key = `${method}${route}`;
         if (!this._routes[key]) {
-            this._routes[key] = new Route(method, route);
+            this._routes[key] = new Route(method, route, options.args);
         }
         this._routes[key].addEndpoint(endpoint);
         return endpoint;
@@ -372,6 +377,17 @@ class Application {
             return;
         }
         authMethod(req, res, cb);
+    }
+
+    _checkArguments(args, req, res, next) {
+        Object.keys(args).forEach((key) => {
+            const arg = args[key];
+            if (!arg.type.isValid(req.params[key])) {
+                throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+            }
+            req.params[key] = arg.type.cast(req.params[key]);
+        });
+        next();
     }
 
     /**
@@ -389,30 +405,22 @@ class Application {
         const mergedParams = { ...req.query, ...req.body };
         const castedParams = {};
         const paramsKey = req.method === 'GET' ? 'query' : 'body';
-        try {
-            params.forEach((param) => {
-                const p = param.name;
-                if (param.required) {
-                    const requiredParam = req[paramsKey][p];
-                    if (requiredParam === null || requiredParam === undefined) {
-                        throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
-                    }
-                } else if (mergedParams[p] === undefined) {
-                    return;
+        params.forEach((param) => {
+            const p = param.name;
+            if (param.required) {
+                const requiredParam = req[paramsKey][p];
+                if (requiredParam === null || requiredParam === undefined) {
+                    throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
                 }
-                if (!param.type.isValid(mergedParams[p])) {
-                    throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
-                } else {
-                    castedParams[p] = param.type.cast(mergedParams[p]);
-                }
-            });
-        } catch (e) {
-            if (['ERR_MISSING_PARAMETER', 'ERR_INVALID_TYPE'].indexOf(e.code) >= 0) {
-                next(e);
+            } else if (mergedParams[p] === undefined) {
                 return;
             }
-            throw e;
-        }
+            if (!param.type.isValid(mergedParams[p])) {
+                throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
+            } else {
+                castedParams[p] = param.type.cast(mergedParams[p]);
+            }
+        });
         req[paramsKey] = { ...req[paramsKey], ...castedParams };
         next();
     }
@@ -603,7 +611,7 @@ const m = (options = {}) => {
     const { docs } = app._options;
     if (docs.enabled) {
         app.get(docs.route, {
-            requireAuth: docs.auth, 
+            requireAuth: docs.auth,
             description: 'Documentation of this API.',
             hideDocs: true,
         }, (req, res, next) => next(null, app.docs()));
