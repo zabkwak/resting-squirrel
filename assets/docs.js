@@ -79,7 +79,7 @@ $(document).ready(() => {
             const $form = $(e.target);
             const args = {};
             const data = {};
-            const headers = {};
+            const headers = { 'x-agent': 'Docs Console' };
             $form.find('.args input[type="text"]').each((index, input) => {
                 const { name, value } = input;
                 args[name] = value || void 0;
@@ -175,6 +175,7 @@ $(document).ready(() => {
     $.ajax({
         dataType: 'json',
         url: '/docs',
+        headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
             $content.html('');
             $index.html('<div class="list-group list-group-flush"></div>');

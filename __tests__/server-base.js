@@ -7,9 +7,10 @@ describe('Base app creation', () => {
 
     it('checks if the app has default values', () => {
         const app = rs();
-        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(8080);
+        expect(name).to.be.equal('Resting Squirrel App');
         expect(dataKey).to.be.equal('data');
         expect(errorKey).to.be.equal('error');
         expect(log).to.be.true;
@@ -40,6 +41,7 @@ describe('Base app creation', () => {
     it('checks if the custom options are properly set', () => {
         const app = rs({
             port: 9000,
+            name: 'Test Api',
             dataKey: '_data',
             errorKey: '_error',
             log: false,
@@ -66,9 +68,10 @@ describe('Base app creation', () => {
             },
             validateParams: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(9000);
+        expect(name).to.be.equal('Test Api');
         expect(dataKey).to.be.equal('_data');
         expect(errorKey).to.be.equal('_error');
         expect(log).to.be.false;

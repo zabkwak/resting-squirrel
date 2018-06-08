@@ -6,6 +6,7 @@ import RouteParser from 'route-parser';
 import async from 'async';
 import Type from 'runtime-type';
 import path from 'path';
+import fs from 'fs';
 
 import Endpoint, { Param, Field } from './endpoint';
 import HttpError from './http-error';
@@ -16,6 +17,7 @@ import pkg from '../package.json';
 /**
  * @typedef AppOptions
  * @property {number} port
+ * @property {string} name
  * @property {string} dataKey
  * @property {string} errorKey
  * @property {boolean} log
@@ -62,6 +64,7 @@ import pkg from '../package.json';
 /** @type {AppOptions} */
 const DEFAULT_OPTIONS = {
     port: 8080,
+    name: 'Resting Squirrel App',
     dataKey: 'data',
     errorKey: 'error',
     log: true,
@@ -615,7 +618,7 @@ class Application {
  */
 const m = (options = {}) => {
     const app = new Application(options);
-    const { docs } = app._options;
+    const { docs, name } = app._options;
     if (docs.enabled) {
         app.get(docs.route, {
             requireAuth: docs.auth,
@@ -627,6 +630,13 @@ const m = (options = {}) => {
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/html; charset=utf-8');
+            fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
+                if (err) {
+                    next(err);
+                    return;
+                }
+                res.end(buffer.toString().replace(/\$\{name\}/g, name));
+            });
             res.sendFile(path.resolve(__dirname, '../assets/docs.html'));
         });
         app.get(`${docs.route}.js`, {
