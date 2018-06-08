@@ -67,6 +67,11 @@ This usage will create the app with default options.
 - **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
+**apiKey** Object for setting up the api key.
+- **enabled** If true api key is validated. Default: false  
+- **type** Type of the location of api key in request. One of qs, body, header. Default: qs  
+- **validator(apiKey, next)** Validator of api key.
+
 **before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
 **after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
 **defaultError** Default error for response if no error is defined  
@@ -229,6 +234,5 @@ The module creates generic documentation by default. The documentation is on the
 - shape description
 - shape fields required status
 - timeout option
-- api_key validation
 - list of error codes in endpoint options
 - custom warning of the endpoint
