@@ -161,6 +161,40 @@ describe('Authorization', () => {
 
 describe('Arguments validation', () => {
 
+    it('calls the GET endpoint with not defined arguments with valid arguments', (done) => {
+        request.get({
+            url: 'http://localhost:8080/0/args/5/not-defined',
+            gzip: true,
+            json: true,
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['id']);
+            expect(data.id).to.be.equal('5');
+            done();
+        });
+    });
+
+    it('calls the GET endpoint with not defined arguments with valid arguments', (done) => {
+        request.get({
+            url: 'http://localhost:8080/0/args/string/not-defined',
+            gzip: true,
+            json: true,
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['id']);
+            expect(data.id).to.be.equal('string');
+            done();
+        });
+    });
+
     it('calls the GET endpoint with valid arguments', (done) => {
         request.get({
             url: 'http://localhost:8080/0/args/5/defined',

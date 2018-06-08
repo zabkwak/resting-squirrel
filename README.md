@@ -183,4 +183,3 @@ This parameters are updating behaviour of the current request.
 - api_key validation
 - list of error codes in endpoint options
 - custom warning of the endpoint
-- URL params form

@@ -3,7 +3,7 @@ $(document).ready(() => {
     const $index = $('#index');
     const $console = $('#console');
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
-    const testConsole = (endpoint, { description, docs, params, response, required_auth, deprecated }) => {
+    const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
             <h2>${endpoint}</h2>
@@ -12,6 +12,17 @@ $(document).ready(() => {
                 <div>
                     <div class="headers"></div>
                     <a href="#" class="btn btn-link btn-sm add">Add header</a>
+                </div>
+                <h3>Arguments</h3>
+                <div class="args">
+                    ${Object.keys(args).map((key) => {
+                const { description, type, required } = args[key];
+                return `
+                            <p class="form-group">
+                                <input id="${key}" class="required form-control" type="text" name="${key}" placeholder="${key} (${type})" />
+                            </p>
+                        `;
+            }).join('')}
                 </div>
                 <h3>Params</h3>
                 <div class="params">
@@ -66,8 +77,13 @@ $(document).ready(() => {
             e.preventDefault();
             $response.html('Processing');
             const $form = $(e.target);
+            const args = {};
             const data = {};
             const headers = {};
+            $form.find('.args input[type="text"]').each((index, input) => {
+                const { name, value } = input;
+                args[name] = value || void 0;
+            });
             $form.find('.params input[type="text"]').each((index, input) => {
                 const { name, value } = input;
                 data[name] = value || void 0;
@@ -79,13 +95,17 @@ $(document).ready(() => {
                 headers[name] = value || void 0;
             });
             const start = Date.now();
+            let url = path;
+            Object.keys(args).forEach((arg) => {
+                url = url.replace(`:${arg}`, args[arg]);
+            });
             $.ajax({
                 method: method.toLowerCase(),
                 data: method === 'GET' ? data : JSON.stringify(data),
                 headers,
                 dataType: 'json',
                 contentType: 'application/json',
-                url: path,
+                url,
                 error: ({ responseText, status }, textStatus, error) => {
                     renderData(error, JSON.parse(responseText), status, Date.now() - start);
                 },
@@ -111,7 +131,7 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
-    const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated }) => {
+    const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated, args }) => {
         const id = getEndpointId(endpoint);
         const { origin, pathname, hash } = location;
         const link = `${origin}${pathname}#${id}`;
@@ -128,6 +148,8 @@ $(document).ready(() => {
                         <a class="test-link btn btn-info" href="#${id}">test in console</a>
                     </div>        
                     <p class="description rounded">${description || docs}</p>
+                    <h3>Arguments</h3>
+                    ${formatParams(args, true)}
                     <h3>Params</h3>
                     ${formatParams(params)}
                     <h3>Response</h3>
@@ -146,7 +168,7 @@ $(document).ready(() => {
         });
         $docs.find('a.test-link').click((e) => {
             e.preventDefault();
-            testConsole(endpoint, { description, docs, params, response, required_auth, deprecated });
+            testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
         });
         return $docs;
     };

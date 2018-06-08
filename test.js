@@ -54,4 +54,14 @@ app.post(0, '/post-data', {
     ],
 }, (req, res, next) => next(null, req.body));
 
+app.get(0, '/args/:id', {
+    description: 'Validates the arguments and returns it.',
+    args: [
+        new Field('id', Type.integer, 'Integer argument'),
+    ],
+    response: [
+        new Field('id', Type.integer, 'Integer field'),
+    ],
+}, (req, res, next) => next(null, req.params));
+
 app.start();
