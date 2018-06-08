@@ -84,7 +84,7 @@ import { Error } from 'resting-squirrel';
 console.log(new Error("Some error", "some_code"));
 ```
 
-### Functions  
+### Functions DEPRECATED
 **use(route, callback)** Registers express middleware. Route can be callback.  
 **get(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the GET method. requiredAuth, params and docs can be callback. Callback is taken from express.  
 **post(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the POST method. requiredAuth, params and docs can be callback. Callback is taken from express.  
@@ -94,10 +94,55 @@ console.log(new Error("Some error", "some_code"));
 **listen(cb)** Starts listening on the port from options. DEPRECATED   
 **start(cb)** Starts listening on the port from options.  
 
+### Function
+**use(route, callback)** Registers express middleware. Route can be callback.  
+**get(version, route, options = {}, callback)** Registers route on the GET method. options can be callback. Callback is taken from express.  
+**post(version, route, options = {}, callback)** Registers route on the POST method. options can be callback. Callback is taken from express.  
+**put(version, route, options = {}, callback)** Registers route on the PUT method. options can be callback. Callback is taken from express.  
+**delete(version, route, options = {}, callback)** Registers route on the DELETE method. optionscan be callback. Callback is taken from express.  
+**head(version, route, options = {}, callback)** Registers route on the HEAD method. options can be callback. Callback is taken from express.  
+**listen(cb)** Starts listening on the port from options. DEPRECATED   
+**start(cb)** Starts listening on the port from options.  
+
 All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in the response.
 
+#### Endpoint options
+**requireAuth** If true the endpoint requires authorization.  
+**description** Description of the endpoint.  
+**args** List of `Field` instances to define endpoint arguments. If it's not defined all arguments defined in the route are of `any` type.  
+**params** List of `Param` instances to define endpoint parameters.  
+**response** List of `Field` instances to define endpoint response fields.  
+**hideDocs** If true the endpoint is hidden from the documentation.
+
+#### Arguments
+The list of arguments fields in the http methods is array of `Field` instances. The values are validated with type checking. 
+```javascript
+import rs, { Param, Field, Type } from 'resting-squirrel';
+
+const app = rs();
+
+// It creates integer argument field with name int_arg
+const f1 = new Field('int_arg', Type.integer, 'Integer argument');
+
+// It creates float response field with name float_arg
+const f2 = Field.create({
+    name: 'float_arg',
+    type: Type.float,
+    description: 'Float argument',
+});
+
+// It creates any argument field with name any_arg
+const f3 = Field.create('any_arg');
+
+// Registers the GET endpoint which validates the arguments.
+rs.get(0, '/fields', {
+    args: [f1, f2, f3],
+    description: 'Test endpoint for argument examples',
+}, (req, res, next) => next(null, req.params));
+```
+
 #### Params
-The list of params in the http methods can be array of `string`s or array of `Param` instances. 
+The list of params in the http methods can be array of `string`s or array of `Param` instances. The params are input json in the POST, PUT, DELETE methods or query string in the GET method.
 ##### String array
 The string array of the parameters is deprecated. It creates `Param` instances from string. The parameter has the name from the `string`, it will be required, the type will be `any` and it won't have a description.
 ##### Param array
@@ -175,6 +220,9 @@ rs.get(0, '/fields', {
 This parameters are updating behaviour of the current request.  
 **nometa** If meta is enabled in config this parameter will disable it.  
 **pretty** JSON response is printed for human reading.  
+
+## Documentation
+The module creates generic documentation by default. The documentation is on the `/docs` route (if it's not set in app options) as a JSON data. `/docs.html` contains simple HTML which converts the JSON data to HTML and adds the test console. 
 
 ## TODO
 - shape description

@@ -379,6 +379,13 @@ class Application {
         authMethod(req, res, cb);
     }
 
+    /**
+     * 
+     * @param {Object.<string, Field>} args 
+     * @param {*} req 
+     * @param {*} res 
+     * @param {*} next 
+     */
     _checkArguments(args, req, res, next) {
         Object.keys(args).forEach((key) => {
             const arg = args[key];
