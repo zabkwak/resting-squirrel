@@ -40,6 +40,7 @@ $(document).ready(() => {
         const renderData = (error, data, status, took) => {
             $response.html(`
                 <h4 class="badge badge-${error ? 'danger' : 'success'}">${error ? 'Error' : 'Success'} (${status}${error ? ` - ${error}` : ''})</h4>
+                ${data.warning ? `<span class="badge badge-warning">${data.warning}</span>` : ''}
                 <strong>Took: ${took} ms</strong>
                 <pre><code>${JSON.stringify(data, null, 4) || ''}</code></pre>
             `);
