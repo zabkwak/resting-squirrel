@@ -49,6 +49,7 @@ This usage will create the app with default options.
 
 ### Options
 **port** Port where the app listens. Default: 8080  
+**name** Name of the app. Default: Resting Squirrel App  
 **dataKey** Key in the output where the data are sent. Default: data  
 **errorKey** Key in the output where the error is sent. Default: error  
 **requestLimit** Limit for input data. Default: 1mb  

@@ -27,6 +27,7 @@ import pkg from '../package.json';
  * @property {string} requestLimit
  * @property {AppOptions.Docs} docs
  * @property {function} auth
+ * @property {AppOptions.ApiKey} apiKey
  * @property {Object.<string, function>} before
  * @property {Object.<string, function>} after
  * @property {AppOptions.Error} defaultError
@@ -50,6 +51,12 @@ import pkg from '../package.json';
  * @property {string} route
  * @property {boolean} auth
  * @property {boolean} paramsAsArray
+ */
+/**
+ * @typedef AppOptions.ApiKey
+ * @property {boolean} enabled
+ * @property {'qs'|'body'|'header'} type
+ * @property {function} validator
  */
 /**
  * @typedef RouteOptions
@@ -90,6 +97,11 @@ const DEFAULT_OPTIONS = {
             return;
         }
         next();
+    },
+    apiKey: {
+        enabled: false,
+        type: 'qs',
+        validator: (apiKey, next) => next(),
     },
     before: {
         '*': (req, res, next) => next(),
@@ -262,42 +274,48 @@ class Application {
                 const endpoint = route.routes[v];
                 this._app[route.method](endpoint.getEndpoint(), (req, res, next) => {
                     req.__endpoint = endpoint;
-                    this._checkAuth(req, res, endpoint.requiredAuth, auth, (err) => {
+                    this._checkApiKey(req, res, (err) => {
                         if (err) {
                             next(err);
                             return;
                         }
-                        this._checkArguments(endpoint.getRouteArguments(), req, res, (err) => {
-                            this._checkParams(endpoint.params, req, res, (err) => {
-                                if (err) {
-                                    next(err);
-                                    return;
-                                }
-                                this._beforeCallback(req, res, before, (err) => {
+                        this._checkAuth(req, res, endpoint.requiredAuth, auth, (err) => {
+                            if (err) {
+                                next(err);
+                                return;
+                            }
+                            this._checkArguments(endpoint.getRouteArguments(), req, res, (err) => {
+                                this._checkParams(endpoint.params, req, res, (err) => {
                                     if (err) {
                                         next(err);
                                         return;
                                     }
-                                    endpoint.callback(req, res, (err, data) => {
+                                    this._beforeCallback(req, res, before, (err) => {
                                         if (err) {
                                             next(err);
                                             return;
                                         }
-                                        if (endpoint.response) {
-                                            endpoint.response.forEach((field) => {
-                                                const { type, key } = field;
-                                                if (type.isValid(data[key])) {
-                                                    data[key] = type.cast(data[key]);
-                                                } else {
-                                                    const message = `Response on key '${key}' has invalid type. It should be ${type}`;
-                                                    if (this._options.responseStrictValidation) {
-                                                        throw new Err(message);
+                                        endpoint.callback(req, res, (err, data) => {
+                                            if (err) {
+                                                next(err);
+                                                return;
+                                            }
+                                            if (endpoint.response) {
+                                                endpoint.response.forEach((field) => {
+                                                    const { type, key } = field;
+                                                    if (type.isValid(data[key])) {
+                                                        data[key] = type.cast(data[key]);
+                                                    } else {
+                                                        const message = `Response on key '${key}' has invalid type. It should be ${type}`;
+                                                        if (this._options.responseStrictValidation) {
+                                                            throw new Err(message);
+                                                        }
+                                                        console.warn(message);
                                                     }
-                                                    console.warn(message);
-                                                }
-                                            });
-                                        }
-                                        res._sendData(data);
+                                                });
+                                            }
+                                            res._sendData(data);
+                                        });
                                     });
                                 });
                             });
@@ -372,6 +390,31 @@ class Application {
         }
         this._routes[key].addEndpoint(endpoint);
         return endpoint;
+    }
+
+    _checkApiKey(req, res, next) {
+        const { apiKey } = this._options;
+        if (!apiKey.enabled) {
+            next();
+            return;
+        }
+        let key = null;
+        switch (apiKey.type) {
+            case 'qs':
+                key = req.query.api_key;
+                break;
+            case 'body':
+                key = req.body.api_key;
+                break;
+            case 'header':
+                key = req.headers.api_key;
+                break;
+        }
+        if (!key) {
+            next(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
+            return;
+        }
+        apiKey.validator(key, next);
     }
 
     _checkAuth(req, res, requiredAuth, authMethod, cb) {
