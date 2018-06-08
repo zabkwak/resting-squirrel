@@ -105,7 +105,7 @@ $(document).ready(() => {
                 headers,
                 dataType: 'json',
                 contentType: 'application/json',
-                url,
+                url: `${url}?api_key=${API_KEY}`,
                 error: ({ responseText, status }, textStatus, error) => {
                     renderData(error, JSON.parse(responseText), status, Date.now() - start);
                 },
@@ -174,7 +174,7 @@ $(document).ready(() => {
     };
     $.ajax({
         dataType: 'json',
-        url: '/docs',
+        url: '/docs?api_key=API_KEY',
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
             $content.html('');

@@ -678,7 +678,11 @@ const m = (options = {}) => {
                     next(err);
                     return;
                 }
-                res.end(buffer.toString().replace(/\$\{name\}/g, name));
+                res.end(
+                    buffer.toString()
+                        .replace(/\$\{name\}/g, name)
+                        .replace(/\$\{apiKey\}/g, req.query.api_key)
+                );
             });
             res.sendFile(path.resolve(__dirname, '../assets/docs.html'));
         });

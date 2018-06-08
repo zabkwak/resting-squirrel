@@ -1,9 +1,12 @@
 <html>
 
 <head>
+    <script type="text/javascript">
+        const API_KEY = '${apiKey}';
+    </script>
     <script type="text/javascript" src="//code.jquery.com/jquery-latest.min.js"></script>
-    <script type="text/javascript" src="/docs.js"></script>
-    <link rel="stylesheet" type="text/css" href="/docs.css" />
+    <script type="text/javascript" src="/docs.js?api_key=${apiKey}"></script>
+    <link rel="stylesheet" type="text/css" href="/docs.css?api_key=${apiKey}" />
     <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
     <title>${name} documentation</title>
 </head>

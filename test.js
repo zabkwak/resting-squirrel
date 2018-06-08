@@ -1,6 +1,10 @@
 const RS = require('./');
 
-const app = RS.default();
+const app = RS.default({
+    apiKey: {
+        enabled: true,
+    },
+});
 
 const { Field, Param, Type } = RS;
 
