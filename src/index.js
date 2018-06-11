@@ -2,6 +2,7 @@ import express from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import Err from 'smart-error';
+import HttpError from 'http-smart-error';
 import RouteParser from 'route-parser';
 import async from 'async';
 import Type from 'runtime-type';
@@ -9,7 +10,6 @@ import path from 'path';
 import fs from 'fs';
 
 import Endpoint, { Param, Field } from './endpoint';
-import HttpError from './http-error';
 import Route from './route';
 
 import pkg from '../package.json';
