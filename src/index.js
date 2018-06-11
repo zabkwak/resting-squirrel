@@ -262,6 +262,11 @@ class Application {
         return this._registerRoute(method, version, route, { requireAuth, params, description }, callback);
     }
 
+    /**
+     * 
+     * @param {function} cb 
+     * @deprecated
+     */
     listen(cb = () => { }) {
         this.start(cb);
     }
@@ -518,6 +523,7 @@ class Application {
 
         this._app.use((req, res, next) => {
             const d = new Date();
+            req.getEndpoint = () => req.__endpoint;
             res.send204 = () => {
                 console.warn('res.send204 is deprecated. Use next callback in the route without data.');
                 this._afterCallback(null, undefined, req, res, after, (err) => {

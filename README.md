@@ -70,7 +70,7 @@ This usage will create the app with default options.
 **apiKey** Object for setting up the api key.
 - **enabled** If true api key is validated. Default: false  
 - **type** Type of the location of api key in request. One of qs, body, header. Default: qs  
-- **validator(apiKey, next)** Validator of api key.
+- **validator(apiKey, next)** Validator of api key.  
 
 **before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
 **after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
@@ -100,7 +100,7 @@ console.log(new Error("Some error", "some_code"));
 **listen(cb)** Starts listening on the port from options. DEPRECATED   
 **start(cb)** Starts listening on the port from options.  
 
-### Function
+### Functions
 **use(route, callback)** Registers express middleware. Route can be callback.  
 **get(version, route, options = {}, callback)** Registers route on the GET method. options can be callback. Callback is taken from express.  
 **post(version, route, options = {}, callback)** Registers route on the POST method. options can be callback. Callback is taken from express.  
@@ -236,3 +236,4 @@ The module creates generic documentation by default. The documentation is on the
 - timeout option
 - list of error codes in endpoint options
 - custom warning of the endpoint
+- remove callback hell in start function
