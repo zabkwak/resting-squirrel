@@ -174,7 +174,7 @@ $(document).ready(() => {
     };
     $.ajax({
         dataType: 'json',
-        url: '/docs?api_key=API_KEY',
+        url: `/docs?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
             $content.html('');
