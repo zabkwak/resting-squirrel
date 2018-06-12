@@ -290,6 +290,10 @@ class Application {
                                 return;
                             }
                             this._checkArguments(endpoint.getRouteArguments(), req, res, (err) => {
+                                if (err) {
+                                    next(err);
+                                    return;
+                                }
                                 this._checkParams(endpoint.params, req, res, (err) => {
                                     if (err) {
                                         next(err);
@@ -438,13 +442,21 @@ class Application {
      * @param {*} next 
      */
     _checkArguments(args, req, res, next) {
-        Object.keys(args).forEach((key) => {
-            const arg = args[key];
-            if (!arg.type.isValid(req.params[key])) {
-                throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+        try {
+            Object.keys(args).forEach((key) => {
+                const arg = args[key];
+                if (!arg.type.isValid(req.params[key])) {
+                    throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+                }
+                req.params[key] = arg.type.cast(req.params[key]);
+            });
+        } catch (err) {
+            if (err.code === 'ERR_INVALID_TYPE') {
+                next(err);
+                return;
             }
-            req.params[key] = arg.type.cast(req.params[key]);
-        });
+            throw err;
+        }
         next();
     }
 
@@ -463,22 +475,30 @@ class Application {
         const mergedParams = { ...req.query, ...req.body };
         const castedParams = {};
         const paramsKey = req.method === 'GET' ? 'query' : 'body';
-        params.forEach((param) => {
-            const p = param.name;
-            if (param.required) {
-                const requiredParam = req[paramsKey][p];
-                if (requiredParam === null || requiredParam === undefined) {
-                    throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
+        try {
+            params.forEach((param) => {
+                const p = param.name;
+                if (param.required) {
+                    const requiredParam = req[paramsKey][p];
+                    if (requiredParam === null || requiredParam === undefined) {
+                        throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
+                    }
+                } else if (mergedParams[p] === undefined) {
+                    return;
                 }
-            } else if (mergedParams[p] === undefined) {
+                if (!param.type.isValid(mergedParams[p])) {
+                    throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
+                } else {
+                    castedParams[p] = param.type.cast(mergedParams[p]);
+                }
+            });
+        } catch (err) {
+            if (['ERR_MISSING_PARAMETER', 'ERR_INVALID_TYPE'].indexOf(err.code) >= 0) {
+                next(err);
                 return;
             }
-            if (!param.type.isValid(mergedParams[p])) {
-                throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
-            } else {
-                castedParams[p] = param.type.cast(mergedParams[p]);
-            }
-        });
+            throw err;
+        }
         req[paramsKey] = { ...req[paramsKey], ...castedParams };
         next();
     }
