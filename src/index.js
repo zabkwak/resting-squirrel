@@ -710,7 +710,6 @@ const m = (options = {}) => {
                         .replace(/\$\{apiKey\}/g, req.query.api_key)
                 );
             });
-            res.sendFile(path.resolve(__dirname, '../assets/docs.html'));
         });
         app.get(`${docs.route}.js`, {
             requireAuth: false,
