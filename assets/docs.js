@@ -182,8 +182,12 @@ $(document).ready(() => {
             $ul = $index.find('div.list-group');
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
-                $ul.append(`<a class="list-group-item" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
+                const { deprecated } = data[endpoint];
+                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
             });
+            if (location.hash) {
+                location.href = location.hash;
+            }
         },
     });
 });

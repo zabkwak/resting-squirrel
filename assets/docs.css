@@ -15,7 +15,7 @@ body {
     border-bottom: 2px solid grey;
 }
 
-#content .endpoint.deprecated h2 {
+.list-group-item.deprecated {
     text-decoration: line-through;
 }
 
