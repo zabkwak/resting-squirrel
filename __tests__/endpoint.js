@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import Type from 'runtime-type';
 
-import Endpoint, { Param } from '../src/endpoint';
+import Endpoint, { Param, Field } from '../src/endpoint';
 
 import { ParamParser } from '../src/endpoint/param';
 
@@ -57,6 +57,18 @@ describe('Endpoint.Param', () => {
 
     it('tries to create the param with dot notation', () => {
         expect(() => Param.create('test.test')).to.throw(Error).that.has.property('code', 'ERR_NO_SHAPE');
+    });
+
+    it('creates the param from field instance', () => {
+        const field = new Field('id', Type.integer, "Identificator");
+        const param = Param.createFromField(field, true);
+        expect(param).to.have.all.keys(['key', 'name', 'required', 'type', 'description']);
+        const { name, key, required, type, description } = param;
+        expect(name).to.be.equal('id');
+        expect(key).to.be.equal('id');
+        expect(required).to.be.true;
+        expect(type).to.be.equal(Type.integer);
+        expect(description).to.be.equal('Identificator');
     });
 });
 

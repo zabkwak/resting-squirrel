@@ -15,6 +15,15 @@ class Param extends Field {
         return new this(param.name, param.required, param.type, param.description);
     }
 
+    /**
+     * 
+     * @param {Field} field 
+     * @param {boolean} required 
+     */
+    static createFromField(field, required = false) {
+        return this.create({ ...field, required });
+    }
+
     /** @type {boolean} */
     required = false;
 
