@@ -143,11 +143,11 @@ $(document).ready(() => {
                         ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
                         ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}     
                     </div>  
-                    <div>
+                    <div class="btn-group">
                         <a class="copy-link btn btn-info" href="#${id}">copy link</a>     
                         <a class="test-link btn btn-info" href="#${id}">test in console</a>
                     </div>        
-                    <p class="description rounded">${description || docs}</p>
+                    <p class="description card card-body bg-light">${description || docs}</p>
                     <h3>Arguments</h3>
                     ${formatParams(args, true)}
                     <h3>Params</h3>

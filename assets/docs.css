@@ -31,11 +31,6 @@ body {
     width: 25%;
 }
 
-#content .endpoint .description {
-    padding: 10px;
-    background: lightgray;
-}
-
 #console .badge {
     font-size: 100%;
 }

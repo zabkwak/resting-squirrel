@@ -708,6 +708,7 @@ const m = (options = {}) => {
                     buffer.toString()
                         .replace(/\$\{name\}/g, name)
                         .replace(/\$\{apiKey\}/g, req.query.api_key)
+                        .replace(/\$\{rsVersion\}/g, pkg.version)
                 );
             });
         });
