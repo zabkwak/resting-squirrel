@@ -91,13 +91,15 @@ describe('ParamParser', () => {
 describe('Endpoint', () => {
 
     it('creates the endpoint with null response', () => {
-        const endpoint = new Endpoint(0, false, [], null);
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, description, hideDocs, callback, route, deprecated } = endpoint;
+        const endpoint = new Endpoint(null, { version: 0, requireAuth: false, params: [], response: null, description: null });
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
         expect(params.length).to.be.equal(0);
+        expect(errors).to.be.an.instanceOf(Array);
+        expect(errors.length).to.be.equal(0);
         expect(response).to.be.null;
         expect(description).to.be.null;
         expect(hideDocs).to.be.false;
@@ -106,19 +108,29 @@ describe('Endpoint', () => {
     });
 
     it('creates the endpoint with params defined on the old version of the module', () => {
-        const endpoint = new Endpoint(0, false, ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'], [], 'Creates new car record', true, () => { });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, description, hideDocs, callback, route, deprecated } = endpoint;
+        const endpoint = new Endpoint(null, {
+            version: 0,
+            params: ['brand', 'type', 'dimensions', 'dimensions.width', 'dimensions.height', 'dimensions.weight'],
+            response: [],
+            description: 'Creates new car record',
+            hideDocs: true,
+            callback: () => { },
+        });
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
         expect(params.length).to.be.equal(3);
         expect(response).to.be.an.instanceOf(Array);
+        expect(response.length).to.be.equal(0);
+        expect(errors).to.be.an.instanceOf(Array);
+        expect(errors.length).to.be.equal(2);
 
         expect(description).to.be.equal('Creates new car record');
         expect(hideDocs).to.be.true;
         expect(callback).to.be.a('function');
-        expect(route).to.be.nul;
+        expect(route).to.be.null;
         expect(deprecated).to.be.false;
 
         const [brand, type, dimensions] = params;

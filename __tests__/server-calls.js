@@ -876,8 +876,8 @@ describe('Errors', () => {
 
 describe('Docs', () => {
 
-    const validateDocs = (doc, docs = null, args = [], params = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
-        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'deprecated']);
+    const validateDocs = (doc, docs = null, args = [], params = [], errors = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
+        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'errors', 'deprecated']);
         expect(doc.docs).to.be.equal(docs);
         expect(doc.docs).to.be.equal(doc.description);
         expect(doc.required_params).to.deep.equal(required_params);
@@ -895,10 +895,14 @@ describe('Docs', () => {
             o = null;
         }
         expect(doc.response).to.deep.equal(o);
-        o = {};
         // Arguments validation
+        o = {};
         args.forEach(p => o[p.name] = p);
         expect(doc.args).to.deep.equal(o);
+        // Errors validation
+        o = {};
+        errors.forEach(p => o[p.code] = p.description);
+        expect(doc.errors).to.deep.equal(o);
     }
 
     it('validates the docs data', (done) => {
@@ -930,41 +934,69 @@ describe('Docs', () => {
                 'GET /0/args/:id/defined',
             ]);
             validateDocs(data['GET /']);
-            validateDocs(data['GET /auth'], null, [], [], [], true);
-            validateDocs(data['GET /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            validateDocs(data['GET /auth'], null, [], [], [], [], true);
+            validateDocs(data['GET /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['param']);
             validateDocs(data['GET /params/type'], null, [], [
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
+            ], [
+                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ], ['param']);
+            validateDocs(data['GET /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
             ], ['param']);
-            validateDocs(data['GET /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['GET /params/cast'], null, [], [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
-            ], ['int', 'float']);
-            validateDocs(data['POST /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
+            ], [
+                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ], ['int', 'float']);
+            validateDocs(data['POST /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['param']);
             validateDocs(data['POST /params/type'], null, [], [
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
+            ], [
+                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ], ['param']);
+            validateDocs(data['POST /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
             ], ['param']);
-            validateDocs(data['POST /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], ['param']);
             validateDocs(data['POST /params/cast'], null, [], [
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
-            ], ['int', 'float']);
+            ], [
+                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ], ['int', 'float']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
-            validateDocs(data['GET /1/version'], null, [], [], [], false, [], true);
+            validateDocs(data['GET /1/version'], null, [], [], [], [], false, [], true);
             validateDocs(data['GET /2/version']);
             validateDocs(
                 data['GET /0/options'],
                 'Endpoint with options.',
                 [],
                 [{ name: 'param', description: null, key: 'param', required: true, type: 'integer', description: 'Test integer parameter.' }],
+                [
+                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ],
                 ['param'],
                 false,
                 [{ name: 'success', key: 'success', type: 'boolean', description: 'Flag if the execution of the endpoint was successful.' }],
             );
-            validateDocs(data['GET /0/options/null-response'], null, [], [], [], false, null);
+            validateDocs(data['GET /0/options/null-response'], null, [], [], [], [], false, null);
             validateDocs(data['POST /0/data-types'], null, [], [
                 { name: 'integer', description: null, key: 'integer', required: false, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: false, type: 'float' },
@@ -973,6 +1005,8 @@ describe('Docs', () => {
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
                 { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
                 { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
+            ], [
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
             ]);
             validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }]);
             validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }]);

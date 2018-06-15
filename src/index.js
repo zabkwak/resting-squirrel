@@ -9,7 +9,7 @@ import Type from 'runtime-type';
 import path from 'path';
 import fs from 'fs';
 
-import Endpoint, { Param, Field } from './endpoint';
+import Endpoint, { Param, Field, Error as ErrorField } from './endpoint';
 import Route from './route';
 
 import pkg from '../package.json';
@@ -63,6 +63,7 @@ import pkg from '../package.json';
  * @property {boolean} requireAuth
  * @property {Param[]|string[]} params
  * @property {Field[]} response
+ * @property {string[]|ErrorField[]} errors
  * @property {string} description
  * @property {boolean} hideDocs
  * @property {Field[]} args
@@ -371,6 +372,7 @@ class Application {
                     required_params: endpoint.requiredParams,
                     required_auth: endpoint.requiredAuth,
                     response: endpoint.getResponse(),
+                    errors: endpoint.getErrors(),
                     deprecated: endpoint.isDeprecated(),
                 };
             });
@@ -391,13 +393,16 @@ class Application {
             callback = options;
             options = {};
         }
-        const { requireAuth, params, response, description, hideDocs } = options;
-        const endpoint = new Endpoint(version, requireAuth, params, response, description, hideDocs, callback, this._options.validateParams);
         const key = `${method}${route}`;
         if (!this._routes[key]) {
             this._routes[key] = new Route(method, route, options.args);
         }
-        this._routes[key].addEndpoint(endpoint);
+        const endpoint = new Endpoint(this._routes[key], {
+            version,
+            ...options,
+            callback,
+            validateParams: this._options.validateParams,
+        });
         return endpoint;
     }
 

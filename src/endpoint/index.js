@@ -1,20 +1,33 @@
-import Type from 'runtime-type';
-import Error from 'smart-error';
-
 import Param, { ParamParser } from './param';
 import Field from './field';
+import Error from './error';
 
 class Endpoint {
+
+    /**
+     * @typedef Options
+     * @property {number?} version
+     * @property {boolean} requireAuth
+     * @property {Param[]|string[]} params
+     * @property {Field[]} response
+     * @property {string[]|Error[]} errors
+     * @property {string} description
+     * @property {boolean} hideDocs
+     * @property {function} callback
+     * @property {boolean} validateParams
+     */
 
     version = null;
     requiredAuth = null;
     /** @type {Param[]} */
     params = null;
+    /** @type {Field[]} */
     response = null;
+    /** @type {Error[]} */
+    errors = null;
     description = null;
     hideDocs = false;
     callback = null;
-    // TODO co to kurva je?
     route = null;
     deprecated = false;
 
@@ -34,17 +47,32 @@ class Endpoint {
         return this.description;
     }
 
-    constructor(version = null, requiredAuth = false, params = [], response = [], description = null, hideDocs = false, callback = null, validateParams = true) {
-        this.version = version;
-        this.requiredAuth = requiredAuth;
-        this.params = ParamParser.parse(params);
-        this.response = response;
-        this.description = description;
-        this.hideDocs = hideDocs;
-        this.callback = callback;
-        if (validateParams) {
+    /**
+     * 
+     * @param {*} route 
+     * @param {Options} options 
+     */
+    constructor(route, options = {}) {
+        this.version = options.version === undefined ? null : options.version;
+        this.requiredAuth = options.requireAuth || false;
+        this.params = ParamParser.parse(options.params || []);
+        this.response = options.response === undefined ? [] : options.response;
+        this.errors = (options.errors || []).map((e) => {
+            if (e instanceof Error) {
+                return e;
+            }
+            return new Error(e);
+        });
+        this.description = options.description || null;
+        this.hideDocs = options.hideDocs || false;
+        this.callback = options.callback || null;
+        if (options.validateParams) {
             this._validateParams();
         }
+        if (route) {
+            route.addEndpoint(this);
+        }
+        this._setErrors();
     }
 
     getEndpoint() {
@@ -80,6 +108,15 @@ class Endpoint {
             return {};
         }
         return this.route.args;
+    }
+
+    getErrors(array = false) {
+        if (array) {
+            return this.errors;
+        }
+        const o = {};
+        this.errors.forEach(p => o[p.code] = p.description);
+        return o;
     }
 
     isDeprecated() {
@@ -120,10 +157,21 @@ class Endpoint {
             }
         });
     }
+
+    _setErrors() {
+        if (this.params.length) {
+            this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
+        }
+        if (this.requiredParams.length) {
+            this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
+        }
+        // TODO missing_api_key
+    }
 }
 
 export {
     Endpoint as default,
     Param,
     Field,
+    Error,
 };

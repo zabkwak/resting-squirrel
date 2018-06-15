@@ -234,6 +234,6 @@ The module creates generic documentation by default. The documentation is on the
 - shape description
 - shape fields required status
 - timeout option
-- list of error codes in endpoint options
+- validation of the errors in endpoint
 - custom warning of the endpoint
 - remove callback hell in start function
