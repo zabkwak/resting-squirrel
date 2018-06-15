@@ -408,6 +408,7 @@ class Application {
             ...options,
             callback,
             validateParams: this._options.validateParams,
+            apiKeyEnabled: this._options.apiKey.enabled,
         });
         return endpoint;
     }

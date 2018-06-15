@@ -15,6 +15,7 @@ class Endpoint {
      * @property {boolean} hideDocs
      * @property {function} callback
      * @property {boolean} validateParams
+     * @property {boolean} apiKeyEnabled
      */
 
     version = null;
@@ -72,7 +73,7 @@ class Endpoint {
         if (route) {
             route.addEndpoint(this);
         }
-        this._setErrors();
+        this._setErrors(options.apiKeyEnabled);
     }
 
     getEndpoint() {
@@ -158,7 +159,10 @@ class Endpoint {
         });
     }
 
-    _setErrors() {
+    _setErrors(apiKeyEnabled = false) {
+        if (apiKeyEnabled) {
+            this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
+        }
         if (this.params.length) {
             this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
         } else if (this.route && Object.keys(this.route.args).length) {
@@ -167,7 +171,6 @@ class Endpoint {
         if (this.requiredParams.length) {
             this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
         }
-        // TODO missing_api_key
     }
 }
 
