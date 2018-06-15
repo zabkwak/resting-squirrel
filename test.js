@@ -68,4 +68,11 @@ app.get(0, '/args/:id', {
     ],
 }, (req, res, next) => next(null, req.params));
 
+app.get(0, '/field-shape', {
+    description: 'Defines response as a Field.Shape',
+    response: [
+        new Field.Shape('shape', new Field('string', Type.string))
+    ],
+});
+
 app.start();

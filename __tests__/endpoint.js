@@ -5,6 +5,20 @@ import Endpoint, { Param, Field } from '../src/endpoint';
 
 import { ParamParser } from '../src/endpoint/param';
 
+describe('Endpoind.Field', () => {
+
+    it('checks the Field.Shape', () => {
+        const shape = new Field.Shape('shape', new Field('string', Type.string), new Field('integer', Type.integer));
+        expect(shape).to.have.all.keys(['name', 'fields', 'type']);
+        const { name, fields, type } = shape;
+        expect(name).to.be.equal('shape');
+        expect(fields).to.be.an.instanceOf(Array);
+        expect(fields.length).to.be.equal(2);
+        expect(type).to.be.an.instanceOf(Type.Type);
+        expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+    });
+});
+
 describe('Endpoint.Param', () => {
 
     it('checks the default values', () => {

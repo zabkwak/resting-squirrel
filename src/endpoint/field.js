@@ -1,7 +1,40 @@
 import Type from 'runtime-type';
 import Error from 'smart-error';
 
+class Shape {
+
+    name = null;
+    /** @type {Field[]} */
+    fields = [];
+    /** @type {Type.Type} */
+    type = Type.any;
+
+    /**
+     * 
+     * @param {Field[]} fields 
+     */
+    constructor(name, ...fields) {
+        this.name = name;
+        this.fields = fields;
+        const shape = {};
+        this.fields.forEach((field) => {
+            shape[field.name] = field.type;
+        });
+        this.type = Type.shape(shape);
+    }
+
+    toJSON() {
+        const o = {};
+        this.fields.forEach((field) => {
+            o[field.name] = field;
+        });
+        return o;
+    }
+}
+
 export default class Field {
+
+    static Shape = Shape;
 
     static create(param) {
         if (typeof param === 'string') {
