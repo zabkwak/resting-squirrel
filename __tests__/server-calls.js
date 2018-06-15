@@ -1009,10 +1009,10 @@ describe('Docs', () => {
                     { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
                 ]);
             validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }], [], [
-                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
             ]);
             validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }], [], [
-                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
             ]);
             expect(data['GET /docs']).to.be.undefined;
             expect(data['GET /docs.html']).to.be.undefined;

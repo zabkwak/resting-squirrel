@@ -131,7 +131,23 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
-    const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated, args }) => {
+    const formatErrors = (errors) => {
+        if (!errors) {
+            return '';
+        }
+        const keys = Object.keys(errors);
+        if (!keys.length) {
+            return '';
+        }
+        $table = $(`<table class="table"><thead><tr><th>Code</th><th>Description</th><th></th><th></th></tr></thead><tbody></tbody></table>`);
+        $tbody = $table.find('tbody');
+        keys.forEach((code) => {
+            const description = errors[code];
+            $tbody.append(`<tr><td>${code}</td><td>${description}</td><td></td><td></td></tr>`);
+        });
+        return $table.prop('outerHTML');
+    };
+    const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated, args, errors }) => {
         const id = getEndpointId(endpoint);
         const { origin, pathname, hash } = location;
         const link = `${origin}${pathname}#${id}`;
@@ -154,6 +170,8 @@ $(document).ready(() => {
                     ${formatParams(params)}
                     <h3>Response</h3>
                     ${formatParams(response, true)}
+                    <h3>Errors</h3>
+                    ${formatErrors(errors)}
                 </div>
             </div>
         `);

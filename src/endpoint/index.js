@@ -160,16 +160,20 @@ class Endpoint {
     }
 
     _setErrors(apiKeyEnabled = false) {
-        if (apiKeyEnabled) {
-            this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
-        }
-        if (this.params.length) {
+        const params = Boolean(this.params.length);
+        const args = this.route && Object.keys(this.route.args).length;
+        if (args && params) {
+            this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters or arguments has invalid type.'));
+        } else if (params) {
             this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
-        } else if (this.route && Object.keys(this.route.args).length) {
-            this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
+        } else if (args) {
+            this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the arguments has invalid type.'));
         }
         if (this.requiredParams.length) {
             this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
+        }
+        if (apiKeyEnabled) {
+            this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
         }
     }
 }
