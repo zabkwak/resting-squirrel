@@ -10,7 +10,7 @@ $ npm install resting-squirrel
 
 ## Usage
 ```javascript
-import rs, { Param, Type, Field } from 'resting-squirrel';
+import rs, { Param, Type, Field, ErrorField } from 'resting-squirrel';
 
 const app = rs();
 
@@ -27,9 +27,13 @@ app.put(0, '/user', false, [new Param('name', true, Type.string, 'Name of the us
 app.get('/documented', false, [], 'I am documented endpoint.', (req, res, next) => next(null, { success: true }));
 
 // Complex definition
-app.post(0, '/user', {
+app.post(0, '/user/:id', {
     // Endpoint requires authorization
     requireAuth: true,
+    // Route argument "id" must be an integer
+    args: [
+        new Field('id', Type.integer, 'Identificator of the user to update'),
+    ],
     // Endpoint accepts parameter name which has to be a string
     params: [
         new Param('name', false, Type.string, 'Name of the user'),
@@ -41,7 +45,10 @@ app.post(0, '/user', {
     ],
     // Description for the documentation
     description: 'Updates the user informations',
-}, (req, res, next) => User.update(req.user_id, req.body, next));
+    errors: [
+        new ErrorField('ERR_INVALID_USER', 'Returned if request id of the user does not exist.'),
+    ],
+}, (req, res, next) => User.update(req.params.id, req.body, next));
 
 app.start();
 ```
@@ -235,6 +242,5 @@ The module creates generic documentation by default. The documentation is on the
 - shape description
 - shape fields required status
 - timeout option
-- api key missing error in the errors list by default if the key is required
 - custom warning of the endpoint
 - remove callback hell in start function

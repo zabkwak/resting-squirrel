@@ -750,4 +750,5 @@ export {
     Param,
     Type,
     Field,
+    ErrorField,
 };
