@@ -1006,10 +1006,14 @@ describe('Docs', () => {
                 { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
                 { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
             ], [
+                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+                ]);
+            validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }], [], [
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
             ]);
-            validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }]);
-            validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }]);
+            validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }], [], [
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ]);
             expect(data['GET /docs']).to.be.undefined;
             expect(data['GET /docs.html']).to.be.undefined;
             expect(data['GET /docs.js']).to.be.undefined;

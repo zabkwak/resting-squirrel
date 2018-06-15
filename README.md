@@ -118,6 +118,7 @@ All http methods are using the same function for handling data. First parameter 
 **args** List of `Field` instances to define endpoint arguments. If it's not defined all arguments defined in the route are of `any` type.  
 **params** List of `Param` instances to define endpoint parameters.  
 **response** List of `Field` instances to define endpoint response fields.  
+**errors** List of `ErrorField` instances to define errors which could be returned during the execution.  
 **hideDocs** If true the endpoint is hidden from the documentation.
 
 #### Arguments
@@ -234,6 +235,6 @@ The module creates generic documentation by default. The documentation is on the
 - shape description
 - shape fields required status
 - timeout option
-- validation of the errors in endpoint
+- api key missing error in the errors list by default if the key is required
 - custom warning of the endpoint
 - remove callback hell in start function

@@ -161,6 +161,8 @@ class Endpoint {
     _setErrors() {
         if (this.params.length) {
             this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
+        } else if (this.route && Object.keys(this.route.args).length) {
+            this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
         }
         if (this.requiredParams.length) {
             this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));

@@ -345,6 +345,12 @@ class Application {
                     console.error(err.stack);
                 }
             }
+            if (req.__endpoint) {
+                const errors = Object.keys(req.__endpoint.getErrors());
+                if (!errors.includes(err.code)) {
+                    console.warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
+                }
+            }
             res.status(err.statusCode);
             delete err.statusCode;
             res._sendData(err.toJSON(), errorKey);
