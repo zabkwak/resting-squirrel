@@ -59,8 +59,8 @@ describe('Endpoint lifecycle', function () {
 
     app.get('/', (req, res, next) => next(false, { success: true }));
     app.get('/auth', true, (req, res, next) => next(false, { success: true }));
-    app.get('/204', (req, res, next) => res.send204());
-    app.get('/204/auth', true, (req, res, next) => res.send204());
+    app.get('/204', (req, res, next) => next());
+    app.get('/204/auth', true, (req, res, next) => next());
     app.get('/param/:param', true, (req, res, next) => next(false, { success: true }));
     app.get('/param/:param/param', true, (req, res, next) => next(false, { success: true }));
     app.get('/model/list', true, (req, res, next) => next(false, { success: true }));

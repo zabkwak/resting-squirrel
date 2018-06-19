@@ -1,6 +1,7 @@
 const RS = require('./');
 
 const app = RS.default({
+    name: 'RS DEV API',
     apiKey: {
         enabled: true,
     },
