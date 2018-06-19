@@ -8,6 +8,11 @@ $(document).ready(() => {
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
+            <div>
+                <button type="button" class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <h2>${endpoint}</h2>
             <form id="console-form" action="/" method="post">
                 <h3>Headers</h3>
@@ -73,6 +78,11 @@ $(document).ready(() => {
                 $header.remove();
             });
             $headers.append($header);
+        });
+
+        $consoleContent.find('button.close').click((e) => {
+            e.preventDefault();
+            $console.hide();
         });
 
         $('#console-form').submit((e) => {
@@ -199,6 +209,7 @@ $(document).ready(() => {
         $docs.find('a.test-link').click((e) => {
             e.preventDefault();
             testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
+            $console.show();
         });
         return $docs;
     };
@@ -207,6 +218,7 @@ $(document).ready(() => {
         url: `/docs?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
+            // $console.hide();
             $content.html(`
                 <h2>Description</h2>
                 <p>
