@@ -1,5 +1,18 @@
+html {
+    font-size: 0.9rem;
+}
+
 body {
     overflow: hidden;
+}
+
+code {
+    font-size: 100%!important;
+}
+
+#content-wrapper {
+    padding: 0;
+    height: 88%;
 }
 
 #index, #content, #console {
@@ -7,9 +20,7 @@ body {
     padding: 10px;
 }
 
-#content {
-    padding: 10px;
-}
+#content {}
 
 #content .endpoint h2 {
     border-bottom: 2px solid grey;

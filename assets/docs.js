@@ -75,7 +75,9 @@ $(document).ready(() => {
 
         $('#console-form').submit((e) => {
             e.preventDefault();
-            $response.html('Processing');
+            $response.html(`<div class="text-center">
+                <img src="//cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif" alt="loading" />
+            </div>`);
             const $form = $(e.target);
             const args = {};
             const data = {};
@@ -127,7 +129,14 @@ $(document).ready(() => {
         $tbody = $table.find('tbody');
         keys.forEach((key) => {
             const { description, type, required } = params[key];
-            $tbody.append(`<tr><td>${key}</td><td>${type}</td><td>${description}</td><td>${response ? '' : required}</td></tr>`);
+            $tbody.append(`
+            <tr>
+                <td>${key}</td>
+                <td>${type}</td>
+                <td>${description}</td>
+                <td>${response ? '' : (required ? '<i class="fa fa-check-circle"></i>' : '<i class="fa fa-times-circle"></i>')}</td>
+            </tr>
+            `);
         });
         return $table.prop('outerHTML');
     };
@@ -153,7 +162,7 @@ $(document).ready(() => {
         const link = `${origin}${pathname}#${id}`;
         const $docs = $(`
             <div id='${id}' class="endpoint${deprecated ? ' deprecated' : ''}">
-                <h2>${endpoint}</h2>
+                <h3>${endpoint}</h3>
                 <div class="docs">
                     <div>
                         ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
@@ -164,13 +173,13 @@ $(document).ready(() => {
                         <a class="test-link btn btn-info" href="#${id}">test in console</a>
                     </div>        
                     <p class="description card card-body bg-light">${description || docs}</p>
-                    <h3>Arguments</h3>
+                    <h4>Arguments</h4>
                     ${formatParams(args, true)}
-                    <h3>Params</h3>
+                    <h4>Params</h4>
                     ${formatParams(params)}
-                    <h3>Response</h3>
+                    <h4>Response</h4>
                     ${formatParams(response, true)}
-                    <h3>Errors</h3>
+                    <h4>Errors</h4>
                     ${formatErrors(errors)}
                 </div>
             </div>
@@ -195,7 +204,38 @@ $(document).ready(() => {
         url: `/docs?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
-            $content.html('');
+            $content.html(`
+                <h2>Description</h2>
+                <p>
+                    REST-like API with <code>JSON</code> input/output. 
+                </p>
+                <h3>Input</h3>
+                <p>
+                    HTTP methods <code>POST</code>, <code>PUT</code> and <code>DELETE</code> are using JSON body as input parameters. 
+                    So header <code>Content-Type: application/json</code> is required.<br />
+                    <code>GET</code> method is using query string for input parameters.
+                </p>
+                <h3>Output</h3>
+                <p>
+                    The API is returning data in <code>JSON</code> string with <code>Content-Type: application/json</code> header.<br />
+                    The response contains <code>${DATA_KEY}</code> key with data object as specified in endpoint documentation under the Response block.<br />
+                    Or the <code>${ERROR_KEY}</code> key if some error occures in the request process. 
+                    The <code>${ERROR_KEY}</code> contains <code>message</code> and <code>code</code> fields where the information about the error are stored. 
+                    The error codes which can the endpoint return are in endpoint documentation under the Errors block.
+                    ${META ? '<br />The response contains a <code>_meta</code> key with meta information about the request.' : ''}
+                </p>
+                <h4>204 response</h4>
+                <p>
+                    Some of endpoints can return an empty response (HTTP code 204). The endpoint documentation under the Response block is empty in this case.
+                </p>
+                ${API_KEY && API_KEY !== 'undefined' ? '<h3>Api key</h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
+                <h3>Reserved GET parameters</h3>
+                <h4>nometa</h4>
+                <p>Hides meta data from the response.</p>
+                <h4>pretty</h4>
+                <p>Prints the response for human reading.</p>
+                <h2>Endpoints</h2>
+            `);
             $index.html('<div class="list-group list-group-flush"></div>');
             $ul = $index.find('div.list-group');
             Object.keys(data).forEach((endpoint) => {

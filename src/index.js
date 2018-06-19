@@ -716,12 +716,20 @@ const m = (options = {}) => {
                     next(err);
                     return;
                 }
-                res.end(
-                    buffer.toString()
-                        .replace(/\$\{name\}/g, name)
-                        .replace(/\$\{apiKey\}/g, req.query.api_key)
-                        .replace(/\$\{rsVersion\}/g, pkg.version)
-                );
+                let html = buffer.toString();
+                const vars = {
+                    name,
+                    apiKey: app._options.apiKey.enabled ? req.query.api_key : void 0,
+                    rsVersion: pkg.version,
+                    dataKey: app._options.dataKey,
+                    errorKey: app._options.errorKey,
+                    meta: app._options.meta.enabled,
+                };
+                Object.keys(vars).forEach((key) => {
+                    const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+                    html = html.replace(r, vars[key]);
+                });
+                res.end(html);
             });
         });
         app.get(`${docs.route}.js`, {

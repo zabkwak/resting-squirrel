@@ -244,3 +244,7 @@ The module creates generic documentation by default. The documentation is on the
 - timeout option
 - custom warning of the endpoint
 - remove callback hell in start function
+- remove POST api key support
+- remove auth option in the docs
+- filter endpoints by api key
+- auth as object with function and description -> the description will be used in documentation.
