@@ -2,6 +2,8 @@ $(document).ready(() => {
     const $content = $('#content');
     const $index = $('#index');
     const $console = $('#console');
+    const { protocol, host } = location;
+    const baseUrl = `${protocol}//${host}`;
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
@@ -169,8 +171,9 @@ $(document).ready(() => {
                         ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}     
                     </div>  
                     <div class="btn-group">
-                        <a class="copy-link btn btn-info" href="#${id}">copy link</a>     
-                        <a class="test-link btn btn-info" href="#${id}">test in console</a>
+                        <a class="copy-link btn btn-outline-info" href="${link}">copy documentation link</a>     
+                        <a class="copy-link btn btn-outline-info" href="${baseUrl}${endpoint.split(' ')[1]}">copy endpoint link</a>   
+                        <a class="test-link btn btn-outline-info" href="#${id}">test in console</a>
                     </div>        
                     <p class="description card card-body bg-light">${description || docs}</p>
                     <h4>Arguments</h4>
@@ -187,7 +190,7 @@ $(document).ready(() => {
         const $docsContent = $docs.find('.docs');
         $docs.find('a.copy-link').click((e) => {
             e.preventDefault();
-            const $link = $(`<input class="link" type="text" value="${link}" />`);
+            const $link = $(`<input class="link" type="text" value="${e.target.href}" />`);
             $docs.append($link);
             $link[0].select();
             document.execCommand('copy');
@@ -209,6 +212,9 @@ $(document).ready(() => {
                 <p>
                     REST-like API with <code>JSON</code> input/output. 
                 </p>
+                <p>
+                    The API is called as an http request on <code>${baseUrl}/[endpoint]</code> with required parameters.
+                </p>
                 <h3>Input</h3>
                 <p>
                     HTTP methods <code>POST</code>, <code>PUT</code> and <code>DELETE</code> are using JSON body as input parameters. 
@@ -221,7 +227,8 @@ $(document).ready(() => {
                     The response contains <code>${DATA_KEY}</code> key with data object as specified in endpoint documentation under the Response block.<br />
                     Or the <code>${ERROR_KEY}</code> key if some error occures in the request process. 
                     The <code>${ERROR_KEY}</code> contains <code>message</code> and <code>code</code> fields where the information about the error are stored. 
-                    The error codes which can the endpoint return are in endpoint documentation under the Errors block.
+                    The error codes which can the endpoint return are in endpoint documentation under the Errors block.<br />
+                    If the endpoint is deprecated the response contains a deprecated info in <code>warning</code> key.
                     ${META ? '<br />The response contains a <code>_meta</code> key with meta information about the request.' : ''}
                 </p>
                 <h4>204 response</h4>

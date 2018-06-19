@@ -558,14 +558,7 @@ class Application {
             req.getEndpoint = () => req.__endpoint;
             res.send204 = () => {
                 console.warn('res.send204 is deprecated. Use next callback in the route without data.');
-                this._afterCallback(null, undefined, req, res, after, (err) => {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-                    res.status(204);
-                    res._end();
-                });
+                res._sendData();
             };
             res.send404 = (message = 'Page not found', code = 'page_not_found') => {
                 res.sendError(HttpError.create(404, message, code));
