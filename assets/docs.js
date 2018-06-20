@@ -218,7 +218,6 @@ $(document).ready(() => {
         url: `/docs?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
-            // $console.hide();
             $content.html(`
                 <h2>Description</h2>
                 <p>

@@ -5,6 +5,7 @@ const app = RS.default({
     apiKey: {
         enabled: true,
     },
+    logStack: false,
 });
 
 const { Field, Param, Type } = RS;
