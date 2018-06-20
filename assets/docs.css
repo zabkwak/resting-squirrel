@@ -10,9 +10,26 @@ code {
     font-size: 100%!important;
 }
 
+footer, header {
+    overflow: hidden;
+    height: 5%;
+    padding: 10px;
+}
+
+#app {
+    overflow: hidden;
+    height: 100%;
+}
+
+#container {
+    padding: 0;
+    overflow: hidden;
+    height: 90%;
+}
+
 #content-wrapper {
     padding: 0;
-    height: 88%;
+    /*height: 88%;*/
     display: flex;
 }
 
@@ -33,7 +50,7 @@ code {
 }
 
 #console {
-    flex-basis: 30%;
+    flex-basis: 40%;
     display: none;
 }
 

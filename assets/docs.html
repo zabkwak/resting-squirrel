@@ -19,23 +19,26 @@
 </head>
 
 <body>
-    <div id="container" class="container-fluid">
-        <h1>${name} documentation</h1>
-        <div id="content-wrapper" class="container-fluid float-left h-90">
-            <div id="index" class="float-left h-100"></div>
-            <div id="content" class="float-left h-100">
-                <div class="text-center">
-                    <img src="//cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif" alt="loading" />
+    <div id="app">
+        <header>
+            <h1>${name} documentation</h1>
+        </header>
+        <div id="container" class="container-fluid">
+            <div id="content-wrapper" class="container-fluid float-left">
+                <div id="index" class="float-left h-100"></div>
+                <div id="content" class="float-left h-100">
+                    <div class="text-center">
+                        <img src="//cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif" alt="loading" />
+                    </div>
                 </div>
+                <div id="console" class="float-left h-100"></div>
             </div>
-            <div id="console" class="float-left h-100"></div>
         </div>
-        <footer>
+        <footer class="bg-light">
             <p>
-                The documentation is automatically generetad based on the module app setup. There can be differences between the documented informations and the final
-                result. In that case please contact the API developer if needed.
-                <br />
-                Powered by
+                The documentation is automatically generetad based on the module app setup. There can be differences between the documented
+                informations and the final result. In that case please contact the API developer if needed.
+                <br /> Powered by
                 <a href="https://www.npmjs.com/package/resting-squirrel/" target="_blank">Resting Squirrel</a> v${rsVersion}. Documentation is using
                 <a href="https://jquery.com/" target="_blank">jQuery</a> and
                 <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> with
