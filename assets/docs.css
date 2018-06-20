@@ -12,8 +12,8 @@ code {
 
 footer, header {
     overflow: hidden;
-    height: 5%;
     padding: 10px;
+    height: 5%;
 }
 
 #app {
