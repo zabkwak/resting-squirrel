@@ -70,7 +70,7 @@ This usage will create the app with default options.
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
-- **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
+- **auth** If true documentation request must be authorized with *options.auth* function. Default: false DEPRECATED Using api key is preffered option.  
 - **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  

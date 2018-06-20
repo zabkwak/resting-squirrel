@@ -51,7 +51,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @typedef AppOptions.Docs
  * @property {boolean} enabled
  * @property {string} route
- * @property {boolean} auth
+ * @property {boolean} auth DEPRECATED
  * @property {boolean} paramsAsArray
  */
 /**
@@ -699,13 +699,18 @@ const m = (options = {}) => {
     const app = new Application(options);
     const { docs, name } = app._options;
     if (docs.enabled) {
+        let requireAuth = false;
+        if (docs.auth) {
+            console.warn('Using auth on docs is deprecated. Use api key and its validation instead.');
+            requireAuth = true;
+        }
         app.get(docs.route, {
-            requireAuth: docs.auth,
+            requireAuth,
             description: 'Documentation of this API.',
             hideDocs: true,
         }, (req, res, next) => next(null, app.docs()));
         app.get(`${docs.route}.html`, {
-            requireAuth: docs.auth,
+            requireAuth,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/html; charset=utf-8');
@@ -731,14 +736,12 @@ const m = (options = {}) => {
             });
         });
         app.get(`${docs.route}.js`, {
-            requireAuth: false,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/javascript; charset=utf-8');
             res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
         });
         app.get(`${docs.route}.css`, {
-            requireAuth: false,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/css; charset=utf-8');
