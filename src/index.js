@@ -14,6 +14,8 @@ import Route from './route';
 
 import pkg from '../package.json';
 
+const APP_PACKAGE = require(path.resolve('./package.json'));
+
 /**
  * @typedef AppOptions
  * @property {number} port
@@ -622,6 +624,9 @@ class Application {
                                 body,
                                 query: req.query,
                                 headers: req.headers,
+                            },
+                            app: {
+                                version: APP_PACKAGE.version,
                             },
                         };
                         if (typeof res.__meta === 'object') {
