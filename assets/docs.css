@@ -104,3 +104,11 @@ footer p {
 .w-60 {
     width: 60%;
 }
+
+.remove {
+    color: red;
+}
+
+a i.fa {
+    line-height: 34px;
+}

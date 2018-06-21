@@ -18,7 +18,7 @@ $(document).ready(() => {
                 <h3>Headers</h3>
                 <div>
                     <div class="headers"></div>
-                    <a href="#" class="btn btn-link btn-sm add">Add header</a>
+                    <a href="#" class="btn btn-link btn-sm add header">Add header</a>
                 </div>
                 <h3>Arguments</h3>
                 <div class="args">
@@ -34,13 +34,34 @@ $(document).ready(() => {
                 <h3>Params</h3>
                 <div class="params">
                     ${Object.keys(params).map((key) => {
-                const { description, type, required } = params[key];
-                return `
-                            <p class="form-group">
-                                <input id="${key}" class="required form-control" type="text" name="${key}" placeholder="${key} (${type})" />
+                        const { description, type, required, shape, shape_array } = params[key];
+                        if (shape) {
+                            return '<h3>shape</h3>';
+                        }
+                        if (shape_array) {
+                            return '<h3>shape array</h3>';
+                        }
+                        if (type && type.lastIndexOf('[]') === type.length - 2) {
+                            const elementType = type.substr(0, type.length - 2);
+                            return `
+                                <div class="array-wrapper" id="${key}" data-type="${elementType}">
+                                    <strong>${key}</strong>
+                                    <p class="form-group row">
+                                        <label for="${key}-0" class="col-sm-3 col-form-label">element</label>
+                                        <input id="${key}-0" class="col-sm-7 form-control array" type="text" name="${key}[]" placeholder="${elementType.replace(/"/g, '&quot;')}" />
+                                    </p>
+                                    <a href="#" class="btn btn-link btn-sm add element">Add element</a>
+                                </div>
+
+                            `;
+                        }
+                        return `
+                            <p class="form-group row">
+                                <label for="${key}" class="col-sm-3 col-form-label">${key}</label>
+                                <input id="${key}" class="col-sm-7 form-control" type="text" name="${key}" placeholder="${type.replace(/"/g, '&quot;')}" />
                             </p>
                         `;
-            }).join('')}
+                    }).join('')}
                 </div>
                 <p>
                     <input type="submit" value="Send" class="btn btn-primary" />
@@ -58,13 +79,13 @@ $(document).ready(() => {
         const renderData = (error, data, status, took) => {
             $response.html(`
                 <h4 class="badge badge-${error ? 'danger' : 'success'}">${error ? 'Error' : 'Success'} (${status}${error ? ` - ${error}` : ''})</h4>
-                ${data.warning ? `<span class="badge badge-warning">${data.warning}</span>` : ''}
+                ${data && data.warning ? `<span class="badge badge-warning">${data.warning}</span>` : ''}
                 <strong>Took: ${took} ms</strong>
                 <pre><code>${JSON.stringify(data, null, 4) || ''}</code></pre>
             `);
         };
 
-        $console.find('#console-form a.add').click((e) => {
+        $console.find('#console-form a.add.header').click((e) => {
             e.preventDefault();
             const $header = $(`
                 <div class="form-group mb-2 form-inline">
@@ -78,6 +99,26 @@ $(document).ready(() => {
                 $header.remove();
             });
             $headers.append($header);
+        });
+
+        $console.find('#console-form a.add.element').click((e) => {
+            e.preventDefault();
+            const $parent = $(e.target.parentNode);
+            const key = e.target.parentNode.id;
+            const $this = $(e.target);
+            const type = $parent.attr('data-type');
+            const $el = $(`
+                <p class="form-group row">
+                    <label for="${key}-1" class="col-sm-3 col-form-label">element</label>
+                    <input id="${key}-1" class="col-sm-7 form-control array" type="text" name="${key}[]" placeholder="${type.replace(/"/g, '&quot;')}" />
+                    <a href="#" class="col-sm-1 remove"><i class="fa fa-times-circle"></i></a>
+                </p>
+            `);
+            $el.find('a.remove').click((e) => {
+                e.preventDefault();
+                $el.remove();
+            });
+            $el.insertBefore($this);
         });
 
         $consoleContent.find('button.close').click((e) => {
@@ -94,14 +135,34 @@ $(document).ready(() => {
             const args = {};
             const data = {};
             const headers = { 'x-agent': 'Docs Console' };
+            // Arguments
             $form.find('.args input[type="text"]').each((index, input) => {
                 const { name, value } = input;
                 args[name] = value || void 0;
             });
+            // Params
             $form.find('.params input[type="text"]').each((index, input) => {
                 const { name, value } = input;
-                data[name] = value || void 0;
+                if (!value) {
+                    return;
+                }
+                let val = value;
+                try {
+                    val = JSON.parse(val);
+                } catch (e) {
+
+                }
+                if (input.classList.contains('array')) {
+                    const n = name.substr(0, name.length - 2);
+                    if (!data[n]) {
+                        data[n] = [];
+                    }
+                    data[n].push(val);
+                    return;
+                }
+                data[name] = val;
             });
+            // Headers
             $form.find('.headers div.form-group').each((index, group) => {
                 const $group = $(group);
                 const name = $group.find('input[name="name"]').val();

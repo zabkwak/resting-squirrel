@@ -102,7 +102,7 @@ app.post(0, '/param-shape', {
 }, (req, res, next) => next());
 
 app.post(1, '/param-shape', {
-    description: 'Defines params as a Shape',
+    description: 'Defines params as a Shape.',
     params: [
         new Param.Shape(
             'shape',
@@ -114,6 +114,14 @@ app.post(1, '/param-shape', {
         ),
         new Param.ShapeArray('shape_array', true, 'Array of shapes defined as Field.ShapeArray.', new Param('string', false, Type.string, 'String field as part of the shape.')),
     
+    ],
+    response: null,
+}, (req, res, next) => next());
+
+app.post(0, '/param-array', {
+    description: 'Defines params as a array.',
+    params: [
+        new Param('array', true, Type.arrayOf(Type.integer), 'List of numbers'),
     ],
     response: null,
 }, (req, res, next) => next());

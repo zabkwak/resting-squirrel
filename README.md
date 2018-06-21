@@ -250,6 +250,7 @@ The module creates generic documentation by default. The documentation is on the
 - shape description in placeholder in doc console
 - empty array of required params is passing the type params checking
 - doc console shape fields
+- Field.Shape & Field.ShapeArray (& Param equivivalents) to the readme
 ### v3
 - remove auth option in the docs
 - remove POST api key support
