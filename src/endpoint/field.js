@@ -36,6 +36,7 @@ class Shape {
             name: this.name,
             description: this.description,
             shape: {},
+            type: this.type.toString(),
         };
         this.fields.forEach((field) => {
             o.shape[field.name] = field;
@@ -76,6 +77,7 @@ class ShapeArray {
             name: this.name,
             description: this.description,
             shape_array: this.shape.toJSON().shape,
+            type: this.type.toString(),
         }; 
     }
 }

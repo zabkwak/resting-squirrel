@@ -20,7 +20,7 @@ describe('Endpoind.Field', () => {
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
             const json = shape.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape',
                 description: null,
@@ -38,6 +38,7 @@ describe('Endpoind.Field', () => {
                         description: null,
                     },
                 },
+                type: shape.type.toString(),
             });
         });
 
@@ -52,7 +53,7 @@ describe('Endpoind.Field', () => {
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
             const json = shape.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape',
                 description: 'Description',
@@ -70,6 +71,7 @@ describe('Endpoind.Field', () => {
                         description: null,
                     },
                 },
+                type: shape.type.toString(),
             });
         });
     });
@@ -85,7 +87,7 @@ describe('Endpoind.Field', () => {
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
             const json = shapeArray.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape_array']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape-array',
                 description: null,
@@ -103,6 +105,7 @@ describe('Endpoind.Field', () => {
                         description: null,
                     },
                 },
+                type: shapeArray.type.toString(),
             });
         });
 
@@ -116,7 +119,7 @@ describe('Endpoind.Field', () => {
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
             const json = shapeArray.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape_array']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape-array',
                 description: 'Description',
@@ -134,6 +137,7 @@ describe('Endpoind.Field', () => {
                         description: null,
                     },
                 },
+                type: shapeArray.type.toString(),
             });
         });
     });
@@ -220,7 +224,7 @@ describe('Endpoint.Param', () => {
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
             const json = shape.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape', 'required']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape', 'required', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape',
                 description: 'Description',
@@ -241,6 +245,7 @@ describe('Endpoint.Param', () => {
                         required: true,
                     },
                 },
+                type: shape.type.toString(),
             });
         });
     });
@@ -258,7 +263,7 @@ describe('Endpoint.Param', () => {
             expect(required).to.be.true;
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
             const json = shapeArray.toJSON();
-            expect(json).to.have.all.keys(['name', 'description', 'shape_array', 'required']);
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array', 'required', 'type']);
             expect(json).to.deep.equal({
                 name: 'shape-array',
                 description: 'Description',
@@ -279,6 +284,7 @@ describe('Endpoint.Param', () => {
                         required: true,
                     },
                 },
+                type: shapeArray.type.toString(),
             });
         });
     });

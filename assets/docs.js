@@ -36,10 +36,10 @@ $(document).ready(() => {
                     ${Object.keys(params).map((key) => {
                         const { description, type, required, shape, shape_array } = params[key];
                         if (shape) {
-                            return '<h3>shape</h3>';
+                            // TODO
                         }
                         if (shape_array) {
-                            return '<h3>shape array</h3>';
+                            // TODO
                         }
                         if (type && type.lastIndexOf('[]') === type.length - 2) {
                             const elementType = type.substr(0, type.length - 2);
@@ -147,11 +147,11 @@ $(document).ready(() => {
                     return;
                 }
                 let val = value;
+                // Try decode value as json string to JS Object
                 try {
                     val = JSON.parse(val);
-                } catch (e) {
-
-                }
+                } catch (e) { }
+                // If the input is array element add its value to the array field
                 if (input.classList.contains('array')) {
                     const n = name.substr(0, name.length - 2);
                     if (!data[n]) {
