@@ -92,4 +92,30 @@ app.get(1, '/response-shape', {
     ],
 }, (req, res, next) => next(null, { shape: { string: 'test', integer: 5, shape: { string: 'string' } }, shape_array: [{ string: 'string' }] }));
 
+app.post(0, '/param-shape', {
+    description: 'Defines params as a Shape',
+    params: [
+        new Param('shape', true, Type.shape({ string: Type.string }), 'Field defined as Type.shape.'),
+        new Param('shape_array', true, Type.arrayOf(Type.shape({ string: Type.string })), 'Array of shapes.'),
+    ],
+    response: null,
+}, (req, res, next) => next());
+
+app.post(1, '/param-shape', {
+    description: 'Defines params as a Shape',
+    params: [
+        new Param.Shape(
+            'shape',
+            true,
+            'Field defined as Field.Shape.',
+            new Param('string', true, Type.string, 'String field as part of the shape.'),
+            new Field('integer', Type.integer, 'Integer field as part of the shape.'),
+            new Param.Shape('shape', true, 'Nested shape', new Field('string', Type.string, 'String field as part of the nested shape.')),
+        ),
+        new Param.ShapeArray('shape_array', true, 'Array of shapes defined as Field.ShapeArray.', new Param('string', false, Type.string, 'String field as part of the shape.')),
+    
+    ],
+    response: null,
+}, (req, res, next) => next());
+
 app.start();

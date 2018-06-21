@@ -112,6 +112,7 @@ describe('Endpoind.Field', () => {
             const { name, description, type, shape } = shapeArray;
             expect(name).to.be.equal('shape-array');
             expect(description).to.be.equal('Description');
+            expect(shape).to.be.an.instanceOf(Field.Shape);
             expect(type).to.be.an.instanceOf(Type.Type);
             expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
             const json = shapeArray.toJSON();
@@ -203,6 +204,83 @@ describe('Endpoint.Param', () => {
         expect(required).to.be.true;
         expect(type).to.be.equal(Type.integer);
         expect(description).to.be.equal('Identificator');
+    });
+
+    describe('.Shape', () => {
+
+        it('checks the Param.Shape with a description', () => {
+            const shape = new Param.Shape('shape', true, 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+            expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description', 'required']);
+            const { name, fields, type, description, required } = shape;
+            expect(name).to.be.equal('shape');
+            expect(description).to.be.equal('Description');
+            expect(required).to.be.true;
+            expect(fields).to.be.an.instanceOf(Array);
+            expect(fields.length).to.be.equal(2);
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+            const json = shape.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape', 'required']);
+            expect(json).to.deep.equal({
+                name: 'shape',
+                description: 'Description',
+                required: true,
+                shape: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: 'String field in the shape.',
+                        required: true,
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                        required: true,
+                    },
+                },
+            });
+        });
+    });
+
+    describe('.ShapeArray', () => {
+
+        it('checks the Param.ShapeArray with a description', () => {
+            const shapeArray = new Param.ShapeArray('shape-array', true, 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+            expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape', 'required']);
+            const { name, description, type, shape, required } = shapeArray;
+            expect(name).to.be.equal('shape-array');
+            expect(description).to.be.equal('Description');
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(shape).to.be.an.instanceOf(Field.Shape);
+            expect(required).to.be.true;
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
+            const json = shapeArray.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array', 'required']);
+            expect(json).to.deep.equal({
+                name: 'shape-array',
+                description: 'Description',
+                required: true,
+                shape_array: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: 'String field in the shape.',
+                        required: true,
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                        required: true,
+                    },
+                },
+            });
+        });
     });
 });
 

@@ -3,7 +3,72 @@ import Error from 'smart-error';
 
 import Field from './field';
 
+class Shape extends Field.Shape {
+
+    required = false;
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {boolean} required 
+     * @param {string} description 
+     * @param {Field[]|Param[]} fields 
+     */
+    constructor(name, required, description, ...fields) {
+        super(name, description, ...fields);
+        this.required = required;
+        // force all shape parameters to be required -> temp solution
+        this.fields = this.fields.map((field) => {
+            if (field instanceof Shape || field instanceof ShapeArray) {
+                return field;
+            }
+            return Param.createFromField(field, true);
+        });
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            required: this.required,
+        };
+    }
+}
+
+class ShapeArray extends Field.ShapeArray {
+
+    required = false;
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {boolean} required 
+     * @param {string} description 
+     * @param {Field[]|Param[]} fields 
+     */
+    constructor(name, required, description, ...fields) {
+        super(name, description, ...fields);
+        this.required = required;
+        // force all shape parameters to be required -> temp solution
+        this.shape.fields = this.shape.fields.map((field) => {
+            if (field instanceof Shape || field instanceof ShapeArray) {
+                return field;
+            }
+            return Param.createFromField(field, true);
+        });
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            required: this.required,
+        };
+    }
+}
+
 class Param extends Field {
+
+    static Shape = Shape;
+    static ShapeArray = ShapeArray;
 
     static create(param) {
         if (typeof param === 'string') {
@@ -66,6 +131,10 @@ class ParamParser {
         this._findShapes();
         this.params.forEach((param) => {
             try {
+                if (param instanceof Param || param instanceof Param.Shape || param instanceof Param.ShapeArray) {
+                    this._addParam(param);
+                    return;
+                }
                 if (this._isShape(param)) {
                     return;
                 }
