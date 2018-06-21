@@ -14,6 +14,8 @@ import Route from './route';
 
 import pkg from '../package.json';
 
+const APP_PACKAGE = require(path.resolve('./package.json'));
+
 /**
  * @typedef AppOptions
  * @property {number} port
@@ -49,7 +51,7 @@ import pkg from '../package.json';
  * @typedef AppOptions.Docs
  * @property {boolean} enabled
  * @property {string} route
- * @property {boolean} auth
+ * @property {boolean} auth DEPRECATED
  * @property {boolean} paramsAsArray
  */
 /**
@@ -558,14 +560,7 @@ class Application {
             req.getEndpoint = () => req.__endpoint;
             res.send204 = () => {
                 console.warn('res.send204 is deprecated. Use next callback in the route without data.');
-                this._afterCallback(null, undefined, req, res, after, (err) => {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-                    res.status(204);
-                    res._end();
-                });
+                res._sendData();
             };
             res.send404 = (message = 'Page not found', code = 'page_not_found') => {
                 res.sendError(HttpError.create(404, message, code));
@@ -629,6 +624,9 @@ class Application {
                                 body,
                                 query: req.query,
                                 headers: req.headers,
+                            },
+                            app: {
+                                version: APP_PACKAGE.version,
                             },
                         };
                         if (typeof res.__meta === 'object') {
@@ -701,13 +699,18 @@ const m = (options = {}) => {
     const app = new Application(options);
     const { docs, name } = app._options;
     if (docs.enabled) {
+        let requireAuth = false;
+        if (docs.auth) {
+            console.warn('Using auth on docs is deprecated. Use api key and its validation instead.');
+            requireAuth = true;
+        }
         app.get(docs.route, {
-            requireAuth: docs.auth,
+            requireAuth,
             description: 'Documentation of this API.',
             hideDocs: true,
         }, (req, res, next) => next(null, app.docs()));
         app.get(`${docs.route}.html`, {
-            requireAuth: docs.auth,
+            requireAuth,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/html; charset=utf-8');
@@ -716,23 +719,29 @@ const m = (options = {}) => {
                     next(err);
                     return;
                 }
-                res.end(
-                    buffer.toString()
-                        .replace(/\$\{name\}/g, name)
-                        .replace(/\$\{apiKey\}/g, req.query.api_key)
-                        .replace(/\$\{rsVersion\}/g, pkg.version)
-                );
+                let html = buffer.toString();
+                const vars = {
+                    name,
+                    apiKey: app._options.apiKey.enabled ? req.query.api_key : void 0,
+                    rsVersion: pkg.version,
+                    dataKey: app._options.dataKey,
+                    errorKey: app._options.errorKey,
+                    meta: app._options.meta.enabled,
+                };
+                Object.keys(vars).forEach((key) => {
+                    const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+                    html = html.replace(r, vars[key]);
+                });
+                res.end(html);
             });
         });
         app.get(`${docs.route}.js`, {
-            requireAuth: false,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/javascript; charset=utf-8');
             res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
         });
         app.get(`${docs.route}.css`, {
-            requireAuth: false,
             hideDocs: true,
         }, (req, res, next) => {
             res.header('content-type', 'text/css; charset=utf-8');

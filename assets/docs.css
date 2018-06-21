@@ -1,14 +1,59 @@
+html {
+    font-size: 0.9rem;
+}
+
 body {
+    overflow: hidden;
+}
+
+code {
+    font-size: 100%!important;
+}
+
+footer, header {
+    overflow: hidden;
+    padding: 10px;
+}
+
+footer p {
+    margin: 0;
+}
+
+#app {
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#container {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex: 1;
+}
+
+#content-wrapper {
+    padding: 0;
+    display: flex;
     overflow: hidden;
 }
 
 #index, #content, #console {
     overflow-y: auto;
     padding: 10px;
+    flex: 1 1 100%;
 }
 
-#content {
-    padding: 10px;
+#index {
+    flex-basis: 15%;
+    max-width: 15%;
+    min-width: 15%;
+}
+
+#console {
+    flex-basis: 40%;
+    display: none;
 }
 
 #content .endpoint h2 {

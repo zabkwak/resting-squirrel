@@ -65,12 +65,12 @@ This usage will create the app with default options.
 - **data** Custom meta data for the application. This data are set for all endpoints. Default: {}
 
 **log** If true access log and error log are written in stdout. Default: true  
-**logStack** If true and log is enabled the stack trace is written in stdout. Default: true  
+**logStack** If true and log is enabled the stack trace is written in stdout. This option should be false on the production app -> the request process is longer if the complete stack is printed to the console. Default: true  
 **logger({ statusCode, method, path, spec, body, params, query, headers, took })** Custom logging function which is called before the request ends. Default function logs the data in the console like in previous versions.  
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
-- **auth** If true documentation request must be authorized with *options.auth* function. Default: false  
+- **auth** If true documentation request must be authorized with *options.auth* function. Default: false DEPRECATED Using api key is preffered option.  
 - **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
 **auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
@@ -244,3 +244,11 @@ The module creates generic documentation by default. The documentation is on the
 - timeout option
 - custom warning of the endpoint
 - remove callback hell in start function
+- filter endpoints by api key
+- auth as object with function and description -> the description will be used in documentation.
+- custom data to endpoint instance
+- non-array response definition
+### v3
+- remove auth option in the docs
+- remove POST api key support
+- remove function arguments support in http methods.

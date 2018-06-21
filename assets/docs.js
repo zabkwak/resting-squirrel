@@ -2,10 +2,17 @@ $(document).ready(() => {
     const $content = $('#content');
     const $index = $('#index');
     const $console = $('#console');
+    const { protocol, host } = location;
+    const baseUrl = `${protocol}//${host}`;
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
+            <div>
+                <button type="button" class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <h2>${endpoint}</h2>
             <form id="console-form" action="/" method="post">
                 <h3>Headers</h3>
@@ -73,9 +80,16 @@ $(document).ready(() => {
             $headers.append($header);
         });
 
+        $consoleContent.find('button.close').click((e) => {
+            e.preventDefault();
+            $console.hide();
+        });
+
         $('#console-form').submit((e) => {
             e.preventDefault();
-            $response.html('Processing');
+            $response.html(`<div class="text-center">
+                <img src="//cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif" alt="loading" />
+            </div>`);
             const $form = $(e.target);
             const args = {};
             const data = {};
@@ -127,7 +141,14 @@ $(document).ready(() => {
         $tbody = $table.find('tbody');
         keys.forEach((key) => {
             const { description, type, required } = params[key];
-            $tbody.append(`<tr><td>${key}</td><td>${type}</td><td>${description}</td><td>${response ? '' : required}</td></tr>`);
+            $tbody.append(`
+            <tr>
+                <td>${key}</td>
+                <td>${type}</td>
+                <td>${description}</td>
+                <td>${response ? '' : (required ? '<i class="fa fa-check-circle"></i>' : '<i class="fa fa-times-circle"></i>')}</td>
+            </tr>
+            `);
         });
         return $table.prop('outerHTML');
     };
@@ -153,24 +174,25 @@ $(document).ready(() => {
         const link = `${origin}${pathname}#${id}`;
         const $docs = $(`
             <div id='${id}' class="endpoint${deprecated ? ' deprecated' : ''}">
-                <h2>${endpoint}</h2>
+                <h3>${endpoint}</h3>
                 <div class="docs">
                     <div>
                         ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
                         ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}     
                     </div>  
                     <div class="btn-group">
-                        <a class="copy-link btn btn-info" href="#${id}">copy link</a>     
-                        <a class="test-link btn btn-info" href="#${id}">test in console</a>
+                        <a class="copy-link btn btn-outline-info" href="${link}">copy documentation link</a>     
+                        <a class="copy-link btn btn-outline-info" href="${baseUrl}${endpoint.split(' ')[1]}">copy endpoint link</a>   
+                        <a class="test-link btn btn-outline-info" href="#${id}">test in console</a>
                     </div>        
                     <p class="description card card-body bg-light">${description || docs}</p>
-                    <h3>Arguments</h3>
+                    <h4>Arguments</h4>
                     ${formatParams(args, true)}
-                    <h3>Params</h3>
+                    <h4>Params</h4>
                     ${formatParams(params)}
-                    <h3>Response</h3>
+                    <h4>Response</h4>
                     ${formatParams(response, true)}
-                    <h3>Errors</h3>
+                    <h4>Errors</h4>
                     ${formatErrors(errors)}
                 </div>
             </div>
@@ -178,7 +200,7 @@ $(document).ready(() => {
         const $docsContent = $docs.find('.docs');
         $docs.find('a.copy-link').click((e) => {
             e.preventDefault();
-            const $link = $(`<input class="link" type="text" value="${link}" />`);
+            const $link = $(`<input class="link" type="text" value="${e.target.href}" />`);
             $docs.append($link);
             $link[0].select();
             document.execCommand('copy');
@@ -187,6 +209,7 @@ $(document).ready(() => {
         $docs.find('a.test-link').click((e) => {
             e.preventDefault();
             testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
+            $console.show();
         });
         return $docs;
     };
@@ -195,7 +218,42 @@ $(document).ready(() => {
         url: `/docs?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
-            $content.html('');
+            $content.html(`
+                <h2>Description</h2>
+                <p>
+                    REST-like API with <code>JSON</code> input/output. 
+                </p>
+                <p>
+                    The API is called as an http request on <code>${baseUrl}/[endpoint]</code> with required parameters.
+                </p>
+                <h3>Input</h3>
+                <p>
+                    HTTP methods <code>POST</code>, <code>PUT</code> and <code>DELETE</code> are using JSON body as input parameters. 
+                    So header <code>Content-Type: application/json</code> is required.<br />
+                    <code>GET</code> method is using query string for input parameters.
+                </p>
+                <h3>Output</h3>
+                <p>
+                    The API is returning data in <code>JSON</code> string with <code>Content-Type: application/json</code> header.<br />
+                    The response contains <code>${DATA_KEY}</code> key with data object as specified in endpoint documentation under the Response block.<br />
+                    Or the <code>${ERROR_KEY}</code> key if some error occures in the request process. 
+                    The <code>${ERROR_KEY}</code> contains <code>message</code> and <code>code</code> fields where the information about the error are stored. 
+                    The error codes which can the endpoint return are in endpoint documentation under the Errors block.<br />
+                    If the endpoint is deprecated the response contains a deprecated info in <code>warning</code> key.
+                    ${META ? '<br />The response contains a <code>_meta</code> key with meta information about the request.' : ''}
+                </p>
+                <h4>204 response</h4>
+                <p>
+                    Some of endpoints can return an empty response (HTTP code 204). The endpoint documentation under the Response block is empty in this case.
+                </p>
+                ${API_KEY && API_KEY !== 'undefined' ? '<h3>Api key</h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
+                <h3>Reserved GET parameters</h3>
+                <h4>nometa</h4>
+                <p>Hides meta data from the response.</p>
+                <h4>pretty</h4>
+                <p>Prints the response for human reading.</p>
+                <h2>Endpoints</h2>
+            `);
             $index.html('<div class="list-group list-group-flush"></div>');
             $ul = $index.find('div.list-group');
             Object.keys(data).forEach((endpoint) => {
