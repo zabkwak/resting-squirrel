@@ -137,14 +137,20 @@ $(document).ready(() => {
         if (!keys.length) {
             return '';
         }
-        $table = $(`<table class="table"><thead><tr><th>Field</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
-        $tbody = $table.find('tbody');
+        const $table = $(`<table class="table"><thead><tr><th>Field</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
+        const $tbody = $table.find('tbody');
         keys.forEach((key) => {
-            const { description, type, required } = params[key];
+            const { description, type, required, shape, shape_array } = params[key];
+            let typeCell = type;
+            if (shape) {
+                typeCell = formatParams(shape, response);
+            } else if (shape_array) {
+                typeCell = `[]${formatParams(shape_array, response)}`;
+            }
             $tbody.append(`
             <tr>
                 <td>${key}</td>
-                <td>${type}</td>
+                <td>${typeCell}</td>
                 <td>${description}</td>
                 <td>${response ? '' : (required ? '<i class="fa fa-check-circle"></i>' : '<i class="fa fa-times-circle"></i>')}</td>
             </tr>

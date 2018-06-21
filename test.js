@@ -70,11 +70,26 @@ app.get(0, '/args/:id', {
     ],
 }, (req, res, next) => next(null, req.params));
 
-app.get(0, '/field-shape', {
+app.get(0, '/response-shape', {
+    description: 'Defines response as a Shape',
+    response: [
+        new Field('shape', Type.shape({ string: Type.string }), 'Field defined as Type.shape.'),
+        new Field('shape_array', Type.arrayOf(Type.shape({ string: Type.string })), 'Array of shapes.'),
+    ],
+}, (req, res, next) => next(null, { shape: { string: 'test' }, shape_array: [{ string: 'string' }] }));
+
+app.get(1, '/response-shape', {
     description: 'Defines response as a Field.Shape',
     response: [
-        new Field.Shape('shape', new Field('string', Type.string))
+        new Field.Shape(
+            'shape',
+            'Field defined as Field.Shape.',
+            new Field('string', Type.string, 'String field as part of the shape.'),
+            new Field('integer', Type.integer, 'Integer field as part of the shape.'),
+            new Field.Shape('shape', 'Nested shape', new Field('string', Type.string, 'String field as part of the nested shape.')),
+        ),
+        new Field.ShapeArray('shape_array', 'Array of shapes defined as Field.ShapeArray.', new Field('string', Type.string, 'String field as part of the shape.')),
     ],
-});
+}, (req, res, next) => next(null, { shape: { string: 'test', integer: 5, shape: { string: 'string' } }, shape_array: [{ string: 'string' }] }));
 
 app.start();

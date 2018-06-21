@@ -4,17 +4,25 @@ import Error from 'smart-error';
 class Shape {
 
     name = null;
+    description = null;
     /** @type {Field[]} */
     fields = [];
     /** @type {Type.Type} */
     type = Type.any;
 
     /**
-     * 
+     * @param {string} name
+     * @param {string} description
      * @param {Field[]} fields 
      */
-    constructor(name, ...fields) {
+    constructor(name, description, ...fields) {
         this.name = name;
+        if (description instanceof Field) {
+            fields.unshift(description);
+            this.description = null;
+        } else {
+            this.description = description;
+        }
         this.fields = fields;
         const shape = {};
         this.fields.forEach((field) => {
@@ -24,17 +32,58 @@ class Shape {
     }
 
     toJSON() {
-        const o = {};
+        const o = {
+            name: this.name,
+            description: this.description,
+            shape: {},
+        };
         this.fields.forEach((field) => {
-            o[field.name] = field;
+            o.shape[field.name] = field;
         });
         return o;
+    }
+}
+
+class ShapeArray {
+
+    name = null;
+    description = null;
+    /** @type {Shape} */
+    shape = null;
+    /** @type {Type.Type} */
+    type = Type.any;
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {string} description 
+     * @param {Field[]} shape 
+     */
+    constructor(name, description, ...fields) {
+        this.name = name;
+        if (description instanceof Field) {
+            fields.unshift(description);
+            this.description = null;
+        } else {
+            this.description = description;
+        }
+        this.shape = new Shape('__shape__', null, ...fields);
+        this.type = Type.arrayOf(this.shape.type);
+    }
+
+    toJSON() {
+        return {
+            name: this.name,
+            description: this.description,
+            shape_array: this.shape.toJSON().shape,
+        }; 
     }
 }
 
 export default class Field {
 
     static Shape = Shape;
+    static ShapeArray = ShapeArray;
 
     static create(param) {
         if (typeof param === 'string') {

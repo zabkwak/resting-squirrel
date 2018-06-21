@@ -74,6 +74,7 @@ footer p {
 
 #content .endpoint .docs table.table td {
     width: 25%;
+    vertical-align: middle;
 }
 
 #console .badge {

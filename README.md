@@ -239,7 +239,6 @@ This parameters are updating behaviour of the current request.
 The module creates generic documentation by default. The documentation is on the `/docs` route (if it's not set in app options) as a JSON data. `/docs.html` contains simple HTML which converts the JSON data to HTML and adds the test console. 
 
 ## TODO
-- shape description
 - shape fields required status
 - timeout option
 - custom warning of the endpoint

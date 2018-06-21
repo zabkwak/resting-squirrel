@@ -314,11 +314,11 @@ class Application {
                                             }
                                             if (endpoint.response) {
                                                 endpoint.response.forEach((field) => {
-                                                    const { type, key } = field;
-                                                    if (type.isValid(data[key])) {
-                                                        data[key] = type.cast(data[key]);
+                                                    const { type, name } = field;
+                                                    if (type.isValid(data[name])) {
+                                                        data[name] = type.cast(data[name]);
                                                     } else {
-                                                        const message = `Response on key '${key}' has invalid type. It should be ${type}`;
+                                                        const message = `Response on key '${name}' has invalid type. It should be ${type}`;
                                                         if (this._options.responseStrictValidation) {
                                                             throw new Err(message);
                                                         }

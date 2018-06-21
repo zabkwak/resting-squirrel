@@ -7,16 +7,136 @@ import { ParamParser } from '../src/endpoint/param';
 
 describe('Endpoind.Field', () => {
 
-    it('checks the Field.Shape', () => {
-        const shape = new Field.Shape('shape', new Field('string', Type.string), new Field('integer', Type.integer));
-        expect(shape).to.have.all.keys(['name', 'fields', 'type']);
-        const { name, fields, type } = shape;
-        expect(name).to.be.equal('shape');
-        expect(fields).to.be.an.instanceOf(Array);
-        expect(fields.length).to.be.equal(2);
-        expect(type).to.be.an.instanceOf(Type.Type);
-        expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+    describe('.Shape', () => {
+
+        it('checks the Field.Shape without a description', () => {
+            const shape = new Field.Shape('shape', new Field('string', Type.string), new Field('integer', Type.integer));
+            expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description']);
+            const { name, fields, type, description } = shape;
+            expect(name).to.be.equal('shape');
+            expect(description).to.be.null;
+            expect(fields).to.be.an.instanceOf(Array);
+            expect(fields.length).to.be.equal(2);
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+            const json = shape.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape']);
+            expect(json).to.deep.equal({
+                name: 'shape',
+                description: null,
+                shape: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: null,
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                    },
+                },
+            });
+        });
+
+        it('checks the Field.Shape with a description', () => {
+            const shape = new Field.Shape('shape', 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+            expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description']);
+            const { name, fields, type, description } = shape;
+            expect(name).to.be.equal('shape');
+            expect(description).to.be.equal('Description');
+            expect(fields).to.be.an.instanceOf(Array);
+            expect(fields.length).to.be.equal(2);
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+            const json = shape.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape']);
+            expect(json).to.deep.equal({
+                name: 'shape',
+                description: 'Description',
+                shape: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: 'String field in the shape.',
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                    },
+                },
+            });
+        });
     });
+
+    describe('.ShapeArray', () => {
+
+        it('checks the Field.ShapeArray without a description', () => {
+            const shapeArray = new Field.ShapeArray('shape-array', new Field('string', Type.string), new Field('integer', Type.integer));
+            expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape']);
+            const { name, description, type, shape } = shapeArray;
+            expect(name).to.be.equal('shape-array');
+            expect(description).to.be.null;
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
+            const json = shapeArray.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array']);
+            expect(json).to.deep.equal({
+                name: 'shape-array',
+                description: null,
+                shape_array: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: null,
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                    },
+                },
+            });
+        });
+
+        it('checks the Field.ShapeArray with a description', () => {
+            const shapeArray = new Field.ShapeArray('shape-array', 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+            expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape']);
+            const { name, description, type, shape } = shapeArray;
+            expect(name).to.be.equal('shape-array');
+            expect(description).to.be.equal('Description');
+            expect(type).to.be.an.instanceOf(Type.Type);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})[]`);
+            const json = shapeArray.toJSON();
+            expect(json).to.have.all.keys(['name', 'description', 'shape_array']);
+            expect(json).to.deep.equal({
+                name: 'shape-array',
+                description: 'Description',
+                shape_array: {
+                    string: {
+                        name: 'string',
+                        key: 'string',
+                        type: Type.string,
+                        description: 'String field in the shape.',
+                    },
+                    integer: {
+                        name: 'integer',
+                        key: 'integer',
+                        type: Type.integer,
+                        description: null,
+                    },
+                },
+            });
+        });
+    });
+
 });
 
 describe('Endpoint.Param', () => {
