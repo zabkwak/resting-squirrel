@@ -497,6 +497,9 @@ class Application {
                     if (requiredParam === null || requiredParam === undefined) {
                         throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
                     }
+                    if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
+                        throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
+                    }
                 } else if (mergedParams[p] === undefined) {
                     return;
                 }

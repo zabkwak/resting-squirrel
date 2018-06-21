@@ -247,8 +247,6 @@ The module creates generic documentation by default. The documentation is on the
 - auth as object with function and description -> the description will be used in documentation.
 - custom data to endpoint instance
 - non-array response definition
-- shape description in placeholder in doc console
-- empty array of required params is passing the type params checking
 - doc console shape fields
 - Field.Shape & Field.ShapeArray (& Param equivivalents) to the readme
 ### v3
