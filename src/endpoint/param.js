@@ -5,6 +5,10 @@ import Field from './field';
 
 class Shape extends Field.Shape {
 
+    static createFromFieldShape(shape, required = false) {
+        return new this(shape.name, required, shape.description, ...shape.fields);
+    }
+
     required = false;
 
     /**
