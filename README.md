@@ -150,7 +150,7 @@ const f2 = Field.create({
 const f3 = Field.create('any_arg');
 
 // Registers the GET endpoint which validates the arguments.
-rs.get(0, '/fields', {
+app.get(0, '/fields', {
     args: [f1, f2, f3],
     description: 'Test endpoint for argument examples',
 }, (req, res, next) => next(null, req.params));
@@ -182,7 +182,7 @@ const p2 = Param.create({
 const p3 = Param.create('any_param');
 
 // Registers the GET endpoint which requires three parameters to execute
-rs.get(0, '/params', false, [p1, p2, p3], 'Test endpoint for param examples', (req, res, next) => next(null, req.query));
+app.get(0, '/params', false, [p1, p2, p3], 'Test endpoint for param examples', (req, res, next) => next(null, req.query));
 ```
 The `Param` class uses type definition from the [runtime-type](https://www.npmjs.com/package/runtime-type) for type checking. 
 
@@ -215,7 +215,7 @@ const doSomeStuff = () => {
 };
 
 // Registers the GET endpoint which validates the fields before the data render.
-rs.get(0, '/fields', {
+app.get(0, '/fields', {
     response: [f1, f2, f3],
     description: 'Test endpoint for field examples',
 }, (req, res, next) => next(null, doSomeStuff()));
