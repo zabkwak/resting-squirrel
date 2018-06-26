@@ -5,6 +5,7 @@ $(document).ready(() => {
     const { protocol, host } = location;
     const baseUrl = `${protocol}//${host}`;
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
+    const className = (...args) => args.filter(item => Boolean(item)).join(' '); 
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
@@ -190,7 +191,7 @@ $(document).ready(() => {
             });
         });
     };
-    const formatParams = (params, response = false) => {
+    const formatParams = (params, response = false, hidden = false) => {
         if (!params) {
             return '';
         }
@@ -198,15 +199,15 @@ $(document).ready(() => {
         if (!keys.length) {
             return '';
         }
-        const $table = $(`<table class="table"><thead><tr><th>Field</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
+        const $table = $(`<table class="table"${hidden ? ' style="display: none;"' : ''}><thead><tr><th>Field</th><th>Type</th><th>Description</th><th>${response ? '' : 'Required'}</th></tr></thead><tbody></tbody></table>`);
         const $tbody = $table.find('tbody');
         keys.forEach((key) => {
             const { description, type, required, shape, shape_array } = params[key];
             let typeCell = type;
             if (shape) {
-                typeCell = formatParams(shape, response);
+                typeCell = `Shape <a href="#" class="shape-visibility">show</a>${formatParams(shape, response, true)}`;
             } else if (shape_array) {
-                typeCell = `[]${formatParams(shape_array, response)}`;
+                typeCell = `Shape[] <a href="#" class="shape-visibility">show</a>${formatParams(shape_array, response, true)}`;
             }
             $tbody.append(`
             <tr>
@@ -277,6 +278,18 @@ $(document).ready(() => {
             e.preventDefault();
             testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
             $console.show();
+        });   
+        $docs.find('a.shape-visibility').click((e) => {
+            e.preventDefault();
+            const $this = $(e.target);
+            const $table = $this.siblings('table');
+            if ($table.is(':visible')) {
+                $table.hide();
+                $this.text('show');
+            } else {
+                $table.show();
+                $this.text('hide');
+            }
         });
         return $docs;
     };
