@@ -90,11 +90,12 @@ This usage will create the app with default options.
 **responseStrictValidation** If true the Error is thrown if response key has invalid type. Default: false  
 
 ### Errors
-Module has own Error class inherited from [Error](https://nodejs.org/api/errors.html#errors_class_error). Id adds code parameter to the error response. 
+Module is using [SmartError](https://www.npmjs.com/package/smart-error) as base error and [HttpSmartError](https://www.npmjs.com/package/http-smart-error) for http errors.
 ```javascript
-import { Error } from 'resting-squirrel';
+import { Error, HttpError } from 'resting-squirrel';
 
-console.log(new Error("Some error", "some_code"));
+console.log(new Error("Some error", "some_code")); // Error with message "Some error" and code "ERR_SOME_CODE"
+console.log(HttpError.create(400)); // Http error with 400 status code, message "Bad request" and code "ERR_BAD_REQUEST"
 ```
 
 ### Functions DEPRECATED
