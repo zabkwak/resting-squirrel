@@ -221,6 +221,39 @@ rs.get(0, '/fields', {
 
 ```
 
+#### Shapes
+In some cases is needed to use shape field (param). Shapes are JS objects. The field (param) can have `Type.shape` but it's not effective for the documentation. For this purpose `Field` (`Param`) class has static classes `Shape` and `ShapeArray`. 
+##### Field.Shape
+###### constructor
+| field         | type          | description                 |
+| ------------- |:-------------:| --------------------------- |
+| name          | string        | Name of the field           |
+| description   | string        | Description of the field    |
+| ...fields     | `Field`[]     | List of fields in the shape |
+##### Field.ShapeArray
+###### constructor
+| field         | type          | description                 |
+| ------------- |:-------------:| --------------------------- |
+| name          | string        | Name of the field           |
+| description   | string        | Description of the field    |
+| ...fields     | `Field`[]     | List of fields in the shape |
+##### Param.Shape
+###### constructor
+| field         | type          | description                        |
+| ------------- |:-------------:| ---------------------------------- |
+| name          | string        | Name of the param                  |
+| required      | boolean       | Indicates if the param is requried |
+| description   | string        | Description of the param           |
+| ...params     | `Param`[]     | List of params in the shape        |
+##### Param.ShapeArray
+###### constructor
+| field         | type          | description                        |
+| ------------- |:-------------:| ---------------------------------- |
+| name          | string        | Name of the param                  |
+| required      | boolean       | Indicates if the param is requried |
+| description   | string        | Description of the param           |
+| ...params     | `Param`[]     | List of params in the shape        |
+
 #### Response methods in the callback  
 **send204()** Sets 204 http code and sends empty response.  
 **send401(message = "Unauthorized request", code = "unauthorized_request")** Sets 401 http code and sends the Error instance.  
@@ -238,6 +271,11 @@ This parameters are updating behaviour of the current request.
 ## Documentation
 The module creates generic documentation by default. The documentation is on the `/docs` route (if it's not set in app options) as a JSON data. `/docs.html` contains simple HTML which converts the JSON data to HTML and adds the test console. 
 
+## Recommendations
+- Do not use `Type.shape` in args, params and fields definition. It'll be documented as shape string from the [runtime-type](https://www.npmjs.com/package/runtime-type) module.
+- Do not use `Type.any` in args, params and fields definition. Any type is not validated as a type so it can be anything.
+- Use `HttpError` for errors sent to the endpoint callback.
+
 ## TODO
 - shape fields required status
 - timeout option
@@ -248,7 +286,6 @@ The module creates generic documentation by default. The documentation is on the
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
-- Field.Shape & Field.ShapeArray (& Param equivivalents) to the readme
 ### v3
 - remove auth option in the docs
 - remove POST api key support
