@@ -61,6 +61,13 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {function} validator
  */
 /**
+ * @typedef AppOptions.Auth
+ * @property {boolean} enabled
+ * @property {string} key
+ * @property {string} description
+ * @property {function} validator
+ */
+/**
  * @typedef RouteOptions
  * @property {boolean} requireAuth
  * @property {Param[]|string[]} params

@@ -283,7 +283,7 @@ The module creates generic documentation by default. The documentation is on the
 - custom warning of the endpoint
 - remove callback hell in start function
 - filter endpoints by api key
-- auth as object with function and description -> the description will be used in documentation.
+- auth as object with function, headerKey and description -> the description will be used in documentation
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
