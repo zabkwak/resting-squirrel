@@ -79,6 +79,7 @@ app.get(0, '/promise', {
     params: [
         new Param('error', false, Type.boolean, 'Indicates if the promise should return array.'),
     ],
+    response: null,
 }, async (req, res, next) => {
     const { error } = req.query;
     await asyncFunction(error);

@@ -4,7 +4,7 @@
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./__tests__ --recursive --compilers js:babel-core/register --timeout 5000",
+    "test": "mocha ./__tests__/server-calls-promises.js --recursive --compilers js:babel-core/register --timeout 5000",
     "create_index": "run-script-os",
     "create_index:win32": "echo module.exports = require('./dist'); > index.js",
     "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",
