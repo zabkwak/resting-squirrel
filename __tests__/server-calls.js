@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import request from 'request';
 
-import rs, { Param, Type, Error, Field } from '../src';
+import rs, { Param, Type, Error, Field, HttpError } from '../src';
 
 const app = rs({ log: false, logStack: false });
 
@@ -28,6 +28,10 @@ app.post('/params/cast', false, [new Param('int', true, Type.integer), new Param
 app.get('/204', (req, res, next) => next());
 
 app.get('/error/custom', (req, res, next) => next(new Error('Custom error', 'test', { field: 'test' })));
+
+app.get(0, '/error/throw', { hideDocs: true }, (req, res, next) => {
+    throw HttpError.create(403);
+});
 
 app.get(1, '/version', (req, res, next) => next(null, { success: true }));
 
@@ -65,6 +69,26 @@ app.get(0, '/args/:id/defined', {
         new Field('id', Type.integer, 'Id of the argument.'),
     ],
 }, (req, res, next) => next(null, req.params));
+
+const asyncFunction = (error = false) => new Promise((resolve, reject) => {
+    if (error) {
+        reject(HttpError.create(400));
+        return;
+    }
+    resolve();
+});
+
+app.get(0, '/promise', {
+    hideDocs: true,
+    params: [
+        new Param('error', false, Type.boolean, 'Indicates if the promise should return array.'),
+    ],
+    response: null,
+}, async (req, res, next) => {
+    const { error } = req.query;
+    await asyncFunction(error);
+    next();
+});
 
 describe('Server start', () => {
 
@@ -616,6 +640,16 @@ describe('Special responses', () => {
             done();
         });
     });
+
+    it('calls the endpoint which will resolve a Promise', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/promise' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.statusCode).to.equal(204);
+            expect(body).to.be.undefined;
+            done();
+        });
+    });
 });
 
 describe('Endpoint defined with options', () => {
@@ -869,6 +903,34 @@ describe('Errors', () => {
             expect(error.message).to.be.equal('Custom error');
             expect(error.code).to.be.equal('ERR_TEST');
             expect(error.field).to.be.equal('test');
+            done();
+        });
+    });
+
+    it('calls endpoint that rejects a Promise without try-catch', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/promise', qs: { error: true } }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Bad Request');
+            expect(error.code).to.be.equal('ERR_BAD_REQUEST');
+            done();
+        });
+    });
+
+    it('calls endpoint that throws an error in callback', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/error/throw' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(403);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Forbidden');
+            expect(error.code).to.be.equal('ERR_FORBIDDEN');
             done();
         });
     });

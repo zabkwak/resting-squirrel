@@ -1,3 +1,5 @@
+import 'babel-polyfill';
+
 import express from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
@@ -309,32 +311,36 @@ class Application {
                                         next(err);
                                         return;
                                     }
-                                    this._beforeCallback(req, res, before, (err) => {
+                                    this._beforeCallback(req, res, before, async (err) => {
                                         if (err) {
                                             next(err);
                                             return;
                                         }
-                                        endpoint.callback(req, res, (err, data) => {
-                                            if (err) {
-                                                next(err);
-                                                return;
-                                            }
-                                            if (endpoint.response) {
-                                                endpoint.response.forEach((field) => {
-                                                    const { type, name } = field;
-                                                    if (type.isValid(data[name])) {
-                                                        data[name] = type.cast(data[name]);
-                                                    } else {
-                                                        const message = `Response on key '${name}' has invalid type. It should be ${type}`;
-                                                        if (this._options.responseStrictValidation) {
-                                                            throw new Err(message);
+                                        try {
+                                            await endpoint.callback(req, res, (err, data) => {
+                                                if (err) {
+                                                    next(err);
+                                                    return;
+                                                }
+                                                if (endpoint.response) {
+                                                    endpoint.response.forEach((field) => {
+                                                        const { type, name } = field;
+                                                        if (type.isValid(data[name])) {
+                                                            data[name] = type.cast(data[name]);
+                                                        } else {
+                                                            const message = `Response on key '${name}' has invalid type. It should be ${type}`;
+                                                            if (this._options.responseStrictValidation) {
+                                                                throw new Err(message);
+                                                            }
+                                                            console.warn(message);
                                                         }
-                                                        console.warn(message);
-                                                    }
-                                                });
-                                            }
-                                            res._sendData(data);
-                                        });
+                                                    });
+                                                }
+                                                res._sendData(data);
+                                            });
+                                        } catch (e) {
+                                            next(e);
+                                        }
                                     });
                                 });
                             });
