@@ -60,16 +60,6 @@ footer p {
     border-bottom: 2px solid grey;
 }
 
-#index .list-group .list-group-item.auth:after {
-    font-family: FontAwesome;
-    content: '\f023';
-    float: right;
-}
-
-#index .list-group .list-group-item.deprecated {
-    text-decoration: line-through;
-}
-
 #content .endpoint h3 {
     border-bottom: 1px solid grey;
 }
@@ -83,8 +73,34 @@ footer p {
     vertical-align: middle;
 }
 
+h2 a, h3 a {
+    color: lightgray;
+    margin-left: 10px;
+}
+
+h2 a:hover, h3 a:hover {
+    color: black;
+    text-decoration: none;
+}
+
+h2 a:after, h3 a:after {
+    font-family: FontAwesome;
+    content: '\f0c1';
+    font-size: 80%;
+}
+
 #console .badge {
     font-size: 100%;
+}
+
+#index .list-group .list-group-item.auth:after {
+    font-family: FontAwesome;
+    content: '\f023';
+    float: right;
+}
+
+#index .list-group .list-group-item.deprecated {
+    text-decoration: line-through;
 }
 
 .h-90 {

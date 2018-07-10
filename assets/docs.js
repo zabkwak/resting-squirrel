@@ -313,13 +313,13 @@ $(document).ready(() => {
                 <p>
                     The API is called as an http request on <code>${baseUrl}/[endpoint]</code> with required parameters.
                 </p>
-                <h3>Input</h3>
+                <h3 id="input">Input<a href="#input"></a></h3>
                 <p>
                     HTTP methods <code>POST</code>, <code>PUT</code> and <code>DELETE</code> are using JSON body as input parameters. 
                     So header <code>Content-Type: application/json</code> is required.<br />
                     <code>GET</code> method is using query string for input parameters.
                 </p>
-                <h3>Output</h3>
+                <h3 id="output">Output<a href="#output"></a></h3>
                 <p>
                     The API is returning data in <code>JSON</code> string with <code>Content-Type: application/json</code> header.<br />
                     The response contains <code>${DATA_KEY}</code> key with data object as specified in endpoint documentation under the Response block.<br />
@@ -333,18 +333,18 @@ $(document).ready(() => {
                 <p>
                     Some of endpoints can return an empty response (HTTP code 204). The endpoint documentation under the Response block is empty in this case.
                 </p>
-                ${API_KEY && API_KEY !== 'undefined' ? '<h3>Api key</h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
-                <h3>Authorization</h3>
+                ${API_KEY && API_KEY !== 'undefined' ? '<h3 href="#api-key">Api key<a href="#api-key"></a></h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
+                <h3 id="authorization">Authorization<a href="#authorization"></a></h3>
                 <p>
                 Endpoints requiring the authorization must be called with <code>${AUTH_KEY}</code> header. Otherwise the error response will be returned.
                 </p>
                 ${AUTH_DESCRIPTION ? `<p>${AUTH_DESCRIPTION}</p>` : ''}
-                <h3>Reserved GET parameters</h3>
+                <h3 id="reserved-get-params">Reserved GET parameters<a href="#reserved-get-params"></a></h3>
                 <h4>nometa</h4>
                 <p>Hides meta data from the response.</p>
                 <h4>pretty</h4>
                 <p>Prints the response for human reading.</p>
-                <h2>Endpoints</h2>
+                <h2 id="endpoints">Endpoints<a href="#endpoints"></a></h2>
             `);
             $index.html('<div class="list-group list-group-flush"></div>');
             $ul = $index.find('div.list-group');
