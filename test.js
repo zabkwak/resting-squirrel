@@ -126,4 +126,10 @@ app.post(0, '/param-array', {
     response: null,
 }, (req, res, next) => next());
 
+app.get(0, '/some/fucking/long/endpoint/which/does/exactly/shit', {
+    description: 'Well. The route is speaking for itself.',
+    response: null,
+    requireAuth: true,
+}, (req, res, next) => next());
+
 app.start();

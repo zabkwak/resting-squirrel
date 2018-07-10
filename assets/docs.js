@@ -351,7 +351,7 @@ $(document).ready(() => {
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
                 const { deprecated, required_auth } = data[endpoint];
-                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
+                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}" title="${endpoint}">${endpoint}</a>`);
             });
             if (location.hash) {
                 location.href = location.hash;

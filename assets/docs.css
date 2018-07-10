@@ -93,10 +93,19 @@ h2 a:after, h3 a:after {
     font-size: 100%;
 }
 
+#index .list-group .list-group-item {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 #index .list-group .list-group-item.auth:after {
     font-family: FontAwesome;
     content: '\f023';
-    float: right;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 44.09px;
 }
 
 #index .list-group .list-group-item.deprecated {
