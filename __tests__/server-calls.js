@@ -29,6 +29,10 @@ app.get('/204', (req, res, next) => next());
 
 app.get('/error/custom', (req, res, next) => next(new Error('Custom error', 'test', { field: 'test' })));
 
+app.get(0, '/error/throw', { hideDocs: true }, (req, res, next) => {
+    throw HttpError.create(403);
+});
+
 app.get(1, '/version', (req, res, next) => next(null, { success: true }));
 
 app.get(2, '/version', (req, res, next) => next(null, { success: true }));
@@ -913,6 +917,20 @@ describe('Errors', () => {
             expect(error).to.have.all.keys(['message', 'code']);
             expect(error.message).to.be.equal('Bad Request');
             expect(error.code).to.be.equal('ERR_BAD_REQUEST');
+            done();
+        });
+    });
+
+    it('calls endpoint that throws an error in callback', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/error/throw' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(403);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error.message).to.be.equal('Forbidden');
+            expect(error.code).to.be.equal('ERR_FORBIDDEN');
             done();
         });
     });
