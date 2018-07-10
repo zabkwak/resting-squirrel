@@ -73,7 +73,11 @@ This usage will create the app with default options.
 - **auth** If true documentation request must be authorized with *options.auth* function. Default: false DEPRECATED Using api key is preffered option.  
 - **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
-**auth(req, res, next)** Function to handle authorization. Default function checks if 'x-token' parameter is in headers.  
+**auth** Object for setting up the authorization.  
+- **key** Key in the headers where the access token is. Default: x-token  
+- **description** Custom description of the authorization process. Default: null  
+- **validator(key, req, res, next)** Function which validates the access token. Default function just checks if the header with `key` exists.  
+
 **apiKey** Object for setting up the api key.
 - **enabled** If true api key is validated. Default: false  
 - **type** Type of the location of api key in request. One of qs, body, header. Default: qs  
