@@ -24,7 +24,10 @@ describe('Base app creation', () => {
         expect(docs.enabled).to.be.true;
         expect(docs.auth).to.be.false;
         expect(docs.route).to.be.equal('/docs');
-        expect(auth).to.be.a('function');
+        expect(auth).to.be.an('object');
+        expect(auth.description).to.be.null;
+        expect(auth.key).to.be.equal('x-token');
+        expect(auth.validator).to.be.a('function');
         expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
         expect(before).to.be.an('object');
         expect(before['*']).to.be.a('function');
@@ -56,6 +59,11 @@ describe('Base app creation', () => {
                 auth: true,
                 route: '/_docs',
             },
+            auth: {
+                key: 'access_token',
+                description: 'Auth description',
+                validator: (key, req, res, cb) => cb(),   
+            },
             before: {
                 '/test': () => { },
             },
@@ -86,7 +94,10 @@ describe('Base app creation', () => {
         expect(docs.enabled).to.be.false;
         expect(docs.auth).to.be.true;
         expect(docs.route).to.be.equal('/_docs');
-        expect(auth).to.be.a('function');
+        expect(auth).to.be.an('object');
+        expect(auth.description).to.be.equal('Auth description');
+        expect(auth.key).to.be.equal('access_token');
+        expect(auth.validator).to.be.a('function');
         expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
         expect(before).to.be.an('object');
         expect(before).to.have.all.keys(['*', '/test']);

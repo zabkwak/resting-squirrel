@@ -30,7 +30,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {AppOptions.Meta} meta
  * @property {string} requestLimit
  * @property {AppOptions.Docs} docs
- * @property {function} auth
+ * @property {AppOptions.Auth|function} auth
  * @property {AppOptions.ApiKey} apiKey
  * @property {Object.<string, function>} before
  * @property {Object.<string, function>} after
@@ -65,7 +65,6 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
 /**
  * @typedef AppOptions.Auth
  * @property {boolean} enabled
- * @property {string} key
  * @property {string} description
  * @property {function} validator
  */
@@ -103,12 +102,16 @@ const DEFAULT_OPTIONS = {
         auth: false,
         paramsAsArray: false,
     },
-    auth: (req, res, next) => {
-        if (!req.headers['x-token']) {
-            res.send401();
-            return;
-        }
-        next();
+    auth: {
+        key: 'x-token',
+        description: null,
+        validator: (key, req, res, next) => {
+            if (!req.headers[key]) {
+                res.send401();
+                return;
+            }
+            next();
+        },
     },
     apiKey: {
         enabled: false,
@@ -156,6 +159,13 @@ class Application {
         // Object merge cannot merge not existing keys, so this adds custom meta data to the options.
         if (options.meta && options.meta.data) {
             Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
+        }
+        if (typeof options.auth === 'function') {
+            console.warn('Using auth option as a function is deprecated.');
+            this._options.auth = this._mergeObjects({}, DEFAULT_OPTIONS.auth);
+            this._options.auth.validator = (key, req, res, cb) => {
+                options.auth(req, res, cb);
+            };
         }
         this._createApp();
     }
@@ -453,12 +463,22 @@ class Application {
         apiKey.validator(key, next);
     }
 
-    _checkAuth(req, res, requiredAuth, authMethod, cb) {
+    /**
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     * @param {*} requiredAuth 
+     * @param {AppOptions.Auth} auth 
+     * @param {*} cb 
+     */
+    _checkAuth(req, res, requiredAuth, auth, cb) {
         if (!requiredAuth) {
             cb();
             return;
         }
-        authMethod(req, res, cb);
+        if (typeof auth.validator === 'function') {
+            auth.validator(auth.key, req, res, cb);
+        }
     }
 
     /**
@@ -691,7 +711,7 @@ class Application {
                 o[k] = v;
                 return;
             }
-            if (typeof v !== 'object') {
+            if (typeof v !== 'object' || v === null) {
                 o[k] = o1[k];
                 return;
             }
