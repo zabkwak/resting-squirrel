@@ -5,7 +5,7 @@ $(document).ready(() => {
     const { protocol, host } = location;
     const baseUrl = `${protocol}//${host}`;
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
-    const className = (...args) => args.filter(item => Boolean(item)).join(' '); 
+    const className = (...args) => args.filter(item => Boolean(item)).join(' ');
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
@@ -18,7 +18,14 @@ $(document).ready(() => {
             <form id="console-form" action="/" method="post">
                 <h3>Headers</h3>
                 <div>
-                    <div class="headers"></div>
+                    <div class="headers">
+                        ${required_auth ? `
+                            <div class="form-group mb-2 form-inline">
+                                <input class="form-control" placeholder="Name" type="text" name="name" readonly value="${AUTH_KEY}" />
+                                <input class="form-control" placeholder="Value" type="text" name="value" />
+                            </div>
+                            ` : ''}
+                    </div>
                     <a href="#" class="btn btn-link btn-sm add header">Add header</a>
                 </div>
                 <h3>Arguments</h3>
@@ -35,16 +42,16 @@ $(document).ready(() => {
                 <h3>Params</h3>
                 <div class="params">
                     ${Object.keys(params).map((key) => {
-                        const { description, type, required, shape, shape_array } = params[key];
-                        if (shape) {
-                            // TODO
-                        }
-                        if (shape_array) {
-                            // TODO
-                        }
-                        if (type && type.lastIndexOf('[]') === type.length - 2) {
-                            const elementType = type.substr(0, type.length - 2);
-                            return `
+                const { description, type, required, shape, shape_array } = params[key];
+                if (shape) {
+                    // TODO
+                }
+                if (shape_array) {
+                    // TODO
+                }
+                if (type && type.lastIndexOf('[]') === type.length - 2) {
+                    const elementType = type.substr(0, type.length - 2);
+                    return `
                                 <div class="array-wrapper" id="${key}" data-type="${elementType}">
                                     <strong>${key}</strong>
                                     <p class="form-group row">
@@ -55,14 +62,14 @@ $(document).ready(() => {
                                 </div>
 
                             `;
-                        }
-                        return `
+                }
+                return `
                             <p class="form-group row">
                                 <label for="${key}" class="col-sm-3 col-form-label">${key}</label>
                                 <input id="${key}" class="col-sm-7 form-control" type="text" name="${key}" placeholder="${type.replace(/"/g, '&quot;')}" />
                             </p>
                         `;
-                    }).join('')}
+            }).join('')}
                 </div>
                 <p>
                     <input type="submit" value="Send" class="btn btn-primary" />
@@ -278,7 +285,7 @@ $(document).ready(() => {
             e.preventDefault();
             testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
             $console.show();
-        });   
+        });
         $docs.find('a.shape-visibility').click((e) => {
             e.preventDefault();
             const $this = $(e.target);
@@ -327,6 +334,11 @@ $(document).ready(() => {
                     Some of endpoints can return an empty response (HTTP code 204). The endpoint documentation under the Response block is empty in this case.
                 </p>
                 ${API_KEY && API_KEY !== 'undefined' ? '<h3>Api key</h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
+                <h3>Authorization</h3>
+                <p>
+                Endpoints requiring the authorization must be called with <code>${AUTH_KEY}</code> header. Otherwise the error response will be returned.
+                </p>
+                ${AUTH_DESCRIPTION ? `<p>${AUTH_DESCRIPTION}</p>` : ''}
                 <h3>Reserved GET parameters</h3>
                 <h4>nometa</h4>
                 <p>Hides meta data from the response.</p>
@@ -338,8 +350,8 @@ $(document).ready(() => {
             $ul = $index.find('div.list-group');
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
-                const { deprecated } = data[endpoint];
-                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
+                const { deprecated, required_auth } = data[endpoint];
+                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}">${endpoint}</a>`);
             });
             if (location.hash) {
                 location.href = location.hash;

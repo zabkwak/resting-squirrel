@@ -148,11 +148,11 @@ describe('Endpoint lifecycle', function () {
                 expect(err).to.be.null;
                 expect(body).to.have.all.keys(['error', '_meta']);
                 expect(body.error).to.have.all.keys(['code', 'message']);
-                expect(body.error.code).to.be.equal('ERR_UNAUTHORIZED');
+                expect(body.error.code).to.be.equal('ERR_MISSING_ACCESS_TOKEN');
                 const lifecycle = JSON.parse(res.headers.lifecycle);
                 expect(lifecycle).to.be.an('object');
                 expect(lifecycle).to.have.all.keys(['auth', 'before', 'before_custom', 'after', 'after_custom']);
-                expect(lifecycle.auth).to.be.true;
+                expect(lifecycle.auth).to.be.false;
                 expect(lifecycle.before).to.be.false;
                 expect(lifecycle.before_custom).to.be.false;
                 expect(lifecycle.after).to.be.true;

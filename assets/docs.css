@@ -60,7 +60,13 @@ footer p {
     border-bottom: 2px solid grey;
 }
 
-.list-group-item.deprecated {
+#index .list-group .list-group-item.auth:after {
+    font-family: FontAwesome;
+    content: '\f023';
+    float: right;
+}
+
+#index .list-group .list-group-item.deprecated {
     text-decoration: line-through;
 }
 

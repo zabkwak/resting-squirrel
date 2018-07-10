@@ -30,7 +30,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {AppOptions.Meta} meta
  * @property {string} requestLimit
  * @property {AppOptions.Docs} docs
- * @property {AppOptions.Auth|function} auth
+ * @property {AppOptions.Auth} auth
  * @property {AppOptions.ApiKey} apiKey
  * @property {Object.<string, function>} before
  * @property {Object.<string, function>} after
@@ -64,7 +64,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  */
 /**
  * @typedef AppOptions.Auth
- * @property {boolean} enabled
+ * @property {string} key
  * @property {string} description
  * @property {function} validator
  */
@@ -106,10 +106,6 @@ const DEFAULT_OPTIONS = {
         key: 'x-token',
         description: null,
         validator: (key, req, res, next) => {
-            if (!req.headers[key]) {
-                res.send401();
-                return;
-            }
             next();
         },
     },
@@ -476,8 +472,13 @@ class Application {
             cb();
             return;
         }
-        if (typeof auth.validator === 'function') {
-            auth.validator(auth.key, req, res, cb);
+        const { key, validator } = auth;
+        if (!req.headers[key]) {
+            cb(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
+            return;
+        }
+        if (typeof validator === 'function') {
+            validator(key, req, res, cb);
         }
     }
 
@@ -758,11 +759,13 @@ const m = (options = {}) => {
                 let html = buffer.toString();
                 const vars = {
                     name,
-                    apiKey: app._options.apiKey.enabled ? req.query.api_key : void 0,
+                    apiKey: app._options.apiKey.enabled ? req.query.api_key : '',
                     rsVersion: pkg.version,
                     dataKey: app._options.dataKey,
                     errorKey: app._options.errorKey,
                     meta: app._options.meta.enabled,
+                    authKey: app._options.auth.key,
+                    authDescription: app._options.auth.description || '',
                 };
                 Object.keys(vars).forEach((key) => {
                     const r = new RegExp(`\\$\\{${key}\\}`, 'g');

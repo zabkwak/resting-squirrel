@@ -163,8 +163,8 @@ describe('Authorization', () => {
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
             expect(error).to.have.all.keys(['message', 'code']);
-            expect(error.message).to.be.equal('Unauthorized');
-            expect(error.code).to.be.equal('ERR_UNAUTHORIZED');
+            expect(error.message).to.be.equal('The access token is missing.');
+            expect(error.code).to.be.equal('ERR_MISSING_ACCESS_TOKEN');
             done();
         });
     });
