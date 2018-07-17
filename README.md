@@ -294,6 +294,7 @@ The module creates generic documentation by default. The documentation is on the
 - remove auth option in the docs
 - remove POST api key support
 - remove function arguments support in http methods.
+- send access token to the auth.validator instead of key
 
 ## Thanks
 - [richardszemerei](https://github.com/richardszemerei) for CSS consultations.

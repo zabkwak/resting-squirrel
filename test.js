@@ -1,4 +1,5 @@
 const RS = require('./');
+const { HttpError } = RS;
 
 const app = RS.default({
     name: 'RS DEV API',
@@ -6,6 +7,21 @@ const app = RS.default({
         enabled: true,
     },
     logStack: false,
+    auth: {
+        key: 'authorization',
+        validator: (key, req, res, next) => {
+            const [type, token] = req.headers[key].split(' ');
+            if (type !== 'Bearer') {
+                next(HttpError.create(401));
+                return;
+            }
+            if (token !== 'TOKEN') {
+                next(HttpError.create(401));
+                return;
+            }
+            next();
+        },
+    },
 });
 
 const { Field, Param, Type } = RS;
@@ -113,7 +129,7 @@ app.post(1, '/param-shape', {
             new Param.Shape('shape', true, 'Nested shape', new Field('string', Type.string, 'String field as part of the nested shape.')),
         ),
         new Param.ShapeArray('shape_array', true, 'Array of shapes defined as Field.ShapeArray.', new Param('string', false, Type.string, 'String field as part of the shape.')),
-    
+
     ],
     response: null,
 }, (req, res, next) => next());
