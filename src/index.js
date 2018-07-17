@@ -329,18 +329,22 @@ class Application {
                                                     return;
                                                 }
                                                 if (endpoint.response) {
-                                                    endpoint.response.forEach((field) => {
-                                                        const { type, name } = field;
-                                                        if (type.isValid(data[name])) {
-                                                            data[name] = type.cast(data[name]);
-                                                        } else {
-                                                            const message = `Response on key '${name}' has invalid type. It should be ${type}`;
-                                                            if (this._options.responseStrictValidation) {
-                                                                throw new Err(message);
+                                                    if (!data) {
+                                                        console.warn('Endpoint has defined response data but the callback is not sending undefined data.');
+                                                    } else {
+                                                        endpoint.response.forEach((field) => {
+                                                            const { type, name } = field;
+                                                            if (type.isValid(data[name])) {
+                                                                data[name] = type.cast(data[name]);
+                                                            } else {
+                                                                const message = `Response on key '${name}' has invalid type. It should be ${type}`;
+                                                                if (this._options.responseStrictValidation) {
+                                                                    throw new Err(message);
+                                                                }
+                                                                console.warn(message);
                                                             }
-                                                            console.warn(message);
-                                                        }
-                                                    });
+                                                        });
+                                                    }
                                                 }
                                                 res._sendData(data);
                                             });

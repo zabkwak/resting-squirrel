@@ -70,6 +70,13 @@ app.get(0, '/args/:id/defined', {
     ],
 }, (req, res, next) => next(null, req.params));
 
+app.get(0, '/response/definition/with/null/data', {
+    hideDocs: true,
+    response: [
+        new Field('id', Type.integer, 'Some identificator'),
+    ],
+}, (req, res, next) => next());
+
 const asyncFunction = (error = false) => new Promise((resolve, reject) => {
     if (error) {
         reject(HttpError.create(400));
@@ -643,6 +650,16 @@ describe('Special responses', () => {
 
     it('calls the endpoint which will resolve a Promise', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/promise' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.statusCode).to.equal(204);
+            expect(body).to.be.undefined;
+            done();
+        });
+    });
+
+    it('calls the enpdoint which has defined response but the callback sends undefined data', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/response/definition/with/null/data' }, (err, res, body) => {
             expect(err).to.be.null;
             expect(res.headers["content-type"]).to.be.undefined;
             expect(res.statusCode).to.equal(204);
