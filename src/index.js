@@ -460,6 +460,7 @@ class Application {
             next(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
             return;
         }
+        req.apiKey = key;
         apiKey.validator(key, next);
     }
 
@@ -481,6 +482,7 @@ class Application {
             cb(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
             return;
         }
+        req.accessToken = req.headers[key];
         if (typeof validator === 'function') {
             validator(key, req, res, cb);
         }
