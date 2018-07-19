@@ -330,7 +330,7 @@ class Application {
                                                 }
                                                 if (endpoint.response) {
                                                     if (!data) {
-                                                        console.warn('Endpoint has defined response data but the callback is not sending undefined data.');
+                                                        console.warn('Endpoint has defined response data but the callback is sending undefined data.');
                                                     } else {
                                                         endpoint.response.forEach((field) => {
                                                             const { type, name } = field;
@@ -676,8 +676,9 @@ class Application {
                             Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
                         }
                     }
-                    res.header('content-type', 'application/json; charset=utf-8');
-                    res.write(JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4));
+                    res.header('Content-Type', 'application/json; charset=utf-8');
+                    const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
+                    res.write(json);
                 } else {
                     res.status(204);
                 }
@@ -741,6 +742,7 @@ class Application {
 const m = (options = {}) => {
     const app = new Application(options);
     const { docs, name } = app._options;
+    app.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
     if (docs.enabled) {
         let requireAuth = false;
         if (docs.auth) {

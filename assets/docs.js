@@ -227,6 +227,7 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
+    
     const formatErrors = (errors) => {
         if (!errors) {
             return '';

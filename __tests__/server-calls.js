@@ -97,6 +97,13 @@ app.get(0, '/promise', {
     next();
 });
 
+app.get(0, '/shape-array', {
+    hideDocs: true,
+    response: [
+        new Field.ShapeArray('shape_array', 'Shape array.', new Field('id', Type.integer), new Field('number', Type.integer)),
+    ],
+}, (req, res, next) => next(null, { shape_array: [{ id: 1, number: 2, text: 'text' }] }));
+
 describe('Server start', () => {
 
     it('starts the server', (done) => {
@@ -948,6 +955,30 @@ describe('Errors', () => {
             expect(error).to.have.all.keys(['message', 'code']);
             expect(error.message).to.be.equal('Forbidden');
             expect(error.code).to.be.equal('ERR_FORBIDDEN');
+            done();
+        });
+    });
+});
+
+describe('Responses', () => {
+
+    it('calls the endpoint which sends field not defined in the shape array', (done) => {
+        request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/shape-array' }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['shape_array']);
+            const { shape_array } = data;
+            expect(shape_array).to.be.an.instanceOf(Array);
+            expect(shape_array.length).to.be.equal(1);
+            const item = shape_array.shift();
+            // expect(item).to.have.all.keys(['id', 'number', 'text']);
+            expect(item).to.have.all.keys(['id', 'number']);
+            expect(item.id).to.be.equal(1);
+            expect(item.number).to.be.equal(2);
+            // expect(item.text).to.be.equal('text');
             done();
         });
     });
