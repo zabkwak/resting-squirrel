@@ -31,6 +31,7 @@ class Endpoint {
     callback = null;
     route = null;
     deprecated = false;
+    apiKeyEnabled = false;
 
     /** 
      * @type {string[]}
@@ -67,13 +68,14 @@ class Endpoint {
         this.description = options.description || null;
         this.hideDocs = options.hideDocs || false;
         this.callback = options.callback || null;
+        this.apiKeyEnabled = options.apiKeyEnabled || false;
         if (options.validateParams) {
             this._validateParams();
         }
         if (route) {
             route.addEndpoint(this);
         }
-        this._setErrors(options.apiKeyEnabled);
+        this._setErrors();
     }
 
     getEndpoint() {
@@ -159,7 +161,7 @@ class Endpoint {
         });
     }
 
-    _setErrors(apiKeyEnabled = false) {
+    _setErrors() {
         const params = Boolean(this.params.length);
         const args = this.route && Object.keys(this.route.args).length;
         if (args && params) {
@@ -175,7 +177,7 @@ class Endpoint {
         if (this.requiredAuth) {
             this.errors.unshift(new Error('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
         }
-        if (apiKeyEnabled) {
+        if (this.apiKeyEnabled) {
             this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
         }
     }

@@ -310,8 +310,8 @@ describe('Endpoint', () => {
 
     it('creates the endpoint with null response', () => {
         const endpoint = new Endpoint(null, { version: 0, requireAuth: false, params: [], response: null, description: null });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated } = endpoint;
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
@@ -323,6 +323,7 @@ describe('Endpoint', () => {
         expect(hideDocs).to.be.false;
         expect(route).to.be.nul;
         expect(deprecated).to.be.false;
+        expect(apiKeyEnabled).to.be.false;
     });
 
     it('creates the endpoint with params defined on the old version of the module', () => {
@@ -333,9 +334,10 @@ describe('Endpoint', () => {
             description: 'Creates new car record',
             hideDocs: true,
             callback: () => { },
+            apiKeyEnabled: true,
         });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated']);
-        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated } = endpoint;
+        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
@@ -343,13 +345,14 @@ describe('Endpoint', () => {
         expect(response).to.be.an.instanceOf(Array);
         expect(response.length).to.be.equal(0);
         expect(errors).to.be.an.instanceOf(Array);
-        expect(errors.length).to.be.equal(2);
+        expect(errors.length).to.be.equal(3);
 
         expect(description).to.be.equal('Creates new car record');
         expect(hideDocs).to.be.true;
         expect(callback).to.be.a('function');
         expect(route).to.be.null;
         expect(deprecated).to.be.false;
+        expect(apiKeyEnabled).to.be.true;
 
         const [brand, type, dimensions] = params;
         expect(brand).to.be.an.instanceOf(Param);

@@ -77,6 +77,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {string} description
  * @property {boolean} hideDocs
  * @property {Field[]} args
+ * @property {boolean} requireApiKey
  */
 
 /** @type {AppOptions} */
@@ -433,7 +434,7 @@ class Application {
             ...options,
             callback,
             validateParams: this._options.validateParams,
-            apiKeyEnabled: this._options.apiKey.enabled,
+            apiKeyEnabled: options.requireApiKey === false ? false : this._options.apiKey.enabled,
         });
         return endpoint;
     }
@@ -441,6 +442,10 @@ class Application {
     _checkApiKey(req, res, next) {
         const { apiKey } = this._options;
         if (!apiKey.enabled) {
+            next();
+            return;
+        }
+        if (!req.__endpoint.apiKeyEnabled) {
             next();
             return;
         }

@@ -196,6 +196,8 @@ describe('Api Key', () => {
 
         app.get(0, '/api-key', (req, res, next) => next(null, req.query));
 
+        app.get(0, '/api-key/ignore', { requireApiKey: false }, (req, res, next) => next());
+
         app.start();
 
         it('calls the endpoint without an api key', (done) => {
@@ -248,6 +250,18 @@ describe('Api Key', () => {
                 expect(body).to.have.all.keys(['data', '_meta']);
                 const { data } = body;
                 expect(data).to.deep.equal({ api_key: 'API_KEY' });
+                done();
+            });
+        });
+
+        it('calls the endpoint which does not require an api key', (done) => {
+            request.get({
+                url: 'http://localhost:8087/0/api-key/ignore',
+                gzip: true,
+                json: true,
+            }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.statusCode).to.equal(204);
                 done();
             });
         });

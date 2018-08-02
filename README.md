@@ -131,7 +131,8 @@ All http methods are using the same function for handling data. First parameter 
 **params** List of `Param` instances to define endpoint parameters.  
 **response** List of `Field` instances to define endpoint response fields.  
 **errors** List of `ErrorField` instances to define errors which could be returned during the execution.  
-**hideDocs** If true the endpoint is hidden from the documentation.
+**hideDocs** If true the endpoint is hidden from the documentation.  
+**requireApiKey** If false the endpoint doesn't require an api key in the request. This option overrides the `options.apiKey.enabled` option if it's false. It's not recommended to use this option.  
 
 #### Arguments
 The list of arguments fields in the http methods is array of `Field` instances. The values are validated with type checking. 
