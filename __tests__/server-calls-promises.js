@@ -26,7 +26,7 @@ class C {
         }
         return new Promise((resolve, reject) => {
             if (!this.id) {
-                reject('No id specified');
+                reject(HttpError.create(400, 'No id specified.', void 0, { field: 'id' }));
                 return;
             }
             resolve({ id: this.id });
@@ -97,12 +97,13 @@ describe('Promises', () => {
             }, (err, res, body) => {
                 expect(err).to.be.null;
                 expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
-                expect(res.statusCode).to.equal(500);
+                expect(res.statusCode).to.equal(400);
                 expect(body).to.have.all.keys(['error', '_meta', 'warning']);
                 const { error } = body;
-                expect(error).to.have.all.keys(['message', 'code']);
-                expect(error.message).to.be.equal('No id specified');
-                expect(error.code).to.be.equal('ERR_INTERNAL_SERVER_ERROR');
+                expect(error).to.have.all.keys(['message', 'code', 'field']);
+                expect(error.message).to.be.equal('No id specified.');
+                expect(error.code).to.be.equal('ERR_BAD_REQUEST');
+                expect(error.field).to.be.equal('id');
                 done();
             });
         });
@@ -132,12 +133,13 @@ describe('Promises', () => {
             }, (err, res, body) => {
                 expect(err).to.be.null;
                 expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
-                expect(res.statusCode).to.equal(500);
+                expect(res.statusCode).to.equal(400);
                 expect(body).to.have.all.keys(['error', '_meta']);
                 const { error } = body;
-                expect(error).to.have.all.keys(['message', 'code']);
-                expect(error.message).to.be.equal('No id specified');
-                expect(error.code).to.be.equal('ERR_INTERNAL_SERVER_ERROR');
+                expect(error).to.have.all.keys(['message', 'code', 'field']);
+                expect(error.message).to.be.equal('No id specified.');
+                expect(error.code).to.be.equal('ERR_BAD_REQUEST');
+                expect(error.field).to.be.equal('id');
                 done();
             });
         });
