@@ -4,9 +4,11 @@ declare module 'resting-squirrel' {
     import HttpSmartError from 'http-smart-error';
     import RuntimeType from 'runtime-type';
 
-    type RouteCallback = (req: any, res: any, next: (error: HttpError | Error | string | null, data: any) => void) => void;
+    type Type = RuntimeType.Type;
 
-    type MiddlewareNext = (error: HttpError | Error | string | null) => void;
+    type RouteCallback = (req: any, res: any, next: (error: HttpSmartError | SmartError | string | null, data: any) => void) => void;
+
+    type MiddlewareNext = (error: HttpSmartError | SmartError | string | null) => void;
 
     interface RouteOptions {
         requireAuth?: boolean,
@@ -96,7 +98,7 @@ declare module 'resting-squirrel' {
          * Adds the endpoin to the routes map.
          * @param Endpoint Endpoint to add.
          */
-        addEndpoint(Endpoint): void;
+        addEndpoint(endpoint: Endpoint): void;
         /**
          * Gets the maximal version of all endpoints.
          */
@@ -219,8 +221,8 @@ declare module 'resting-squirrel' {
         description: string;
         fields: Field[];
         type: Type;
-        constructor(name: string, ...fields: Fields[]);
-        constructor(name: string, description: string, ...fields: Fields[]);
+        constructor(name: string, ...fields: Field[]);
+        constructor(name: string, description: string, ...fields: Field[]);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string };
     }
 
@@ -229,8 +231,8 @@ declare module 'resting-squirrel' {
         description: string;
         shape: FieldShape;
         type: Type;
-        constructor(name: string, ...fields: Fields[]);
-        constructor(name: string, description: string, ...fields: Fields[]);
+        constructor(name: string, ...fields: Field[]);
+        constructor(name: string, description: string, ...fields: Field[]);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string };
     }
 
@@ -240,13 +242,13 @@ declare module 'resting-squirrel' {
 
         static ShapeArray: typeof FieldShapeArray;
 
-        static create(param: string | { name: string, type?: Type.Type, description?: string }): Field;
+        static create(param: string | { name: string, type?: Type, description?: string }): Field;
 
         key: string;
 
         name: string;
 
-        type: RuntimeType.Type;
+        type: Type;
 
         description: string;
 
@@ -261,27 +263,35 @@ declare module 'resting-squirrel' {
 
     class ParamShape extends FieldShape {
         required: boolean;
-        constructor(name: string, required: boolean, ...fields: Fields[]);
-        constructor(name: string, required: boolean, description: string, ...fields: Fields[]);
-        toJSON(): { name: string, required: boolean, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
+        constructor(name: string, required: boolean, ...fields: Field[]);
+        constructor(name: string, required: boolean, description: string, ...fields: Field[]);
+        toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
     }
 
     class ParamShapeArray extends FieldShapeArray {
         required: boolean;
-        constructor(name: string, required: boolean, ...fields: Fields[]);
-        constructor(name: string, required: boolean, description: string, ...fields: Fields[]);
-        toJSON(): { name: string, required: boolean, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
+        constructor(name: string, required: boolean, ...fields: Field[]);
+        constructor(name: string, required: boolean, description: string, ...fields: Field[]);
+        toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
     }
 
-    class Param extends Field {
+    class Param /* extends Field */ {
 
         static Shape: typeof ParamShape;
 
         static ShapeArray: typeof ParamShapeArray;
 
-        static createFromField(field: Field, required?: boolean);
+        static createFromField(field: Field, required?: boolean): Param;
 
-        static create(param: string | { name: string, type?: Type.Type, description?: string, required?: boolean }): Param;
+        static create(param: string | { name: string, type?: Type, description?: string, required?: boolean }): Param;
+
+        key: string;
+
+        name: string;
+
+        type: Type;
+
+        description: string;
 
         required: boolean;
 
@@ -293,7 +303,7 @@ declare module 'resting-squirrel' {
 
         constructor(name: string, required: boolean, type: Type, description: string);
 
-        toJSON(): { name: string, required: boolean, key: string, description: string, type: string, required: boolean };
+        toJSON(): { name: string, key: string, description: string, type: string, required: boolean };
     }
 
     class ErrorField {
@@ -315,7 +325,6 @@ declare module 'resting-squirrel' {
     }
 
     export {
-        construct as default,
         RuntimeType as Type,
         SmartError as Error,
         HttpSmartError as HttpError,
@@ -352,13 +361,13 @@ declare module 'resting-squirrel' {
             /** If true the params are as array in the documentation. */
             paramsAsArray?: boolean,
         },
-        auth?: (req, res, next: MiddlewareNext) => void | {
+        auth?: (req: any, res: any, next: MiddlewareNext) => void | {
             /** Header key where the authorization token is located. */
             key?: string,
             /** Description of the authorization process. */
             description?: string,
             /** Validator function executed while validating authorization token in the endpoint lifecycle. */
-            validator?: (key: string, req, res, next, next: MiddlewareNext) => void,
+            validator?: (key: string, req: any, res: any, next: MiddlewareNext) => void,
         },
         apiKey?: {
             /**
@@ -375,11 +384,11 @@ declare module 'resting-squirrel' {
              */
             validator?: (apiKey: string, next: MiddlewareNext) => void,
         },
-        before?: (req, res, next: MiddlewareNext) => void | {
-            [route: string]: (req, res, next: MiddlewareNext) => void,
+        before?: (req: any, res: any, next: MiddlewareNext) => void | {
+            [route: string]: (req: any, res: any, next: MiddlewareNext) => void,
         },
-        after?: (isError: boolean, data: any, req, res, next: MiddlewareNext) => void | {
-            [route: string]: (isError: boolean, data: any, req, res, next: MiddlewareNext) => void,
+        after?: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void | {
+            [route: string]: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void,
         },
         defaultError?: {
             statusCode?: number,

@@ -27,8 +27,8 @@
     "express": "^4.13.3",
     "http-smart-error": "^1.1.1",
     "route-parser": "0.0.5",
-    "runtime-type": "^1.2.0",
-    "smart-error": "^1.2.1"
+    "runtime-type": "^1.2.1",
+    "smart-error": "^1.2.2"
   },
   "repository": {
     "type": "git",
