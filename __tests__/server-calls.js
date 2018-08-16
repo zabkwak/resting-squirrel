@@ -974,8 +974,7 @@ describe('Responses', () => {
             expect(shape_array).to.be.an.instanceOf(Array);
             expect(shape_array.length).to.be.equal(1);
             const item = shape_array.shift();
-            // expect(item).to.have.all.keys(['id', 'number', 'text']);
-            expect(item).to.have.all.keys(['id', 'number']);
+            expect(item).to.have.all.keys(['id', 'number', 'text']);
             expect(item.id).to.be.equal(1);
             expect(item.number).to.be.equal(2);
             // expect(item.text).to.be.equal('text');
