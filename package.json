@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "./dist/resting-squirrel.d.ts",
   "scripts": {
-    "test": "mocha ./__tests__ --recursive --compilers js:babel-core/register --timeout 5000",
+    "test": "mocha ./__tests__/server-calls-promises --recursive --compilers js:babel-core/register --timeout 5000",
     "create_index": "run-script-os",
     "create_index:win32": "echo module.exports = require('./dist'); > index.js",
     "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",

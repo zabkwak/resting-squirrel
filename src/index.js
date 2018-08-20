@@ -324,31 +324,36 @@ class Application {
                                             return;
                                         }
                                         try {
-                                            await endpoint.callback(req, res, (err, data) => {
+                                            let dataSent = false;
+                                            const p = endpoint.callback(req, res, (err, data) => {
+                                                if (dataSent) {
+                                                    console.warn('Data already sent using a Promise.');
+                                                    return;
+                                                }
+                                                dataSent = true;
                                                 if (err) {
                                                     next(err);
                                                     return;
                                                 }
-                                                if (endpoint.response) {
-                                                    if (!data) {
-                                                        console.warn('Endpoint has defined response data but the callback is sending undefined data.');
-                                                    } else {
-                                                        endpoint.response.forEach((field) => {
-                                                            const { type, name } = field;
-                                                            if (type.isValid(data[name])) {
-                                                                data[name] = type.cast(data[name]);
-                                                            } else {
-                                                                const message = `Response on key '${name}' has invalid type. It should be ${type}`;
-                                                                if (this._options.responseStrictValidation) {
-                                                                    throw new Err(message);
-                                                                }
-                                                                console.warn(message);
-                                                            }
-                                                        });
-                                                    }
-                                                }
-                                                res._sendData(data);
+                                                this._handleData(req, res, data);
                                             });
+                                            if (p instanceof Promise) {
+                                                p.then((data) => {
+                                                    if (dataSent) {
+                                                        console.warn('Data already sent using a callback.');
+                                                        return;
+                                                    }
+                                                    if (data === undefined) {
+                                                        console.warn('Methods using Promises shouldn\'t return undefined.');
+                                                        return;
+                                                    }
+                                                    dataSent = true;
+                                                    this._handleData(req, res, data);
+                                                }).catch((e) => {
+                                                    dataSent = true;
+                                                    next(e); // TODO
+                                                });
+                                            }
                                         } catch (e) {
                                             next(e);
                                         }
@@ -580,6 +585,29 @@ class Application {
             map[spec](req, res, callback);
             return;
         }, cb);
+    }
+
+    _handleData(req, res, data) {
+        const endpoint = req.__endpoint;
+        if (endpoint.response) {
+            if (!data) {
+                console.warn('Endpoint has defined response data but the callback is sending undefined data.');
+            } else {
+                endpoint.response.forEach((field) => {
+                    const { type, name } = field;
+                    if (type.isValid(data[name])) {
+                        data[name] = type.cast(data[name]);
+                    } else {
+                        const message = `Response on key '${name}' has invalid type. It should be ${type}`;
+                        if (this._options.responseStrictValidation) {
+                            throw new Err(message);
+                        }
+                        console.warn(message);
+                    }
+                });
+            }
+        }
+        res._sendData(data);
     }
 
     _afterCallback(err, data, req, res, map, cb) {
