@@ -8,7 +8,7 @@ declare module 'resting-squirrel' {
 
     type RouteCallback = (req: any, res: any, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void;
 
-    type MiddlewareNext = (error?: HttpSmartError | SmartError | string | null) => void;
+    type MiddlewareNext = (error?: HttpSmartError | SmartError | Error | string | null) => void;
 
     interface RouteOptions {
         requireAuth?: boolean,
@@ -337,17 +337,47 @@ declare module 'resting-squirrel' {
     export default function (options?: {
         /** Port number where the app listens */
         port?: number,
+        /** Name of the app. */
         name?: string,
+        /** Key in response where the data are stored. */
         dataKey?: string,
+        /** Key in response where the error is stored. */
         errorKey?: string,
+        /** If true the app is logging. */
         log?: boolean,
+        /** If true the app is logging the stack trace if error occures. */
         logStack?: boolean,
-        logger?: Function,
+        /** Function to log a data. The `log` option must be set to true to call it. */
+        logger?: (data: {
+            /** HTTP status code. */
+            statusCode: number,
+            /** HTTP method. */
+            method: string,
+            /** Endpoint path. */
+            path: string,
+            /** Endpoint route spec. */
+            spec: string,
+            /** Request body. */
+            body: { [key: string]: any },
+            /** Request params. */
+            params: { [key: string]: any },
+            /** Request query. */
+            query: { [key: string]: any },
+            /** Request headers. */
+            headers: { [key: string]: any },
+            /** Execution time of the endpoint in milliseconds. */
+            took: number,
+        }) => void,
+        /** Option to set meta data in the response. */
         meta?: {
+            /** If true meta data are in the response in key `_meta`. */
             enabled?: boolean,
+            /** Additional meta data. */
             data?: { [key: string]: any },
         },
+        /** Limit of the request body. */
         requestLimit?: string,
+        /** Docs settings. */
         docs?: {
             /** If false the documentation is not accessible. */
             enabled?: boolean,
@@ -361,6 +391,7 @@ declare module 'resting-squirrel' {
             /** If true the params are as array in the documentation. */
             paramsAsArray?: boolean,
         },
+        /** Authorization settings. */
         auth?: (req: any, res: any, next: MiddlewareNext) => void | {
             /** Header key where the authorization token is located. */
             key?: string,
@@ -369,6 +400,7 @@ declare module 'resting-squirrel' {
             /** Validator function executed while validating authorization token in the endpoint lifecycle. */
             validator?: (key: string, req: any, res: any, next: MiddlewareNext) => void,
         },
+        /** Api key settings. */
         apiKey?: {
             /**
              * If true all requests require api key parameter. It can be overriden in the endpoint config.
@@ -384,18 +416,25 @@ declare module 'resting-squirrel' {
              */
             validator?: (apiKey: string, next: MiddlewareNext) => void,
         },
+        /** Methods called before the endpoint callback execution. */
         before?: (req: any, res: any, next: MiddlewareNext) => void | {
             [route: string]: (req: any, res: any, next: MiddlewareNext) => void,
         },
+        /**
+         * Methods to call after the endpopint callback execution.
+         */
         after?: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void | {
             [route: string]: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void,
         },
+        /** Default error to show. */
         defaultError?: {
             statusCode?: number,
             message?: string,
             code?: string,
         },
+        /** If true the parameters are validated and warnings are returned if something is wrong. */
         validateParams?: boolean,
+        /** If true the response data are strictly validated to types. It can throw an invalid type error. */
         responseStrictValidation?: boolean,
     }): Application;
 }
