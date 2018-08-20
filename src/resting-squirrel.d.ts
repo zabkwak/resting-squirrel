@@ -6,7 +6,7 @@ declare module 'resting-squirrel' {
 
     type Type = RuntimeType.Type;
 
-    type RouteCallback = (req: any, res: any, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void;
+    type RouteCallback = (req: any, res: any, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void | Promise<any>;
 
     type MiddlewareNext = (error?: HttpSmartError | SmartError | Error | string | null) => void;
 
