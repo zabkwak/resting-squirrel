@@ -662,7 +662,7 @@ class Application {
                 next(new Err(message, errorCode));
             };
             res.sendData = (data, key = dataKey) => {
-                console.warn('res.sendData is deprecated. Use next callback in route.');
+                console.warn('res.sendData is deprecated. Use next callback in route or Promises.');
                 res._sendData(data, key);
             };
             res._sendData = (data, key = dataKey) => {
@@ -727,6 +727,7 @@ class Application {
                         query: req.query,
                         headers: req.headers,
                         took,
+                        response: data,
                     });
                 }
             };

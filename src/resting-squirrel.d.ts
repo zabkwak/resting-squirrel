@@ -367,6 +367,8 @@ declare module 'resting-squirrel' {
             headers: { [key: string]: any },
             /** Execution time of the endpoint in milliseconds. */
             took: number,
+            /** Response sent to the client. */
+            response: { data?: any, error?: HttpSmartError, _meta?: any },
         }) => void,
         /** Option to set meta data in the response. */
         meta?: {
