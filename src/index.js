@@ -88,7 +88,7 @@ const DEFAULT_OPTIONS = {
     errorKey: 'error',
     log: true,
     logStack: true,
-    logger: ({ statusCode, method, path, spec, body, params, query, headers, took }) => {
+    logger: ({ statusCode, method, path, spec, body, params, query, headers, took, response }) => {
         console.log(new Date(), `${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(query)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`);
         console.log('');
     },
