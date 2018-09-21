@@ -4,9 +4,13 @@ $(document).ready(() => {
     const $console = $('#console');
     const { protocol, host } = location;
     const baseUrl = `${protocol}//${host}`;
+
+    let consoleOpened = false;
+
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
     const className = (...args) => args.filter(item => Boolean(item)).join(' ');
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
+        consoleOpened = true;
         const [method, path] = endpoint.split(' ');
         const $consoleContent = $(`
             <div>
@@ -132,6 +136,7 @@ $(document).ready(() => {
         $consoleContent.find('button.close').click((e) => {
             e.preventDefault();
             $console.hide();
+            consoleOpened = false;
         });
 
         $('#console-form').submit((e) => {
@@ -189,7 +194,12 @@ $(document).ready(() => {
                 dataType: 'json',
                 contentType: 'application/json',
                 url: `${url}?api_key=${API_KEY}`,
+                timeout: 30000,
                 error: ({ responseText, status }, textStatus, error) => {
+                    if (error === 'timeout') {
+                        renderData(error, undefined, status, Date.now() - start);
+                        return;
+                    }
                     renderData(error, JSON.parse(responseText), status, Date.now() - start);
                 },
                 success: (response, textStatus, { status }) => {
@@ -227,7 +237,6 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
-
     const formatErrors = (errors) => {
         if (!errors) {
             return '';
@@ -376,6 +385,21 @@ $(document).ready(() => {
             $showDeprecated.click(e => renderIndexItems($ul, endpoints, e.target.checked));
             if (location.hash) {
                 location.href = location.hash;
+            }
+            window.onpopstate = () => {
+                if (!consoleOpened) {
+                    // return;
+                }
+                const { hash } = location;
+                if (!hash) {
+                    return;
+                }
+                Object.keys(data).forEach((endpoint) => {
+                    if (hash.substr(1) === getEndpointId(endpoint)) {
+                        testConsole(endpoint, data[endpoint]);
+                        return;
+                    }
+                });
             }
         },
     });
