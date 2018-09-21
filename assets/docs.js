@@ -227,7 +227,7 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
-    
+
     const formatErrors = (errors) => {
         if (!errors) {
             return '';
@@ -301,6 +301,15 @@ $(document).ready(() => {
         });
         return $docs;
     };
+    const renderIndexItems = ($parent, endpoints, showDeprecated = true) => {
+        $parent.html('');
+        endpoints.forEach(({ endpoint, deprecated, required_auth }) => {
+            if (!showDeprecated && deprecated) {
+                return;
+            }
+            $parent.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}" title="${endpoint}">${endpoint}</a>`);
+        });
+    };
     $.ajax({
         dataType: 'json',
         url: `/docs?api_key=${API_KEY}`,
@@ -347,13 +356,17 @@ $(document).ready(() => {
                 <p>Prints the response for human reading.</p>
                 <h2 id="endpoints">Endpoints<a href="#endpoints"></a></h2>
             `);
-            $index.html('<div class="list-group list-group-flush"></div>');
+            $index.html('<div class="form-check"><label class="form-check-label" for="show-deprecated"><input class="form-check-input" type="checkbox" checked id="show-deprecated" />Show deprecated</label></div><div class="list-group list-group-flush"></div>');
             $ul = $index.find('div.list-group');
+            $showDeprecated = $index.find('#show-deprecated');
+            const endpoints = [];
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
                 const { deprecated, required_auth } = data[endpoint];
-                $ul.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}" title="${endpoint}">${endpoint}</a>`);
+                endpoints.push({ endpoint, deprecated, required_auth });
             });
+            renderIndexItems($ul, endpoints, true);
+            $showDeprecated.click(e => renderIndexItems($ul, endpoints, e.target.checked));
             if (location.hash) {
                 location.href = location.hash;
             }

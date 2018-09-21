@@ -628,7 +628,7 @@ class Application {
     }
 
     _createApp() {
-        const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger } = this._options;
+        const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name } = this._options;
         this._app = express();
 
         this._app.use((req, res, next) => {
@@ -702,6 +702,7 @@ class Application {
                                 headers: req.headers,
                             },
                             app: {
+                                name,
                                 version: APP_PACKAGE.version,
                             },
                         };
