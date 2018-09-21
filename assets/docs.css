@@ -89,6 +89,11 @@ h2 a:after, h3 a:after {
     font-size: 80%;
 }
 
+h2 .badge {
+    font-size: 50%;
+    margin-top: 0.5em;
+}
+
 #console .badge {
     font-size: 100%;
 }

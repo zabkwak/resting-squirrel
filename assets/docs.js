@@ -356,7 +356,14 @@ $(document).ready(() => {
                 <p>Prints the response for human reading.</p>
                 <h2 id="endpoints">Endpoints<a href="#endpoints"></a></h2>
             `);
-            $index.html('<div class="form-check"><label class="form-check-label" for="show-deprecated"><input class="form-check-input" type="checkbox" checked id="show-deprecated" />Show deprecated</label></div><div class="list-group list-group-flush"></div>');
+            $index.html(`
+            <div class="form-check">
+                <h2>Endpoints<span class="badge badge-info pull-right align-middle">${Object.keys(data).length}</span></h2>
+                <label class="form-check-label" for="show-deprecated">
+                    <input class="form-check-input" type="checkbox" checked id="show-deprecated" />Show deprecated
+                </label>
+            </div>
+            <div class="list-group list-group-flush"></div>`);
             $ul = $index.find('div.list-group');
             $showDeprecated = $index.find('#show-deprecated');
             const endpoints = [];
