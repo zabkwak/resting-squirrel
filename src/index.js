@@ -733,7 +733,6 @@ class Application {
                     });
                 }
             };
-            // Object.keys(meta.data).forEach(key => res.addMeta(key, meta.data[key]));
             next();
         });
         this._app.use(compression());

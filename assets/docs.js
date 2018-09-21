@@ -200,7 +200,13 @@ $(document).ready(() => {
                         renderData(error, undefined, status, Date.now() - start);
                         return;
                     }
-                    renderData(error, JSON.parse(responseText), status, Date.now() - start);
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch (e) {
+                        error = 'Unknown error';
+                    }
+                    renderData(error, errorData, status, Date.now() - start);
                 },
                 success: (response, textStatus, { status }) => {
                     renderData(null, response, status, Date.now() - start);
