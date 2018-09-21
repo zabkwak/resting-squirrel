@@ -10,6 +10,7 @@ import async from 'async';
 import Type from 'runtime-type';
 import path from 'path';
 import fs from 'fs';
+import _ from 'lodash';
 
 import Endpoint, { Param, Field, Error as ErrorField } from './endpoint';
 import Route from './route';
@@ -688,7 +689,7 @@ class Application {
                         data.warning = 'This endpoint is deprecated. It can be removed in the future.';
                     }
                     if (meta.enabled && req.query.nometa === undefined) {
-                        data._meta = {
+                        data._meta = _.merge({
                             took,
                             deprecated: deprecated || undefined,
                             rs: {
@@ -705,7 +706,7 @@ class Application {
                                 name,
                                 version: APP_PACKAGE.version,
                             },
-                        };
+                        }, meta.data);
                         if (typeof res.__meta === 'object') {
                             Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
                         }
@@ -732,7 +733,7 @@ class Application {
                     });
                 }
             };
-            Object.keys(meta.data).forEach(key => res.addMeta(key, meta.data[key]));
+            // Object.keys(meta.data).forEach(key => res.addMeta(key, meta.data[key]));
             next();
         });
         this._app.use(compression());

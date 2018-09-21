@@ -22,6 +22,13 @@ const app = RS.default({
             next();
         },
     },
+    meta: {
+        data: {
+            app: {
+                build: 666,
+            },
+        },
+    },
 });
 
 const { Field, Param, Type } = RS;
