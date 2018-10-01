@@ -404,7 +404,7 @@ declare module 'resting-squirrel' {
             paramsAsArray?: boolean,
         },
         /** Authorization settings. */
-        auth?: (req: any, res: any, next: MiddlewareNext) => void | {
+        auth?: ((req: any, res: any, next: MiddlewareNext) => void) | {
             /** Header key where the authorization token is located. */
             key?: string,
             /** Description of the authorization process. */
