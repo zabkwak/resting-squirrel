@@ -11,17 +11,27 @@ declare module 'resting-squirrel' {
     type MiddlewareNext = (error?: HttpSmartError | SmartError | Error | string | null) => void;
 
     interface RouteOptions {
+        /** If true the encpoint require authorization and the auth process of the module is executed. */
         requireAuth?: boolean,
+        /** List of params of the endpoint. */
         params?: Param[] | string[],
-        response?: Field[],
+        /** List of response fields. */
+        response?: Array<Field | FieldShape | FieldShapeArray>,
+        /** List of errors that the endpoint can return. */
         errors?: ErrorField[] | string[],
+        /** Description of the endpoint. */
         description?: string,
+        /** If true the endpoint is hidden from the documentation. */
         hideDocs?: boolean,
+        /** List of arguments. */
         args?: Field[],
+        /** If true the endpoint requires API key. */
         requireApiKey?: boolean,
     }
 
     class Application {
+
+        version: string;
 
         /**
          * Registers the middleware callback to all routes.
@@ -110,7 +120,7 @@ declare module 'resting-squirrel' {
         version: number;
         requiredAuth: boolean;
         params: Param[];
-        response: Field[];
+        response: Array<Field | FieldShape | FieldShapeArray>;
         errors: ErrorField[];
         description: string;
         hideDocs: boolean;
@@ -144,7 +154,7 @@ declare module 'resting-squirrel' {
             /** List of params of the endpoint. */
             params?: Param[] | string[],
             /** List of response fields. */
-            response?: Field[],
+            response?: Array<Field | FieldShape | FieldShapeArray>,
             /** List of errors that the endpoint can return. */
             errors?: ErrorField[] | string[],
             /** Description of the endpoint. */
@@ -221,8 +231,8 @@ declare module 'resting-squirrel' {
         description: string;
         fields: Field[];
         type: Type;
-        constructor(name: string, ...fields: Field[]);
-        constructor(name: string, description: string, ...fields: Field[]);
+        constructor(name: string, ...fields: Array<Field | FieldShape | FieldShapeArray>);
+        constructor(name: string, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray>);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string };
     }
 
@@ -231,8 +241,8 @@ declare module 'resting-squirrel' {
         description: string;
         shape: FieldShape;
         type: Type;
-        constructor(name: string, ...fields: Field[]);
-        constructor(name: string, description: string, ...fields: Field[]);
+        constructor(name: string, ...fields: Array<Field | FieldShape | FieldShapeArray>);
+        constructor(name: string, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray>);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string };
     }
 
@@ -263,15 +273,15 @@ declare module 'resting-squirrel' {
 
     class ParamShape extends FieldShape {
         required: boolean;
-        constructor(name: string, required: boolean, ...fields: Field[]);
-        constructor(name: string, required: boolean, description: string, ...fields: Field[]);
+        constructor(name: string, required: boolean, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
+        constructor(name: string, required: boolean, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
     }
 
     class ParamShapeArray extends FieldShapeArray {
         required: boolean;
-        constructor(name: string, required: boolean, ...fields: Field[]);
-        constructor(name: string, required: boolean, description: string, ...fields: Field[]);
+        constructor(name: string, required: boolean, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
+        constructor(name: string, required: boolean, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
     }
 

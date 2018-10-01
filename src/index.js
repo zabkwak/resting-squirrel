@@ -140,6 +140,10 @@ class Application {
     /** @type {Object.<string, Route>} */
     _routes = {};
 
+    get version() {
+        return APP_PACKAGE.version;
+    }
+
     /**
      * 
      * @param {AppOptions} options 
