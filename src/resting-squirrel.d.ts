@@ -429,13 +429,13 @@ declare module 'resting-squirrel' {
             validator?: (apiKey: string, next: MiddlewareNext) => void,
         },
         /** Methods called before the endpoint callback execution. */
-        before?: (req: any, res: any, next: MiddlewareNext) => void | {
+        before?: ((req: any, res: any, next: MiddlewareNext) => void) | {
             [route: string]: (req: any, res: any, next: MiddlewareNext) => void,
         },
         /**
          * Methods to call after the endpopint callback execution.
          */
-        after?: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void | {
+        after?: ((isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void) | {
             [route: string]: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void,
         },
         /** Default error to show. */
