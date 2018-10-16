@@ -114,7 +114,7 @@ const DEFAULT_OPTIONS = {
     apiKey: {
         enabled: false,
         type: 'qs',
-        validator: (apiKey, next) => next(),
+        validator: (apiKey, next) => new Promise((resolve) => resolve(true)),
     },
     before: {
         '*': (req, res, next) => next(),
@@ -476,7 +476,41 @@ class Application {
             return;
         }
         req.apiKey = key;
-        apiKey.validator(key, next);
+        let executed = false;
+        const p = apiKey.validator(key, (err) => {
+            console.warn('Using a callback in api key validator is deprecated.');
+            if (executed) {
+                console.warn('Middleware executed using a Promise.');
+                return;
+            }
+            executed = true;
+            if (err) {
+                next(err);
+                return;
+            }
+            next();
+        });
+        if (p instanceof Promise) {
+            p.then((valid) => {
+                if (executed) {
+                    console.warn('Middleware executed using a callback.');
+                    return;
+                }
+                if (typeof valid !== 'boolean') {
+                    console.warn('Api key validator should return Promise<boolean>.');
+                    return;
+                }
+                executed = true;
+                if (!valid) {
+                    next(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
+                    return;
+                }
+                next();
+            }).catch((e) => {
+                executed = true;
+                process.next(() => next(e));
+            });
+        }
     }
 
     /**

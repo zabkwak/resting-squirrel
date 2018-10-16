@@ -178,6 +178,7 @@ class Endpoint {
             this.errors.unshift(new Error('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
         }
         if (this.apiKeyEnabled) {
+            this.errors.unshift(new Error('ERR_INVALID_API_KEY', 'Returned if the api key is not valid.'));
             this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
         }
     }

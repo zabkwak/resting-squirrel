@@ -5,6 +5,9 @@ const app = RS.default({
     name: 'RS DEV API',
     apiKey: {
         enabled: true,
+        validator: (apiKey) => new Promise((resolve) => {
+            resolve(apiKey === 'API_KEY');
+        }),
     },
     logStack: false,
     auth: {

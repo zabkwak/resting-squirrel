@@ -426,7 +426,7 @@ declare module 'resting-squirrel' {
             /**
              * Validator function executed while validating api key in the endpoint lifecycle.
              */
-            validator?: (apiKey: string, next: MiddlewareNext) => void,
+            validator?: ((apiKey: string) => Promise<boolean>) | ((apiKey: string, next: MiddlewareNext) => void),
         },
         /** Methods called before the endpoint callback execution. */
         before?: ((req: any, res: any, next: MiddlewareNext) => void) | {
