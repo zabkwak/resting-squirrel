@@ -89,6 +89,43 @@ describe('Api Key', () => {
                 done();
             });
         });
+
+        it('calls non existing endpoint with an api key', (done) => {
+            request.get({
+                url: 'http://localhost:8084/404',
+                gzip: true,
+                json: true,
+                qs: { api_key: 'API_KEY' },
+            }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+                expect(res.statusCode).to.equal(404);
+                expect(body).to.have.all.keys(['error', '_meta']);
+                const { error } = body;
+                expect(error).to.have.all.keys(['message', 'code']);
+                expect(error.message).to.be.equal('Page not found');
+                expect(error.code).to.be.equal('ERR_PAGE_NOT_FOUND');
+                done();
+            });
+        });
+
+        it('calls non existing endpoint without an api key', (done) => {
+            request.get({
+                url: 'http://localhost:8084/404',
+                gzip: true,
+                json: true,
+            }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+                expect(res.statusCode).to.equal(403);
+                expect(body).to.have.all.keys(['error', '_meta']);
+                const { error } = body;
+                expect(error).to.have.all.keys(['message', 'code']);
+                expect(error.message).to.be.equal('Api key is missing.');
+                expect(error.code).to.be.equal('ERR_MISSING_API_KEY');
+                done();
+            });
+        });
     });
 
     describe('Enabled api key in body with default validator', () => {

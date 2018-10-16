@@ -290,7 +290,6 @@ The module creates generic documentation by default. The documentation is on the
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
-- validate api key before the 404 error
 ### v3
 - remove auth option in the docs
 - remove POST api key support

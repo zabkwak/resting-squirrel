@@ -371,7 +371,15 @@ class Application {
                 });
             });
         });
-        this._app.use('*', (req, res, next) => res.send404());
+        this._app.use('*', (req, res, next) => {
+            this._checkApiKey(req, res, (err) => {
+                if (err) {
+                    next(err);
+                    return;
+                }
+                res.send404();
+            });
+        });
         this._app.use((err, req, res, next) => {
             if (!(err instanceof HttpError)) {
                 err = HttpError.create(500, err);
@@ -469,7 +477,7 @@ class Application {
             next();
             return;
         }
-        if (!req.__endpoint.apiKeyEnabled) {
+        if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
             next();
             return;
         }
@@ -490,14 +498,16 @@ class Application {
             return;
         }
         req.apiKey = key;
-        try {
-            if (await req.__endpoint.isApiKeyExcluded(key)) {
-                res.send404();
+        if (req.__endpoint) {
+            try {
+                if (await req.__endpoint.isApiKeyExcluded(key)) {
+                    res.send404();
+                    return;
+                }
+            } catch (e) {
+                next(e);
                 return;
             }
-        } catch (e) {
-            next(e);
-            return;
         }
         let executed = false;
         const p = apiKey.validator(key, (err) => {
