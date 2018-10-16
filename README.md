@@ -287,7 +287,6 @@ The module creates generic documentation by default. The documentation is on the
 - timeout option
 - custom warning of the endpoint
 - remove callback hell in start function
-- filter endpoints by api key
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields

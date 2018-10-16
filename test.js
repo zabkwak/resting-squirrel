@@ -6,7 +6,7 @@ const app = RS.default({
     apiKey: {
         enabled: true,
         validator: (apiKey) => new Promise((resolve) => {
-            resolve(apiKey === 'API_KEY');
+            resolve(['API_KEY', 'API_KEY_EXCLUDED'].includes(apiKey));
         }),
     },
     logStack: false,
@@ -156,6 +156,10 @@ app.get(0, '/some/fucking/long/endpoint/which/does/exactly/shit', {
     description: 'Well. The route is speaking for itself.',
     response: null,
     requireAuth: true,
+}, (req, res, next) => next());
+
+app.get(0, '/excluded', {
+    excludedApiKeys: ['API_KEY_EXCLUDED'],
 }, (req, res, next) => next());
 
 app.start();
