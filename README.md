@@ -81,7 +81,7 @@ This usage will create the app with default options.
 **apiKey** Object for setting up the api key.
 - **enabled** If true api key is validated. Default: false  
 - **type** Type of the location of api key in request. One of qs, body, header. Default: qs  
-- **validator(apiKey, next)** Validator of api key.  
+- **validator(apiKey, next)** Validator of api key. It should return `Promise<boolean>`.  
 
 **before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
 **after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
@@ -291,6 +291,7 @@ The module creates generic documentation by default. The documentation is on the
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
+- validate api key before the 404 error
 ### v3
 - remove auth option in the docs
 - remove POST api key support

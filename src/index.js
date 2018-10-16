@@ -79,6 +79,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {boolean} hideDocs
  * @property {Field[]} args
  * @property {boolean} requireApiKey
+ * @property {string[]|function} excludedApiKeys
  */
 
 /** @type {AppOptions} */
@@ -114,7 +115,7 @@ const DEFAULT_OPTIONS = {
     apiKey: {
         enabled: false,
         type: 'qs',
-        validator: (apiKey, next) => new Promise((resolve) => resolve(true)),
+        validator: (apiKey, next) => new Promise(resolve => resolve(true)),
     },
     before: {
         '*': (req, res, next) => next(),
@@ -397,29 +398,42 @@ class Application {
         });
     }
 
-    docs() {
-        const docs = {};
-        Object.keys(this._routes).forEach((key) => {
-            const route = this._routes[key];
-            Object.keys(route.routes).forEach((v) => {
-                const endpoint = route.routes[v];
-                if (endpoint.hideDocs) {
+    docs(apiKey = null) {
+        return new Promise((resolve, reject) => {
+            const docs = {};
+            async.eachSeries(Object.keys(this._routes), (key, callback) => {
+                const route = this._routes[key];
+                async.eachSeries(Object.keys(route.routes), async (v, callback) => {
+                    const endpoint = route.routes[v];
+                    if (endpoint.hideDocs) {
+                        callback();
+                        return;
+                    }
+                    if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
+                        callback();
+                        return;
+                    }
+                    docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
+                        docs: endpoint.docs,
+                        description: endpoint.description,
+                        args: endpoint.getRouteArguments(),
+                        params: endpoint.getParams(this._options.docs.paramsAsArray),
+                        required_params: endpoint.requiredParams,
+                        required_auth: endpoint.requiredAuth,
+                        response: endpoint.getResponse(),
+                        errors: endpoint.getErrors(),
+                        deprecated: endpoint.isDeprecated(),
+                    };
+                    callback();
+                }, callback);
+            }, (err) => {
+                if (err) {
+                    reject(err);
                     return;
                 }
-                docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
-                    docs: endpoint.docs,
-                    description: endpoint.description,
-                    args: endpoint.getRouteArguments(),
-                    params: endpoint.getParams(this._options.docs.paramsAsArray),
-                    required_params: endpoint.requiredParams,
-                    required_auth: endpoint.requiredAuth,
-                    response: endpoint.getResponse(),
-                    errors: endpoint.getErrors(),
-                    deprecated: endpoint.isDeprecated(),
-                };
+                resolve(docs);
             });
         });
-        return docs;
     }
 
     /**
@@ -449,7 +463,7 @@ class Application {
         return endpoint;
     }
 
-    _checkApiKey(req, res, next) {
+    async _checkApiKey(req, res, next) {
         const { apiKey } = this._options;
         if (!apiKey.enabled) {
             next();
@@ -476,6 +490,15 @@ class Application {
             return;
         }
         req.apiKey = key;
+        try {
+            if (await req.__endpoint.isApiKeyExcluded(key)) {
+                res.send404();
+                return;
+            }
+        } catch (e) {
+            next(e);
+            return;
+        }
         let executed = false;
         const p = apiKey.validator(key, (err) => {
             console.warn('Using a callback in api key validator is deprecated.');
@@ -826,7 +849,7 @@ const m = (options = {}) => {
             requireAuth,
             description: 'Documentation of this API.',
             hideDocs: true,
-        }, (req, res, next) => next(null, app.docs()));
+        }, (req, res, next) => app.docs(req.apiKey));
         app.get(`${docs.route}.html`, {
             requireAuth,
             hideDocs: true,

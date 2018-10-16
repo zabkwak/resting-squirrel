@@ -27,6 +27,8 @@ declare module 'resting-squirrel' {
         args?: Field[],
         /** If true the endpoint requires API key. */
         requireApiKey?: boolean,
+        /** List of api keys or function returning the promise with the list where the endpoint will return 404 error. */
+        excludedApiKeys?: (() => Promise<string[]>) | string[];
     }
 
     class Application {
@@ -128,6 +130,7 @@ declare module 'resting-squirrel' {
         route: Route;
         deprecated: boolean;
         apiKeyEnabled: boolean;
+        excludedApiKeys: (() => Promise<string[]>) | string[];
 
         requiredParams: string[];
         /**
@@ -167,6 +170,8 @@ declare module 'resting-squirrel' {
             validateParams?: boolean,
             /** If false the api key is not required. */
             apiKeyEnabled?: boolean,
+            /** List of api keys or function returning the promise with the list where the endpoint will return 404 error. */
+            excludedApiKeys?: (() => Promise<string[]>) | string[];
         });
 
         /**
@@ -209,6 +214,11 @@ declare module 'resting-squirrel' {
          * Checks if the endpoint is deprecated. If `deprecated` field is set as false, the versions are compared. All versions below maximal version are automatically deprecated.
          */
         isDeprecated(): boolean;
+        /**
+         * Checks if the api key is in the excluded api keys.
+         * @param key Api key to check.
+         */
+        isApiKeyExcluded(key: string): Promise<boolean>;
         /**
          * Sets the endpoint as deprecated.
          */

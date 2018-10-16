@@ -16,6 +16,7 @@ class Endpoint {
      * @property {function} callback
      * @property {boolean} validateParams
      * @property {boolean} apiKeyEnabled
+     * @property {string[]|function} excludedApiKeys
      */
 
     version = null;
@@ -32,6 +33,7 @@ class Endpoint {
     route = null;
     deprecated = false;
     apiKeyEnabled = false;
+    excludedApiKeys = [];
 
     /** 
      * @type {string[]}
@@ -69,6 +71,7 @@ class Endpoint {
         this.hideDocs = options.hideDocs || false;
         this.callback = options.callback || null;
         this.apiKeyEnabled = options.apiKeyEnabled || false;
+        this.excludedApiKeys = options.excludedApiKeys || [];
         if (options.validateParams) {
             this._validateParams();
         }
@@ -127,6 +130,13 @@ class Endpoint {
             return false;
         }
         return this.deprecated || this.route.getMaxVersion() !== this.version;
+    }
+
+    async isApiKeyExcluded(key) {
+        if (typeof this.excludedApiKeys === 'function') {
+            return (await this.excludedApiKeys()).includes(key);
+        }
+        return this.excludedApiKeys.includes(key);
     }
 
     deprecate() {
