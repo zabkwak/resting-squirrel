@@ -880,6 +880,7 @@ const m = (options = {}) => {
                     meta: app._options.meta.enabled,
                     authKey: app._options.auth.key,
                     authDescription: app._options.auth.description || '',
+                    docsRoute: app._options.docs.route,
                 };
                 Object.keys(vars).forEach((key) => {
                     const r = new RegExp(`\\$\\{${key}\\}`, 'g');

@@ -2,8 +2,8 @@ $(document).ready(() => {
     const $content = $('#content');
     const $index = $('#index');
     const $console = $('#console');
-    const { protocol, host } = location;
-    const baseUrl = `${protocol}//${host}`;
+    const { protocol, host, pathname } = location;
+    const baseUrl = `${protocol}//${host}${pathname.replace(`${DOCS_ROUTE}.html`, '')}`;
 
     let consoleOpened = false;
 
@@ -193,7 +193,7 @@ $(document).ready(() => {
                 headers,
                 dataType: 'json',
                 contentType: 'application/json',
-                url: `${url}?api_key=${API_KEY}`,
+                url: `${baseUrl}${url}?api_key=${API_KEY}`,
                 timeout: 30000,
                 error: ({ responseText, status }, textStatus, error) => {
                     if (error === 'timeout') {
@@ -327,7 +327,7 @@ $(document).ready(() => {
     };
     $.ajax({
         dataType: 'json',
-        url: `/docs?api_key=${API_KEY}`,
+        url: `${baseUrl}${DOCS_ROUTE}?api_key=${API_KEY}`,
         headers: { 'x-agent': 'Docs' },
         success: ({ data, _meta }) => {
             $content.html(`
