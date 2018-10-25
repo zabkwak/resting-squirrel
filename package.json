@@ -21,11 +21,11 @@
   },
   "dependencies": {
     "@types/express": "^4.16.0",
-    "async": "^2.6.0",
+    "async": "^2.6.1",
     "babel-polyfill": "^6.26.0",
     "body-parser": "^1.14.2",
-    "compression": "^1.6.0",
-    "express": "^4.13.3",
+    "compression": "^1.7.3",
+    "express": "^4.16.4",
     "http-smart-error": "^1.1.1",
     "lodash": "^4.17.11",
     "route-parser": "0.0.5",
@@ -52,7 +52,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "chai": "^3.5.0",
-    "request": "^2.81.0",
+    "request": "^2.88.0",
     "run-script-os-fix": "^1.0.4"
   }
 }
