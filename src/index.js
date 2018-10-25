@@ -875,6 +875,7 @@ const m = (options = {}) => {
                     name,
                     apiKey: app._options.apiKey.enabled ? req.query.api_key : '',
                     rsVersion: pkg.version,
+                    version: APP_PACKAGE.version,
                     dataKey: app._options.dataKey,
                     errorKey: app._options.errorKey,
                     meta: app._options.meta.enabled,

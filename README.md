@@ -122,7 +122,28 @@ console.log(HttpError.create(400)); // Http error with 400 status code, message 
 **listen(cb)** Starts listening on the port from options. DEPRECATED   
 **start(cb)** Starts listening on the port from options.  
 
+#### Data handling
 All http methods are using the same function for handling data. First parameter in the callback is error and second are data which are sent to the *options.dataKey* in the response.
+```javascript
+app.get(0, '/user', (req, res, next) => {
+    const { user } = req;
+    next(null, user);
+});
+```
+##### Promises
+The callback function can return promise or be an `async` function. Entire callback function is surrounded with `try-catch` block so all rejects in `async` functions are handled as errors.
+```javascript
+app.get(0, '/user', (req, res, next) => {
+    const { user } = req;
+    return new Promise(resolve = resolve(user));
+});
+app.get(1, '/user', async (req) => {
+    const { user } = req;
+    await user.doSomeAsyncStuff();
+    return user;
+});
+```
+For 204 response code just return `null` in the promise.
 
 #### Endpoint options
 **requireAuth** If true the endpoint requires authorization.  
