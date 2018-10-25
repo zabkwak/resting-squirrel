@@ -3,10 +3,40 @@ declare module 'resting-squirrel' {
     import SmartError from 'smart-error';
     import HttpSmartError from 'http-smart-error';
     import RuntimeType from 'runtime-type';
+    import * as express from 'express';
+
+    export interface IRequest<A, Q, B> extends express.Request {
+        apiKey: string;
+        accessToken: string;
+        params: A;
+        query: Q;
+        body: B;
+    }
+
+    interface IResponse extends express.Response {
+        getEndpoint(): Endpoint;
+        /** @deprecated */
+        send204(): void;
+        send401(): void;
+        send401(message: string): void;
+        send401(message: string, code: string): void;
+        send404(): void;
+        send404(message: string): void;
+        send404(message: string, code: string): void;
+        send501(): void;
+        send501(message: string): void;
+        send501(message: string, code: string): void;
+        addMeta(key: string, value: string): void;
+        sendError(error: HttpSmartError): void;
+        /** @deprecated */
+        sendData(data: any): void;
+        /** @deprecated */
+        sendData(data: any, dataKey: string): void;
+    }
 
     type Type = RuntimeType.Type;
 
-    type RouteCallback = (req: any, res: any, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void | Promise<any>;
+    type RouteCallback<R extends IRequest<any, any, any>> = (req: R, res: IResponse, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void | Promise<any>;
 
     type MiddlewareNext = (error?: HttpSmartError | SmartError | Error | string | null) => void;
 
@@ -40,7 +70,7 @@ declare module 'resting-squirrel' {
          * 
          * @param callback Callback to execute as middleware.
          */
-        use(callback: (req: any, res: any, next: Function) => void): void;
+        use<R extends IRequest<any, any, any>>(callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
         /**
          * Registers the middleware callback to the specific route.
@@ -48,34 +78,34 @@ declare module 'resting-squirrel' {
          * @param route Route where the middleware should be used.
          * @param callback Callback to execute as middleware.
          */
-        use(route: string, callback: (req: any, res: any, next: Function) => void): void;
+        use<R extends IRequest<any, any, any>>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
-        get(route: string, callback: RouteCallback): Endpoint;
-        get(route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
-        get(version: number, route: string, callback: RouteCallback): Endpoint;
-        get(version: number, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
+        get<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
+        get<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        get<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
+        get<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
 
-        put(route: string, callback: RouteCallback): Endpoint;
-        put(route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
-        put(version: number, route: string, callback: RouteCallback): Endpoint;
-        put(version: number, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
+        put<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
+        put<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        put<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
+        put<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
 
-        post(route: string, callback: RouteCallback): Endpoint;
-        post(route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
-        post(version: number, route: string, callback: RouteCallback): Endpoint;
-        post(version: number, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
+        post<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
+        post<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        post<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
+        post<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
 
-        delete(route: string, callback: RouteCallback): Endpoint;
-        delete(route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
-        delete(version: number, route: string, callback: RouteCallback): Endpoint;
-        delete(version: number, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
+        delete<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
+        delete<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        delete<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
+        delete<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
 
-        registerRoute(method: string, route: string, callback: RouteCallback): Endpoint;
-        registerRoute(method: string, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
-        registerRoute(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, callback: RouteCallback<R>): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
 
         /** @deprecated */
-        registerRoute(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback<R>): Endpoint;
 
         /**
          * Starts the application.
@@ -117,7 +147,7 @@ declare module 'resting-squirrel' {
         getMaxVersion(): number;
     }
 
-    class Endpoint {
+    class Endpoint<R extends IRequest<any, any, any> = any> {
 
         version: number;
         requiredAuth: boolean;
@@ -126,7 +156,7 @@ declare module 'resting-squirrel' {
         errors: ErrorField[];
         description: string;
         hideDocs: boolean;
-        callback: RouteCallback;
+        callback: RouteCallback<R>;
         route: Route;
         deprecated: boolean;
         apiKeyEnabled: boolean;
@@ -165,7 +195,7 @@ declare module 'resting-squirrel' {
             /** If true the endpoint is hidden from the documentation. */
             hideDocs?: boolean,
             /** The callback to execute if the endpoint is called. */
-            callback?: RouteCallback,
+            callback?: RouteCallback<R>,
             /** If true the parameters are validated for invalid types. */
             validateParams?: boolean,
             /** If false the api key is not required. */
@@ -414,13 +444,13 @@ declare module 'resting-squirrel' {
             paramsAsArray?: boolean,
         },
         /** Authorization settings. */
-        auth?: ((req: any, res: any, next: MiddlewareNext) => void) | {
+        auth?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
             /** Header key where the authorization token is located. */
             key?: string,
             /** Description of the authorization process. */
             description?: string,
             /** Validator function executed while validating authorization token in the endpoint lifecycle. */
-            validator?: (key: string, req: any, res: any, next: MiddlewareNext) => void,
+            validator?: <R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void,
         },
         /** Api key settings. */
         apiKey?: {
@@ -439,14 +469,14 @@ declare module 'resting-squirrel' {
             validator?: ((apiKey: string) => Promise<boolean>) | ((apiKey: string, next: MiddlewareNext) => void),
         },
         /** Methods called before the endpoint callback execution. */
-        before?: ((req: any, res: any, next: MiddlewareNext) => void) | {
-            [route: string]: (req: any, res: any, next: MiddlewareNext) => void,
+        before?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
+            [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
         },
         /**
          * Methods to call after the endpopint callback execution.
          */
-        after?: ((isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void) | {
-            [route: string]: (isError: boolean, data: any, req: any, res: any, next: MiddlewareNext) => void,
+        after?: (<R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void) | {
+            [route: string]: <R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void,
         },
         /** Default error to show. */
         defaultError?: {
