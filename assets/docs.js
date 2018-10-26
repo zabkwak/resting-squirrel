@@ -339,10 +339,25 @@ $(document).ready(() => {
         });
         return $docs;
     };
-    const renderIndexItems = ($parent, endpoints, showDeprecated = true) => {
+    const renderIndexItems = ($parent, endpoints, showDeprecated = true, search = null) => {
         $parent.html('');
+        search = search ? search.split(' ').map(item => item.toLowerCase()) : null;
         endpoints.forEach(({ endpoint, deprecated, required_auth }) => {
             if (!showDeprecated && deprecated) {
+                return;
+            }
+            let valid = true;
+            if (search) {
+                search.forEach((text) => {
+                    if (!valid) {
+                        return;
+                    }
+                    if (endpoint.toLowerCase().indexOf(text) < 0) {
+                        valid = false;
+                    }
+                });
+            }
+            if (!valid) {
                 return;
             }
             $parent.append(`<a class="list-group-item${deprecated ? ' deprecated' : ''}${required_auth ? ' auth' : ''}" href="#${getEndpointId(endpoint)}" title="${endpoint}">${endpoint}</a>`);
@@ -397,13 +412,21 @@ $(document).ready(() => {
             $index.html(`
             <div class="form-check">
                 <h2>Endpoints<span class="badge badge-info pull-right align-middle">${Object.keys(data).length}</span></h2>
-                <label class="form-check-label" for="show-deprecated">
-                    <input class="form-check-input" type="checkbox" checked id="show-deprecated" />Show deprecated
-                </label>
+                <p>
+                    <label class="form-check-label" for="show-deprecated">
+                        <input class="form-check-input" type="checkbox" checked id="show-deprecated" />Show deprecated
+                    </label>
+                </p>
+                <p>
+                    <label class="form-check-label" for="show-deprecated">
+                        <input class="form-check-input w-100" type="text" id="index-search" placeholder="Search" />Search
+                    </label>
+                </p>
             </div>
             <div class="list-group list-group-flush"></div>`);
-            $ul = $index.find('div.list-group');
-            $showDeprecated = $index.find('#show-deprecated');
+            const $ul = $index.find('div.list-group');
+            const $showDeprecated = $index.find('#show-deprecated');
+            const $search = $index.find('#index-search');
             const endpoints = [];
             Object.keys(data).forEach((endpoint) => {
                 $content.append(formatDocs(endpoint, data[endpoint]));
@@ -411,7 +434,8 @@ $(document).ready(() => {
                 endpoints.push({ endpoint, deprecated, required_auth });
             });
             renderIndexItems($ul, endpoints, true);
-            $showDeprecated.click(e => renderIndexItems($ul, endpoints, e.target.checked));
+            $showDeprecated.click(e => renderIndexItems($ul, endpoints, e.target.checked, $search.val()));
+            $search.keyup(e => renderIndexItems($ul, endpoints, $showDeprecated.prop('checked'), e.target.value));
             if (location.hash) {
                 location.href = location.hash;
             }
