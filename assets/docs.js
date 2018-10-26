@@ -53,7 +53,7 @@ $(document).ready(() => {
                 if (shape_array) {
                     // TODO
                 }
-                if (type && type.lastIndexOf('[]') === type.length - 2) {
+                if (type.lastIndexOf('[]') === type.length - 2) {
                     const elementType = type.substr(0, type.length - 2);
                     return `
                                 <div class="array-wrapper" id="${key}" data-type="${elementType}">
@@ -66,6 +66,29 @@ $(document).ready(() => {
                                 </div>
 
                             `;
+                }
+                if (type === 'boolean') {
+                    return `
+                        <p class="form-group row">
+                            <label for="${key}" class="col-sm-3 col-form-label">${key}</label>
+                            <select id="${key}" class="col-sm-7 form-control" name="${key}">
+                                <option value=""></option>
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </p>  
+                    `;
+                }
+                if (type.indexOf('enum') === 0) {
+                    return `
+                        <p class="form-group row">
+                            <label for="${key}" class="col-sm-3 col-form-label">${key}</label>
+                            <select id="${key}" class="col-sm-7 form-control" name="${key}">
+                                <option value=""></option>
+                                ${type.match(/'[^,(?! )]+'/g).map(t => `<option value="${t.replace(/'/g, '')}">${t.replace(/'/g, '')}</option>`).join('')}
+                            </select>
+                        </p>  
+                    `;
                 }
                 return `
                             <p class="form-group row">
@@ -154,7 +177,7 @@ $(document).ready(() => {
                 args[name] = value || void 0;
             });
             // Params
-            $form.find('.params input[type="text"]').each((index, input) => {
+            $form.find('.params input[type="text"], .params select').each((index, input) => {
                 const { name, value } = input;
                 if (!value) {
                     return;

@@ -118,7 +118,7 @@ app.get(1, '/response-shape', {
     ],
 }, (req, res, next) => next(null, { shape: { string: 'test', integer: 5, shape: { string: 'string' } }, shape_array: [{ string: 'string' }] }));
 
-app.post(0, '/param-shape', {
+app.post(0, '/param/shape', {
     description: 'Defines params as a Shape',
     params: [
         new Param('shape', true, Type.shape({ string: Type.string }), 'Field defined as Type.shape.'),
@@ -127,7 +127,7 @@ app.post(0, '/param-shape', {
     response: null,
 }, (req, res, next) => next());
 
-app.post(1, '/param-shape', {
+app.post(1, '/param/shape', {
     description: 'Defines params as a Shape.',
     params: [
         new Param.Shape(
@@ -144,13 +144,29 @@ app.post(1, '/param-shape', {
     response: null,
 }, (req, res, next) => next());
 
-app.post(0, '/param-array', {
+app.post(0, '/param/array', {
     description: 'Defines params as a array.',
     params: [
         new Param('array', true, Type.arrayOf(Type.integer), 'List of numbers'),
     ],
     response: null,
 }, (req, res, next) => next());
+
+app.post(0, '/param/boolean', {
+    description: 'Defines param as a boolean.',
+    params: [
+        new Param('boolean', true, Type.boolean, 'Boolean value.'),
+    ],
+    response: null,
+}, async () => null);
+
+app.post(0, '/param/enum', {
+    description: 'Defines param as an enum.',
+    params: [
+        new Param('enum', true, Type.enum('apple', 'banana', 'orange'), 'Enum value.'),
+    ],
+    response: null,
+}, async () => null);
 
 app.get(0, '/some/fucking/long/endpoint/which/does/exactly/shit', {
     description: 'Well. The route is speaking for itself.',
