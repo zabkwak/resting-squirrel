@@ -14,6 +14,7 @@ import _ from 'lodash';
 
 import Endpoint, { Param, Field, Error as ErrorField } from './endpoint';
 import Route from './route';
+import Benchmark from './benchmark';
 
 import pkg from '../package.json';
 
@@ -307,42 +308,22 @@ class Application {
                 const endpoint = route.routes[v];
                 this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
                     req.__endpoint = endpoint;
+                    const b = req.__benchmark;
+                    b.mark('bootstrap');
                     try {
                         await this._checkApiKey(req);
+                        b.mark('api key checking')
                         await this._checkAuth(req, res, endpoint.requiredAuth, auth);
+                        b.mark('auth checking');
                         await this._checkArguments(endpoint.getRouteArguments(), req);
+                        b.mark('arguments checking');
                         await this._checkParams(endpoint.params, req);
+                        b.mark('params checking');
                         await this._beforeCallback(req, res, before);
-                        let dataSent = false;
-                        const p = endpoint.callback(req, res, (err, data) => {
-                            if (dataSent) {
-                                this._warn('Data already sent using a Promise.');
-                                return;
-                            }
-                            dataSent = true;
-                            if (err) {
-                                next(err);
-                                return;
-                            }
-                            this._handleData(req, res, data);
-                        });
-                        if (p instanceof Promise) {
-                            p.then((data) => {
-                                if (dataSent) {
-                                    this._warn('Data already sent using a callback.');
-                                    return;
-                                }
-                                if (data === undefined) {
-                                    this._warn('Methods using Promises shouldn\'t return undefined.');
-                                    return;
-                                }
-                                dataSent = true;
-                                this._handleData(req, res, data);
-                            }).catch((e) => {
-                                dataSent = true;
-                                next(e); // TODO? process.nextTick
-                            });
-                        }
+                        b.mark('before callback executing');
+                        const data = await this._execute(req, res);
+                        b.mark('callback executed');
+                        this._handleData(req, res, data);
                     } catch (e) {
                         switch (e.code) {
                             case 'ERR_NOT_FOUND':
@@ -671,6 +652,48 @@ class Application {
         });
     }
 
+    /**
+     * 
+     * @param {express.Request} req 
+     * @param {express.Response} res 
+     * @returns {Promise<any>}
+     */
+    _execute(req, res) {
+        return new Promise((resolve, reject) => {
+            const endpoint = req.__endpoint;
+            let dataSent = false;
+            const p = endpoint.callback(req, res, (err, data) => {
+                if (dataSent) {
+                    this._warn('Data already sent using a Promise.');
+                    return;
+                }
+                dataSent = true;
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(data);
+            });
+            if (p instanceof Promise) {
+                p.then((data) => {
+                    if (dataSent) {
+                        this._warn('Data already sent using a callback.');
+                        return;
+                    }
+                    if (data === undefined) {
+                        this._warn('Methods using Promises shouldn\'t return undefined.');
+                        return;
+                    }
+                    dataSent = true;
+                    resolve(data);
+                }).catch((e) => {
+                    dataSent = true;
+                    reject(e); // TODO? process.nextTick
+                });
+            }
+        });
+    }
+
     _handleData(req, res, data) {
         const endpoint = req.__endpoint;
         if (endpoint.response) {
@@ -717,6 +740,8 @@ class Application {
 
         this._app.use((req, res, next) => {
             const d = new Date();
+            const benchmark = new Benchmark().start();
+            req.__benchmark = benchmark;
             req.getEndpoint = () => req.__endpoint;
             res.send204 = () => {
                 this._warn('res.send204 is deprecated. Use next callback in the route without data.');
@@ -757,7 +782,8 @@ class Application {
                 if (JSON.stringify(body).length > 1024) {
                     body = 'Body too long';
                 }
-                const took = Date.now() - d.getTime();
+                benchmark.mark('data handled');
+                const took = benchmark.total;
                 const endpoint = `${req.method} ${req.path}`;
                 let deprecated = false;
                 if (data) {
@@ -783,6 +809,7 @@ class Application {
                                 name,
                                 version: APP_PACKAGE.version,
                             },
+                            // benchmark,
                         }, meta.data);
                         if (typeof res.__meta === 'object') {
                             Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
