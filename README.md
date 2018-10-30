@@ -135,7 +135,7 @@ The callback function can return promise or be an `async` function. Entire callb
 ```javascript
 app.get(0, '/user', (req, res, next) => {
     const { user } = req;
-    return new Promise(resolve = resolve(user));
+    return new Promise(resolve => resolve(user));
 });
 app.get(1, '/user', async (req) => {
     const { user } = req;
