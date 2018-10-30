@@ -849,6 +849,10 @@ class Application {
 const m = (options = {}) => {
     const app = new Application(options);
     const { docs, name } = app._options;
+    app.use('/favicon.ico', (req, res) => {
+        res.status(204);
+        res.end();
+    });
     app.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
     if (docs.enabled) {
         let requireAuth = false;
