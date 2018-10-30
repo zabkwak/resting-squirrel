@@ -694,22 +694,28 @@ class Application {
         });
     }
 
+    /**
+     * Validates the data with defined response of the endpoint. After the validation the data are sent to output.
+     * @param {express.Request} req 
+     * @param {express.Response} res 
+     * @param {any} data 
+     */
     _handleData(req, res, data) {
-        const endpoint = req.__endpoint;
+        const endpoint = req.getEndpoint();
         if (endpoint.response) {
             if (!data) {
                 this._warn('Endpoint has defined response data but the callback is sending undefined data.');
             } else {
                 endpoint.response.forEach((field) => {
                     const { type, name } = field;
-                    if (type.isValid(data[name])) {
+                    try {
                         data[name] = type.cast(data[name]);
-                    } else {
-                        const message = `Response on key '${name}' has invalid type. It should be ${type}`;
+                    } catch (e) {
+                        const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
                         if (this._options.responseStrictValidation) {
-                            throw new Err(message);
+                            throw new Err(message, 'invalid_response_cast', { type_error: e.toJSON() });
                         }
-                        this._warn(message);
+                        this._warn(`${message} -> ${e.message}`);
                     }
                 });
             }
