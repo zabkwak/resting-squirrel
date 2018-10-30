@@ -384,7 +384,9 @@ class Application {
         });
         this._app.listen(port, () => {
             this._log(`The application is listening on ${port}`);
-            cb();
+            if (typeof cb === 'function') {
+                cb();
+            }
         });
     }
 
