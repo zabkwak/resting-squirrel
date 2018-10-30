@@ -28,7 +28,7 @@ declare module 'resting-squirrel' {
         send501(): void;
         send501(message: string): void;
         send501(message: string, code: string): void;
-        addMeta(key: string, value: string): void;
+        addMeta(key: string, value: any): void;
         sendError(error: HttpSmartError): void;
         /** @deprecated */
         sendData(): void;
