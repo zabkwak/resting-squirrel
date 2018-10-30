@@ -314,9 +314,11 @@ The module creates generic documentation by default. The documentation is on the
 - before methods using promises
 - after methods using promises
 - log levels
+- handle Param and Field classes for typescript
 ### v3
 - remove auth option in the docs
 - remove POST api key support
+- remove headers api key support
 - remove function arguments support in http methods.
 - send access token to the auth.validator instead of key
 - change auth default key to authorization

@@ -6,7 +6,10 @@ declare module 'resting-squirrel' {
     import * as express from 'express';
 
     export interface IRequest<A, Q, B> extends express.Request {
+        getEndpoint(): Endpoint<IRequest<A, Q, B>>;
+        /** Api key sent in the request. */
         apiKey: string;
+        /** Access token with which is the request signed. */
         accessToken: string;
         params: A;
         query: Q;
@@ -14,7 +17,6 @@ declare module 'resting-squirrel' {
     }
 
     interface IResponse extends express.Response {
-        getEndpoint(): Endpoint;
         /** @deprecated */
         send204(): void;
         send401(): void;
@@ -65,6 +67,7 @@ declare module 'resting-squirrel' {
 
     class Application {
 
+        /** Version of the application. */
         version: string;
 
         /**
@@ -82,32 +85,32 @@ declare module 'resting-squirrel' {
          */
         use<R extends IRequest<any, any, any>>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
-        get<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
-        get<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
-        get<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
-        get<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        get<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
-        put<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
-        put<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
-        put<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
-        put<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        put<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
-        post<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
-        post<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
-        post<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
-        post<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        post<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
-        delete<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint;
-        delete<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
-        delete<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint;
-        delete<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        delete<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
-        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, callback: RouteCallback<R>): Endpoint;
-        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
-        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
         /** @deprecated */
-        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback<R>): Endpoint;
+        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback<R>): Endpoint<R>;
 
         /**
          * Starts the application.
@@ -254,18 +257,18 @@ declare module 'resting-squirrel' {
         /**
          * Sets the endpoint as deprecated.
          */
-        deprecate(): Endpoint;
+        deprecate(): Endpoint<R>;
         /**
          * Sets the endpoint as requiring auth.
          * @deprecated
          */
-        auth(): Endpoint;
+        auth(): Endpoint<R>;
         /**
          * Sets the description.
          * @param docs Endpoint description.
          * @deprecated
          */
-        setDocs(docs: string): Endpoint;
+        setDocs(docs: string): Endpoint<R>;
     }
 
     class FieldShape {
