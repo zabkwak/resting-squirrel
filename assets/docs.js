@@ -284,8 +284,8 @@ $(document).ready(() => {
     };
     const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated, args, errors }) => {
         const id = getEndpointId(endpoint);
-        const { origin, pathname, hash } = location;
-        const link = `${origin}${pathname}#${id}`;
+        const { origin, pathname, hash, search } = location;
+        const link = `${origin}${pathname}${search}#${id}`;
         const $docs = $(`
             <div id='${id}' class="endpoint${deprecated ? ' deprecated' : ''}">
                 <h3>${endpoint}</h3>
@@ -299,7 +299,7 @@ $(document).ready(() => {
                         <a class="copy-link btn btn-outline-info" href="${baseUrl}${endpoint.split(' ')[1]}">copy endpoint link</a>   
                         <a class="test-link btn btn-outline-info" href="#${id}">test in console</a>
                     </div>        
-                    <p class="description card card-body bg-light">${description || docs}</p>
+                    <p class="description card card-body bg-light">${description || docs || ''}</p>
                     <h4>Arguments</h4>
                     ${formatParams(args, true)}
                     <h4>Params</h4>
@@ -395,6 +395,10 @@ $(document).ready(() => {
                 <h4>204 response</h4>
                 <p>
                     Some of endpoints can return an empty response (HTTP code 204). The endpoint documentation under the Response block is empty in this case.
+                </p>
+                <h3 id="types">Types<a href="#types"></a></h3>
+                <p>
+                    Arguments, params and response are using type definition. The casting of the type is defined in <a href="https://www.npmjs.com/package/runtime-type#types" target="_blank">here</a>.
                 </p>
                 ${API_KEY && API_KEY !== 'undefined' ? '<h3 href="#api-key">Api key<a href="#api-key"></a></h3><p>The key for access to the API. It is an GET parameter and for acquiring one please contact the API developer.</p>' : ''}
                 <h3 id="authorization">Authorization<a href="#authorization"></a></h3>

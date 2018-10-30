@@ -347,6 +347,7 @@ class Application {
             res.send404();
         });
         this._app.use((err, req, res, next) => {
+            const b = req.__benchmark;
             if (!(err instanceof HttpError)) {
                 err = HttpError.create(500, err);
             }
@@ -355,6 +356,7 @@ class Application {
                 if (logStack) {
                     this._error(err.stack);
                 }
+                b.mark('error logging');
             }
             if (req.__endpoint) {
                 const errors = Object.keys(req.__endpoint.getErrors());
