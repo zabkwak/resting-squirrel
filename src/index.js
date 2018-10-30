@@ -108,9 +108,7 @@ const DEFAULT_OPTIONS = {
     auth: {
         key: 'x-token',
         description: null,
-        validator: (key, req, res, next) => {
-            next();
-        },
+        validator: (key, req, res, next) => next(),
     },
     apiKey: {
         enabled: false,
@@ -719,15 +717,9 @@ class Application {
                 console.warn('res.send204 is deprecated. Use next callback in the route without data.');
                 res._sendData();
             };
-            res.send404 = (message = 'Page not found', code = 'page_not_found') => {
-                res.sendError(HttpError.create(404, message, code));
-            };
-            res.send401 = (message, code) => {
-                res.sendError(HttpError.create(401, message, code));
-            };
-            res.send501 = (message, code) => {
-                res.sendError(HttpError.create(501, message, code));
-            };
+            res.send404 = (message = 'Page not found', code = 'page_not_found') => res.sendError(HttpError.create(404, message, code));
+            res.send401 = (message, code) => res.sendError(HttpError.create(401, message, code));
+            res.send501 = (message, code) => res.sendError(HttpError.create(501, message, code));
             res.addMeta = (key, value) => {
                 if (!res.__meta) {
                     res.__meta = {};

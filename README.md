@@ -311,12 +311,15 @@ The module creates generic documentation by default. The documentation is on the
 - non-array response definition
 - doc console shape fields
 - auth validator using promises
+- before methods using promises
+- after methods using promises
 - log levels
 ### v3
 - remove auth option in the docs
 - remove POST api key support
 - remove function arguments support in http methods.
 - send access token to the auth.validator instead of key
+- change auth default key to authorization
 
 ## Thanks
 - [richardszemerei](https://github.com/richardszemerei) for CSS consultations.
