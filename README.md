@@ -307,10 +307,10 @@ The module creates generic documentation by default. The documentation is on the
 - shape fields required status
 - timeout option
 - custom warning of the endpoint
-- remove callback hell in start function
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
+- auth validator using promises
 ### v3
 - remove auth option in the docs
 - remove POST api key support

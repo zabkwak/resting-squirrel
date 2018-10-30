@@ -302,83 +302,65 @@ class Application {
             const route = this._routes[key];
             Object.keys(route.routes).forEach((v) => {
                 const endpoint = route.routes[v];
-                this._app[route.method](endpoint.getEndpoint(), (req, res, next) => {
+                this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
                     req.__endpoint = endpoint;
-                    this._checkApiKey(req, res, (err) => {
-                        if (err) {
-                            next(err);
-                            return;
-                        }
-                        this._checkAuth(req, res, endpoint.requiredAuth, auth, (err) => {
+                    try {
+                        await this._checkApiKey(req);
+                        await this._checkAuth(req, res, endpoint.requiredAuth, auth);
+                        await this._checkArguments(endpoint.getRouteArguments(), req);
+                        await this._checkParams(endpoint.params, req);
+                        await this._beforeCallback(req, res, before);
+                        let dataSent = false;
+                        const p = endpoint.callback(req, res, (err, data) => {
+                            if (dataSent) {
+                                console.warn('Data already sent using a Promise.');
+                                return;
+                            }
+                            dataSent = true;
                             if (err) {
                                 next(err);
                                 return;
                             }
-                            this._checkArguments(endpoint.getRouteArguments(), req, res, (err) => {
-                                if (err) {
-                                    next(err);
+                            this._handleData(req, res, data);
+                        });
+                        if (p instanceof Promise) {
+                            p.then((data) => {
+                                if (dataSent) {
+                                    console.warn('Data already sent using a callback.');
                                     return;
                                 }
-                                this._checkParams(endpoint.params, req, res, (err) => {
-                                    if (err) {
-                                        next(err);
-                                        return;
-                                    }
-                                    this._beforeCallback(req, res, before, async (err) => {
-                                        if (err) {
-                                            next(err);
-                                            return;
-                                        }
-                                        try {
-                                            let dataSent = false;
-                                            const p = endpoint.callback(req, res, (err, data) => {
-                                                if (dataSent) {
-                                                    console.warn('Data already sent using a Promise.');
-                                                    return;
-                                                }
-                                                dataSent = true;
-                                                if (err) {
-                                                    next(err);
-                                                    return;
-                                                }
-                                                this._handleData(req, res, data);
-                                            });
-                                            if (p instanceof Promise) {
-                                                p.then((data) => {
-                                                    if (dataSent) {
-                                                        console.warn('Data already sent using a callback.');
-                                                        return;
-                                                    }
-                                                    if (data === undefined) {
-                                                        console.warn('Methods using Promises shouldn\'t return undefined.');
-                                                        return;
-                                                    }
-                                                    dataSent = true;
-                                                    this._handleData(req, res, data);
-                                                }).catch((e) => {
-                                                    dataSent = true;
-                                                    next(e); // TODO
-                                                });
-                                            }
-                                        } catch (e) {
-                                            next(e);
-                                        }
-                                    });
-                                });
+                                if (data === undefined) {
+                                    console.warn('Methods using Promises shouldn\'t return undefined.');
+                                    return;
+                                }
+                                dataSent = true;
+                                this._handleData(req, res, data);
+                            }).catch((e) => {
+                                dataSent = true;
+                                next(e); // TODO? process.nextTick
                             });
-                        });
-                    });
+                        }
+                    } catch (e) {
+                        switch (e.code) {
+                            case 'ERR_NOT_FOUND':
+                                res.send404();
+                                break;
+                            default:
+                                next(e);
+                        }
+                        return;
+                    }
                 });
             });
         });
-        this._app.use('*', (req, res, next) => {
-            this._checkApiKey(req, res, (err) => {
-                if (err) {
-                    next(err);
-                    return;
-                }
-                res.send404();
-            });
+        this._app.use('*', async (req, res, next) => {
+            try {
+                await this._checkApiKey(req);
+            } catch (e) {
+                next(e);
+                return;
+            }
+            res.send404();
         });
         this._app.use((err, req, res, next) => {
             if (!(err instanceof HttpError)) {
@@ -471,192 +453,217 @@ class Application {
         return endpoint;
     }
 
-    async _checkApiKey(req, res, next) {
-        const { apiKey } = this._options;
-        if (!apiKey.enabled) {
-            next();
-            return;
-        }
-        if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
-            next();
-            return;
-        }
-        let key = null;
-        switch (apiKey.type) {
-            case 'qs':
-                key = req.query.api_key;
-                break;
-            case 'body':
-                key = req.body.api_key;
-                break;
-            case 'header':
-                key = req.headers.api_key;
-                break;
-        }
-        if (!key) {
-            next(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
-            return;
-        }
-        req.apiKey = key;
-        if (req.__endpoint) {
-            try {
-                if (await req.__endpoint.isApiKeyExcluded(key)) {
-                    res.send404();
+    /**
+     * 
+     * @param {express.Request} req
+     * @returns {Promise<void>}
+     */
+    _checkApiKey(req) {
+        return new Promise(async (resolve, reject) => {
+            const { apiKey } = this._options;
+            if (!apiKey.enabled) {
+                resolve();
+                return;
+            }
+            if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
+                resolve();
+                return;
+            }
+            let key = null;
+            switch (apiKey.type) {
+                case 'qs':
+                    key = req.query.api_key;
+                    break;
+                case 'body':
+                    key = req.body.api_key;
+                    break;
+                case 'header':
+                    key = req.headers.api_key;
+                    break;
+            }
+            if (!key) {
+                reject(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
+                return;
+            }
+            req.apiKey = key;
+            if (req.__endpoint) {
+                try {
+                    if (await req.__endpoint.isApiKeyExcluded(key)) {
+                        reject(HttpError.create(404));
+                        return;
+                    }
+                } catch (e) {
+                    reject(e);
                     return;
                 }
-            } catch (e) {
-                next(e);
-                return;
             }
-        }
-        let executed = false;
-        const p = apiKey.validator(key, (err) => {
-            console.warn('Using a callback in api key validator is deprecated.');
-            if (executed) {
-                console.warn('Middleware executed using a Promise.');
-                return;
-            }
-            executed = true;
-            if (err) {
-                next(err);
-                return;
-            }
-            next();
-        });
-        if (p instanceof Promise) {
-            p.then((valid) => {
+            let executed = false;
+            const p = apiKey.validator(key, (err) => {
+                console.warn('Using a callback in api key validator is deprecated.');
                 if (executed) {
-                    console.warn('Middleware executed using a callback.');
-                    return;
-                }
-                if (typeof valid !== 'boolean') {
-                    console.warn('Api key validator should return Promise<boolean>.');
+                    console.warn('Middleware executed using a Promise.');
                     return;
                 }
                 executed = true;
-                if (!valid) {
-                    next(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
+                if (err) {
+                    reject(err);
                     return;
                 }
-                next();
-            }).catch((e) => {
-                executed = true;
-                process.next(() => next(e));
+                resolve();
             });
-        }
+            if (p instanceof Promise) {
+                p.then((valid) => {
+                    if (executed) {
+                        console.warn('Middleware executed using a callback.');
+                        return;
+                    }
+                    if (typeof valid !== 'boolean') {
+                        console.warn('Api key validator should return Promise<boolean>.');
+                        return;
+                    }
+                    executed = true;
+                    if (!valid) {
+                        reject(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
+                        return;
+                    }
+                    resolve();
+                }).catch((e) => {
+                    executed = true;
+                    process.nextTick(() => reject(e));
+                });
+            }
+        });
+
     }
 
     /**
      * 
-     * @param {*} req 
-     * @param {*} res 
+     * @param {express.Request} req 
+     * @param {express.Response} res 
      * @param {*} requiredAuth 
-     * @param {AppOptions.Auth} auth 
-     * @param {*} cb 
+     * @param {AppOptions.Auth} auth
+     * @returns {Promise<void>}
      */
-    _checkAuth(req, res, requiredAuth, auth, cb) {
-        if (!requiredAuth) {
-            cb();
-            return;
-        }
-        const { key, validator } = auth;
-        if (!req.headers[key]) {
-            cb(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
-            return;
-        }
-        req.accessToken = req.headers[key];
-        if (typeof validator === 'function') {
-            validator(key, req, res, cb);
-        }
+    _checkAuth(req, res, requiredAuth, auth) {
+        return new Promise((resolve, reject) => {
+            if (!requiredAuth) {
+                resolve();
+                return;
+            }
+            const { key, validator } = auth;
+            if (!req.headers[key]) {
+                reject(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
+                return;
+            }
+            req.accessToken = req.headers[key];
+            if (typeof validator === 'function') {
+                validator(key, req, res, (err) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
+            }
+        });
     }
 
     /**
      * 
      * @param {Object.<string, Field>} args 
-     * @param {*} req 
-     * @param {*} res 
-     * @param {*} next 
+     * @param {express.Request} req 
+     * @returns {Promise<void>}
      */
-    _checkArguments(args, req, res, next) {
-        try {
-            Object.keys(args).forEach((key) => {
-                const arg = args[key];
-                if (!arg.type.isValid(req.params[key])) {
-                    throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
-                }
-                req.params[key] = arg.type.cast(req.params[key]);
-            });
-        } catch (err) {
-            if (err.code === 'ERR_INVALID_TYPE') {
-                next(err);
-                return;
+    _checkArguments(args, req) {
+        return new Promise((resolve, reject) => {
+            try {
+                Object.keys(args).forEach((key) => {
+                    const arg = args[key];
+                    if (!arg.type.isValid(req.params[key])) {
+                        throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+                    }
+                    req.params[key] = arg.type.cast(req.params[key]);
+                });
+            } catch (err) {
+                reject(err);
             }
-            throw err;
-        }
-        next();
+            resolve();
+        });
     }
 
     /**
      * 
      * @param {Param[]} params 
-     * @param {*} req 
-     * @param {*} res 
-     * @param {function} next 
+     * @param {express.Request} req
+     * @returns {Promise<void>}
      */
-    _checkParams(params, req, res, next) {
-        if (!params.length) {
-            next();
-            return;
-        }
-        const mergedParams = { ...req.query, ...req.body };
-        const castedParams = {};
-        const paramsKey = req.method === 'GET' ? 'query' : 'body';
-        try {
-            params.forEach((param) => {
-                const p = param.name;
-                if (param.required) {
-                    const requiredParam = req[paramsKey][p];
-                    if (requiredParam === null || requiredParam === undefined) {
-                        throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
-                    }
-                    if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
-                        throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
-                    }
-                } else if (mergedParams[p] === undefined) {
-                    return;
-                }
-                if (!param.type.isValid(mergedParams[p])) {
-                    throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
-                } else {
-                    castedParams[p] = param.type.cast(mergedParams[p]);
-                }
-            });
-        } catch (err) {
-            if (['ERR_MISSING_PARAMETER', 'ERR_INVALID_TYPE'].indexOf(err.code) >= 0) {
-                next(err);
+    _checkParams(params, req) {
+        return new Promise((resolve, reject) => {
+            if (!params.length) {
+                resolve();
                 return;
             }
-            throw err;
-        }
-        req[paramsKey] = { ...req[paramsKey], ...castedParams };
-        next();
+            const mergedParams = { ...req.query, ...req.body };
+            const castedParams = {};
+            const paramsKey = req.method === 'GET' ? 'query' : 'body';
+            try {
+                params.forEach((param) => {
+                    const p = param.name;
+                    if (param.required) {
+                        const requiredParam = req[paramsKey][p];
+                        if (requiredParam === null || requiredParam === undefined) {
+                            throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
+                        }
+                        if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
+                            throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
+                        }
+                    } else if (mergedParams[p] === undefined) {
+                        return;
+                    }
+                    if (!param.type.isValid(mergedParams[p])) {
+                        throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
+                    } else {
+                        castedParams[p] = param.type.cast(mergedParams[p]);
+                    }
+                });
+            } catch (err) {
+                reject(err);
+            }
+            req[paramsKey] = { ...req[paramsKey], ...castedParams };
+            resolve();
+        });
     }
 
-    _beforeCallback(req, res, map, cb) {
-        async.eachSeries(Object.keys(map), (spec, callback) => {
-            if (spec === '*') {
+    /**
+     * 
+     * @param {express.Request} req 
+     * @param {express.Response} res 
+     * @param {*} map 
+     * @returns {Promise<void>}
+     */
+    _beforeCallback(req, res, map) {
+        return new Promise((resolve, reject) => {
+            async.eachSeries(Object.keys(map), (spec, callback) => {
+                if (spec === '*') {
+                    map[spec](req, res, callback);
+                    return;
+                }
+                const r = new RouteParser(spec);
+                const match = r.match(req.path);
+                if (!match) {
+                    callback();
+                    return;
+                }
                 map[spec](req, res, callback);
                 return;
-            }
-            const r = new RouteParser(spec);
-            const match = r.match(req.path);
-            if (!match) {
-                callback();
-                return;
-            }
-            map[spec](req, res, callback);
-            return;
-        }, cb);
+            }, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
     }
 
     _handleData(req, res, data) {
