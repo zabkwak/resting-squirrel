@@ -29,6 +29,8 @@ declare module 'resting-squirrel' {
         addMeta(key: string, value: string): void;
         sendError(error: HttpSmartError): void;
         /** @deprecated */
+        sendData(): void;
+        /** @deprecated */
         sendData(data: any): void;
         /** @deprecated */
         sendData(data: any, dataKey: string): void;

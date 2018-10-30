@@ -132,6 +132,7 @@ const DEFAULT_OPTIONS = {
 
 class Application {
 
+    /** @type {express.Express} */
     _app = null;
     /** @type {AppOptions} */
     _options = {};
@@ -149,11 +150,11 @@ class Application {
      */
     constructor(options) {
         if (typeof options.before === 'function') {
-            console.warn('Using \'before\' as a functions is deprecated');
+            this._warn('Using \'before\' as a functions is deprecated');
             options.before = { '*': options.before };
         }
         if (typeof options.after === 'function') {
-            console.warn('Using \'after\' as a functions is deprecated');
+            this._warn('Using \'after\' as a functions is deprecated');
             options.after = { '*': options.after };
         }
         this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
@@ -162,7 +163,7 @@ class Application {
             Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
         }
         if (typeof options.auth === 'function') {
-            console.warn('Using auth option as a function is deprecated.');
+            this._warn('Using auth option as a function is deprecated.');
             this._options.auth = this._mergeObjects({}, DEFAULT_OPTIONS.auth);
             this._options.auth.validator = (key, req, res, cb) => {
                 options.auth(req, res, cb);
@@ -272,7 +273,7 @@ class Application {
             // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
             return this._registerRoute(method, version, route, requireAuth, params);
         }
-        console.warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
+        this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
         if (typeof params === 'function') {
             callback = params;
             params = [];
@@ -294,6 +295,10 @@ class Application {
         this.start(cb);
     }
 
+    /**
+     * Starts the application.
+     * @param {function} cb 
+     */
     start(cb = () => { }) {
         const { port, auth, before, log, logStack, errorKey } = this._options;
         Object.keys(this._routes).forEach((key) => {
@@ -311,7 +316,7 @@ class Application {
                         let dataSent = false;
                         const p = endpoint.callback(req, res, (err, data) => {
                             if (dataSent) {
-                                console.warn('Data already sent using a Promise.');
+                                this._warn('Data already sent using a Promise.');
                                 return;
                             }
                             dataSent = true;
@@ -324,11 +329,11 @@ class Application {
                         if (p instanceof Promise) {
                             p.then((data) => {
                                 if (dataSent) {
-                                    console.warn('Data already sent using a callback.');
+                                    this._warn('Data already sent using a callback.');
                                     return;
                                 }
                                 if (data === undefined) {
-                                    console.warn('Methods using Promises shouldn\'t return undefined.');
+                                    this._warn('Methods using Promises shouldn\'t return undefined.');
                                     return;
                                 }
                                 dataSent = true;
@@ -365,15 +370,15 @@ class Application {
                 err = HttpError.create(500, err);
             }
             if (log) {
-                console.error(err.message);
+                this._error(err.message);
                 if (logStack) {
-                    console.error(err.stack);
+                    this._error(err.stack);
                 }
             }
             if (req.__endpoint) {
                 const errors = Object.keys(req.__endpoint.getErrors());
                 if (!errors.includes(err.code)) {
-                    console.warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
+                    this._warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
                 }
             }
             res.status(err.statusCode);
@@ -499,9 +504,9 @@ class Application {
             }
             let executed = false;
             const p = apiKey.validator(key, (err) => {
-                console.warn('Using a callback in api key validator is deprecated.');
+                this._warn('Using a callback in api key validator is deprecated.');
                 if (executed) {
-                    console.warn('Middleware executed using a Promise.');
+                    this._warn('Middleware executed using a Promise.');
                     return;
                 }
                 executed = true;
@@ -514,11 +519,11 @@ class Application {
             if (p instanceof Promise) {
                 p.then((valid) => {
                     if (executed) {
-                        console.warn('Middleware executed using a callback.');
+                        this._warn('Middleware executed using a callback.');
                         return;
                     }
                     if (typeof valid !== 'boolean') {
-                        console.warn('Api key validator should return Promise<boolean>.');
+                        this._warn('Api key validator should return Promise<boolean>.');
                         return;
                     }
                     executed = true;
@@ -670,7 +675,7 @@ class Application {
         const endpoint = req.__endpoint;
         if (endpoint.response) {
             if (!data) {
-                console.warn('Endpoint has defined response data but the callback is sending undefined data.');
+                this._warn('Endpoint has defined response data but the callback is sending undefined data.');
             } else {
                 endpoint.response.forEach((field) => {
                     const { type, name } = field;
@@ -681,7 +686,7 @@ class Application {
                         if (this._options.responseStrictValidation) {
                             throw new Err(message);
                         }
-                        console.warn(message);
+                        this._warn(message);
                     }
                 });
             }
@@ -714,7 +719,7 @@ class Application {
             const d = new Date();
             req.getEndpoint = () => req.__endpoint;
             res.send204 = () => {
-                console.warn('res.send204 is deprecated. Use next callback in the route without data.');
+                this._warn('res.send204 is deprecated. Use next callback in the route without data.');
                 res._sendData();
             };
             res.send404 = (message = 'Page not found', code = 'page_not_found') => res.sendError(HttpError.create(404, message, code));
@@ -731,11 +736,11 @@ class Application {
                     next(code);
                     return;
                 }
-                console.warn('res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.');
+                this._warn('res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.');
                 next(new Err(message, errorCode));
             };
             res.sendData = (data, key = dataKey) => {
-                console.warn('res.sendData is deprecated. Use next callback in route or Promises.');
+                this._warn('res.sendData is deprecated. Use next callback in route or Promises.');
                 res._sendData(data, key);
             };
             res._sendData = (data, key = dataKey) => {
@@ -840,6 +845,16 @@ class Application {
             console.log(new Date(), message);
         }
     }
+
+    _warn(message) {
+        // console.warn(new Date(), message);
+        console.warn(message);
+    }
+
+    _error(message) {
+        // console.error(new Date(), message);
+        console.error(message);
+    }
 }
 
 /**
@@ -857,14 +872,14 @@ const m = (options = {}) => {
     if (docs.enabled) {
         let requireAuth = false;
         if (docs.auth) {
-            console.warn('Using auth on docs is deprecated. Use api key and its validation instead.');
+            app._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
             requireAuth = true;
         }
         app.get(docs.route, {
             requireAuth,
             description: 'Documentation of this API.',
             hideDocs: true,
-        }, (req, res, next) => app.docs(req.apiKey));
+        }, ({ apiKey }) => app.docs(apiKey));
         app.get(`${docs.route}.html`, {
             requireAuth,
             hideDocs: true,
