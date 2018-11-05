@@ -17,6 +17,7 @@ class Endpoint {
      * @property {boolean} validateParams
      * @property {boolean} apiKeyEnabled
      * @property {string[]|function} excludedApiKeys
+     * @property {number} timeout
      */
 
     version = null;
@@ -34,6 +35,7 @@ class Endpoint {
     deprecated = false;
     apiKeyEnabled = false;
     excludedApiKeys = [];
+    timeout = null;
 
     /** 
      * @type {string[]}
@@ -72,6 +74,7 @@ class Endpoint {
         this.callback = options.callback || null;
         this.apiKeyEnabled = options.apiKeyEnabled || false;
         this.excludedApiKeys = options.excludedApiKeys || [];
+        this.timeout = options.timeout || null;
         if (options.validateParams) {
             this._validateParams();
         }

@@ -86,6 +86,7 @@ This usage will create the app with default options.
 - **type** Type of the location of api key in request. One of qs, body, header. Default: qs  
 - **validator(apiKey, next)** Validator of api key. It should return `Promise<boolean>`.  
 
+**timeout** Time in milliseconds. After this time the endpoints return 408 status code. Default: null  
 **before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
 **after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
 **defaultError** Default error for response if no error is defined  
@@ -298,6 +299,19 @@ This parameters are updating behaviour of the current request.
 **nometa** If meta is enabled in config this parameter will disable it.  
 **pretty** JSON response is printed for human reading.  
 
+## Time out
+If timeout option (global or endpoint) is set the execution process is killed in the first possible moment (some lifecycle methods are still called). If the timeout occured during the endpoint callback execution the execution is still in process but the event `timeout` is called to the `express.Request.on` method. 
+```javascript
+app.get(0, '/timeout', { timeout: 500 }, (req, res, next) => {
+    const timeout = setTimeout(() => {
+        // some stuff
+        next();
+    }, 1000);
+    req.on('timeout', () => clearTimeout(timeout));
+});
+```
+The above example will clear the timeout after the 500ms and 408 error is returned.
+
 ## Documentation
 The module creates generic documentation by default. The documentation is on the `/docs` route (if it's not set in app options) as a JSON data. `/docs.html` contains simple HTML which converts the JSON data to HTML and adds the test console. 
 
@@ -308,7 +322,6 @@ The module creates generic documentation by default. The documentation is on the
 
 ## TODO
 - shape fields required status
-- timeout option
 - custom warning of the endpoint
 - custom data to endpoint instance
 - non-array response definition

@@ -7,8 +7,8 @@ describe('Base app creation', () => {
 
     it('checks if the app has default values', () => {
         const app = rs();
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(8080);
         expect(name).to.be.equal('Resting Squirrel App');
         expect(dataKey).to.be.equal('data');
@@ -33,6 +33,7 @@ describe('Base app creation', () => {
         expect(auth.key).to.be.equal('x-token');
         expect(auth.validator).to.be.a('function');
         expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
+        expect(timeout).to.be.null;
         expect(before).to.be.an('object');
         expect(before['*']).to.be.a('function');
         expect(before).to.have.all.keys(['*']);
@@ -71,6 +72,7 @@ describe('Base app creation', () => {
                 description: 'Auth description',
                 validator: (key, req, res, cb) => cb(),
             },
+            timeout: 30000,
             before: {
                 '/test': () => { },
             },
@@ -84,8 +86,8 @@ describe('Base app creation', () => {
             },
             validateParams: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(9000);
         expect(name).to.be.equal('Test Api');
         expect(dataKey).to.be.equal('_data');
@@ -109,6 +111,7 @@ describe('Base app creation', () => {
         expect(auth.key).to.be.equal('access_token');
         expect(auth.validator).to.be.a('function');
         expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
+        expect(timeout).to.be.equal(30000);
         expect(before).to.be.an('object');
         expect(before).to.have.all.keys(['*', '/test']);
         expect(before['*']).to.be.a('function');
@@ -129,7 +132,7 @@ describe('Base app creation', () => {
             log: false,
             logStack: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
         const { log, logStack } = app._options;
         expect(log).to.be.deep.equal({
             enabled: false,

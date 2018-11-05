@@ -3,7 +3,7 @@ import 'babel-polyfill';
 import express from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
-import Err from 'smart-error';
+import Err, { SmartError } from 'smart-error';
 import HttpError from 'http-smart-error';
 import RouteParser from 'route-parser';
 import async from 'async';
@@ -34,6 +34,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {AppOptions.Docs} docs
  * @property {AppOptions.Auth} auth
  * @property {AppOptions.ApiKey} apiKey
+ * @property {number} timeout
  * @property {Object.<string, function>} before
  * @property {Object.<string, function>} after
  * @property {AppOptions.Error} defaultError
@@ -87,6 +88,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {Field[]} args
  * @property {boolean} requireApiKey
  * @property {string[]|function} excludedApiKeys
+ * @property {number} timeout
  */
 
 /** @type {AppOptions} */
@@ -126,6 +128,7 @@ const DEFAULT_OPTIONS = {
         type: 'qs',
         validator: (apiKey, next) => new Promise(resolve => resolve(true)),
     },
+    timeout: null,
     before: {
         '*': (req, res, next) => next(),
     },
@@ -298,7 +301,7 @@ class Application {
         }
         if (typeof requireAuth === 'object') {
             // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
-            return this._registerRoute(method, version, route, requireAuth, params);
+            return this._registerRoute(method, version, route, { ...requireAuth, timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout }, params);
         }
         this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
         if (typeof params === 'function') {
@@ -310,7 +313,7 @@ class Application {
             callback = description;
             description = null;
         }
-        return this._registerRoute(method, version, route, { requireAuth, params, description }, callback);
+        return this._registerRoute(method, version, route, { requireAuth, params, description, timeout: this._options.timeout }, callback);
     }
 
     /**
@@ -335,25 +338,57 @@ class Application {
                 this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
                     req.__endpoint = endpoint;
                     const b = req.__benchmark;
+                    let timeout;
+                    let timedOut = false;
+                    if (endpoint.timeout) {
+                        timeout = setTimeout(() => {
+                            timedOut = true;
+                            req.emit('timeout');
+                            next(HttpError.create(408));
+                        }, endpoint.timeout);
+                    }
                     b.mark('bootstrap');
                     try {
                         await this._checkApiKey(req);
-                        b.mark('api key checking')
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
+                        b.mark('api key checking');
                         await this._checkAuth(req, res, endpoint.requiredAuth, auth);
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
                         b.mark('auth checking');
                         await this._checkArguments(endpoint.getRouteArguments(), req);
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
                         b.mark('arguments checking');
                         await this._checkParams(endpoint.params, req);
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
                         b.mark('params checking');
                         await this._beforeCallback(req, res, before);
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
                         b.mark('before callback executing');
                         const data = await this._execute(req, res);
+                        if (timedOut) {
+                            throw new Err('Time out', '_timeout_internal');
+                        }
                         b.mark('callback executed');
+                        clearTimeout(timeout);
                         this._handleData(req, res, data);
                     } catch (e) {
+                        clearTimeout(timeout);
                         switch (e.code) {
                             case 'ERR_NOT_FOUND':
                                 res.send404();
+                                break;
+                            case 'ERR__TIMEOUT_INTERNAL':
+                                // This does nothing. The error is sent in the setTimeout.
                                 break;
                             default:
                                 next(e);

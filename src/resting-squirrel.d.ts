@@ -63,6 +63,8 @@ declare module 'resting-squirrel' {
         requireApiKey?: boolean,
         /** List of api keys or function returning the promise with the list where the endpoint will return 404 error. */
         excludedApiKeys?: (() => Promise<string[]>) | string[];
+        /** Time in milliseconds. After the timeout the 408 error is returned. It overrides the global timeout. */
+        timeout?: number;
     }
 
     class Application {
@@ -293,6 +295,7 @@ declare module 'resting-squirrel' {
         deprecated: boolean;
         apiKeyEnabled: boolean;
         excludedApiKeys: (() => Promise<string[]>) | string[];
+        timeout: number;
 
         requiredParams: string[];
         /**
@@ -334,6 +337,8 @@ declare module 'resting-squirrel' {
             apiKeyEnabled?: boolean,
             /** List of api keys or function returning the promise with the list where the endpoint will return 404 error. */
             excludedApiKeys?: (() => Promise<string[]>) | string[];
+            /** Time in milliseconds. After the timeout the 408 error is returned. */
+            timeout?: number;
         });
 
         /**
@@ -610,6 +615,8 @@ declare module 'resting-squirrel' {
              */
             validator?: ((apiKey: string) => Promise<boolean>) | ((apiKey: string, next: MiddlewareNext) => void),
         },
+        /** Global timeout for all endpoints. After the time the 408 error is returned. */
+        timeout?: number;
         /** Methods called before the endpoint callback execution. */
         before?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
             [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
