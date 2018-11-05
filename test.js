@@ -9,7 +9,9 @@ const app = RS.default({
             resolve(['API_KEY', 'API_KEY_EXCLUDED'].includes(apiKey));
         }),
     },
-    logStack: false,
+    log: {
+        stack: false,
+    },
     auth: {
         key: 'authorization',
         validator: (key, req, res, next) => {

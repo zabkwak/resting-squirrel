@@ -13,7 +13,11 @@ describe('Base app creation', () => {
         expect(name).to.be.equal('Resting Squirrel App');
         expect(dataKey).to.be.equal('data');
         expect(errorKey).to.be.equal('error');
-        expect(log).to.be.true;
+        expect(log).to.be.deep.equal({
+            enabled: true,
+            level: 'verbose',
+            stack: true,
+        });
         expect(logStack).to.be.true;
         expect(logger).to.be.a('function');
         expect(meta).to.be.an('object');
@@ -48,8 +52,11 @@ describe('Base app creation', () => {
             name: 'Test Api',
             dataKey: '_data',
             errorKey: '_error',
-            log: false,
-            logStack: false,
+            log: {
+                enabled: false,
+                level: 'warning',
+                stack: false,
+            },
             meta: {
                 enabled: false,
             },
@@ -62,7 +69,7 @@ describe('Base app creation', () => {
             auth: {
                 key: 'access_token',
                 description: 'Auth description',
-                validator: (key, req, res, cb) => cb(),   
+                validator: (key, req, res, cb) => cb(),
             },
             before: {
                 '/test': () => { },
@@ -83,8 +90,11 @@ describe('Base app creation', () => {
         expect(name).to.be.equal('Test Api');
         expect(dataKey).to.be.equal('_data');
         expect(errorKey).to.be.equal('_error');
-        expect(log).to.be.false;
-        expect(logStack).to.be.false;
+        expect(log).to.be.deep.equal({
+            enabled: false,
+            level: 'warning',
+            stack: false,
+        });
         expect(logger).to.be.a('function');
         expect(meta).to.be.an('object');
         expect(meta.enabled).to.be.false;
@@ -112,5 +122,20 @@ describe('Base app creation', () => {
         expect(defaultError.code).to.be.equal('some');
         expect(defaultError.statusCode).to.be.equal(400);
         expect(validateParams).to.be.false;
-    })
+    });
+
+    it('checks the deprecated log options', () => {
+        const app = rs({
+            log: false,
+            logStack: false,
+        });
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { log, logStack } = app._options;
+        expect(log).to.be.deep.equal({
+            enabled: false,
+            level: 'verbose',
+            stack: false,
+        });
+        expect(logStack).to.be.false;
+    });
 });

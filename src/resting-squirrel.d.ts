@@ -526,10 +526,20 @@ declare module 'resting-squirrel' {
         /** Key in response where the error is stored. */
         errorKey?: string,
         /** If true the app is logging. */
-        log?: boolean,
-        /** If true the app is logging the stack trace if error occures. */
+        log?: boolean | {
+            /** If true the app is logging data according the log level. */
+            enabled?: boolean,
+            /** Level of logging data. */
+            level?: 'error' | 'warning' | 'verbose',
+            /** If true the app is logging the stack trace if error occures. */
+            stack?: boolean,
+        },
+        /** 
+         * If true the app is logging the stack trace if error occures. 
+         * @deprecated
+         */
         logStack?: boolean,
-        /** Function to log a data. The `log` option must be set to true to call it. */
+        /** Function to log a data. The `log.enabled` option must be set to true to call it. It's ignoring the log level. */
         logger?: (data: {
             /** HTTP status code. */
             statusCode: number,

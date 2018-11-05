@@ -26,7 +26,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {string} name
  * @property {string} dataKey
  * @property {string} errorKey
- * @property {boolean} log
+ * @property {boolean|AppOptions.Log} log
  * @property {boolean} logStack
  * @property {function} logger
  * @property {AppOptions.Meta} meta
@@ -71,6 +71,12 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {function} validator
  */
 /**
+ * @typedef AppOptions.Log
+ * @property {boolean} enabled
+ * @property {'error'|'warn'|'verbose'} level
+ * @property {boolean} stack
+ */
+/**
  * @typedef RouteOptions
  * @property {boolean} requireAuth
  * @property {Param[]|string[]} params
@@ -89,7 +95,11 @@ const DEFAULT_OPTIONS = {
     name: 'Resting Squirrel App',
     dataKey: 'data',
     errorKey: 'error',
-    log: true,
+    log: {
+        enabled: true,
+        level: 'verbose',
+        stack: true,
+    },
     logStack: true,
     logger: ({ statusCode, method, path, spec, body, params, query, headers, took, response }) => {
         console.log(new Date(), `${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(query)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`);
@@ -169,6 +179,17 @@ class Application {
             this._options.auth.validator = (key, req, res, cb) => {
                 options.auth(req, res, cb);
             };
+        }
+        if (typeof options.log === 'boolean') {
+            this._warn('Using log option as boolean is deprecated.');
+            this._options.log = {
+                ...this._mergeObjects({}, DEFAULT_OPTIONS.log),
+                enabled: options.log,
+            };
+        }
+        if (typeof options.logStack === 'boolean') {
+            this._warn('Using logStack options is deprecated.');
+            this._options.log.stack = options.logStack;
         }
         this._createApp();
     }
@@ -301,7 +322,7 @@ class Application {
      * @param {function} cb 
      */
     start(cb = () => { }) {
-        const { port, auth, before, log, logStack, errorKey } = this._options;
+        const { port, auth, before, log, errorKey } = this._options;
         Object.keys(this._routes).forEach((key) => {
             const route = this._routes[key];
             Object.keys(route.routes).forEach((v) => {
@@ -351,13 +372,9 @@ class Application {
             if (!(err instanceof HttpError)) {
                 err = HttpError.create(err.statusCode || 500, err);
             }
-            if (log) {
-                this._error(err.message);
-                if (logStack) {
-                    this._error(err.stack);
-                }
-                b.mark('error logging');
-            }
+
+            this._error(`${err.message}${log.stack ? `\n${err.stack}` : ''}`);
+            b.mark('error logging');
             if (req.__endpoint) {
                 const errors = Object.keys(req.__endpoint.getErrors());
                 if (!errors.includes(err.code)) {
@@ -833,7 +850,7 @@ class Application {
                     res.status(204);
                 }
                 res.end();
-                if (log && typeof logger === 'function') {
+                if (log.enabled && typeof logger === 'function') {
                     logger({
                         statusCode: res.statusCode,
                         method: req.method,
@@ -879,19 +896,24 @@ class Application {
     }
 
     _log(message) {
-        if (this._options.log) {
+        const { enabled, level } = this._options.log;
+        if (enabled && ['verbose'].includes(level)) {
             console.log(new Date(), message);
         }
     }
 
     _warn(message) {
-        // console.warn(new Date(), message);
-        console.warn(message);
+        const { enabled, level } = this._options.log;
+        if (enabled && ['warning', 'verbose'].includes(level)) {
+            console.warn(new Date(), message);
+        }
     }
 
     _error(message) {
-        // console.error(new Date(), message);
-        console.error(message);
+        const { enabled, level } = this._options.log;
+        if (enabled && ['error', 'warning', 'verbose'].includes(level)) {
+            console.error(new Date(), message);
+        }
     }
 }
 

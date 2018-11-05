@@ -64,8 +64,11 @@ This usage will create the app with default options.
 - **enabled** If true meta data are showed in every request. Default: true  
 - **data** Custom meta data for the application. This data are set for all endpoints. Default: {}
 
-**log** If true access log and error log are written in stdout. Default: true  
-**logStack** If true and log is enabled the stack trace is written in stdout. This option should be false on the production app -> the request process is longer if the complete stack is printed to the console. Default: true  
+**log** Object to configure logging options.  
+- **enabled** If true the logging is enabled. Default: true  
+- **level** Logging level (error, warning, verbose). Default: verbose  
+- **stack** If true the error stack is logged if logging is enabled. Default: true  
+**logStack** If true and log is enabled the stack trace is written in stdout. This option should be false on the production app -> the request process is longer if the complete stack is printed to the console. Default: true DEPRECATED  
 **logger({ statusCode, method, path, spec, body, params, query, headers, took, response })** Custom logging function which is called before the request ends. Default function logs the data in the console like in previous versions.  
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
@@ -313,7 +316,6 @@ The module creates generic documentation by default. The documentation is on the
 - auth validator using promises
 - before methods using promises
 - after methods using promises
-- log levels
 - handle Param and Field classes for typescript
 ### v3
 - remove auth option in the docs
