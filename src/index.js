@@ -349,7 +349,7 @@ class Application {
         this._app.use((err, req, res, next) => {
             const b = req.__benchmark;
             if (!(err instanceof HttpError)) {
-                err = HttpError.create(500, err);
+                err = HttpError.create(err.statusCode || 500, err);
             }
             if (log) {
                 this._error(err.message);
@@ -742,6 +742,9 @@ class Application {
         }, cb);
     }
 
+    /**
+     * Creates the express application instance and registers middlewares.
+     */
     _createApp() {
         const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name } = this._options;
         this._app = express();
