@@ -245,14 +245,14 @@ declare module 'resting-squirrel' {
          * @param cb Callback called after the app is listening.
          * @deprecated
          */
-        listen(cb?: Function): void;
+        listen(cb?: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
 
         /**
          * Starts the application.
          * 
          * @param cb Callback called after the app is listening.
          */
-        start(cb?: Function): void;
+        start(cb?: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
     }
 
     class Route {

@@ -151,6 +151,11 @@ class Application {
     /** @type {Object.<string, Route>} */
     _routes = {};
 
+    _stats = {
+        error: 0,
+        warning: 0,
+    };
+
     get version() {
         return APP_PACKAGE.version;
     }
@@ -386,9 +391,9 @@ class Application {
             res._sendData(err.toJSON(), errorKey);
         });
         this._app.listen(port, () => {
-            this._log(`The application is listening on ${port}`);
+            this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
             if (typeof cb === 'function') {
-                cb();
+                cb(undefined, { stats: this._stats });
             }
         });
     }
@@ -907,6 +912,7 @@ class Application {
         if (enabled && ['warning', 'verbose'].includes(level)) {
             console.warn(new Date(), message);
         }
+        this._stats.warning++;
     }
 
     _error(message) {
@@ -914,6 +920,7 @@ class Application {
         if (enabled && ['error', 'warning', 'verbose'].includes(level)) {
             console.error(new Date(), message);
         }
+        this._stats.error++;
     }
 }
 
