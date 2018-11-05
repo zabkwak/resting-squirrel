@@ -85,31 +85,158 @@ declare module 'resting-squirrel' {
          */
         use<R extends IRequest<any, any, any>>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
+        /**
+         * Registers the GET endpoint without a version and with default options.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         get<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the GET endpoint without a version.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         get<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the GET endpoint with default options.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         get<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the GET endpoint.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         get<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
+        /**
+         * Registers the PUT endpoint without a version and with default options.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         put<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the PUT endpoint without a version.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         put<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the PUT endpoint with default options.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         put<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the PUT endpoint.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         put<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
+        /**
+         * Registers the POST endpoint without a version and with default options.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         post<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the POST endpoint without a version.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         post<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the POST endpoint with default options.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         post<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the POST endpoint.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         post<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
+        /**
+         * Registers the DELETE endpoint without a version and with default options.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         delete<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the DELETE endpoint without a version.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         delete<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the DELETE endpoint with default options.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         delete<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the DELETE endpoint.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         delete<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
+        /**
+         * Registers the API endpoint route without a version and with default options.
+         * @param method HTTP method of the route.
+         * @param route Route of the endpoint.
+         * @param callback Callback to execute.
+         */
         registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the API endpoint route without a version.
+         * @param method HTTP method of the route.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        /**
+         * Registers the API endpoint route.
+         * @param method HTTP method of the route.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param options Options of the endpoint.
+         * @param callback Callback to execute.
+         */
         registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
 
-        /** @deprecated */
+        /**
+         * Registers the API endpoint route. 
+         * @param method HTTP method of the route.
+         * @param version Version of the endpoint.
+         * @param route Route of the endpoint.
+         * @param requireAuth If true the endpoint requires an authorization.
+         * @param params Definition of endpoint params.
+         * @param descripton Description of the ednpoint.
+         * @param callback Callback to execute.
+         * @deprecated
+         */
         registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback<R>): Endpoint<R>;
 
         /**
