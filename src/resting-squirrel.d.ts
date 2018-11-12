@@ -5,7 +5,7 @@ declare module 'resting-squirrel' {
     import RuntimeType from 'runtime-type';
     import * as express from 'express';
 
-    export interface IRequest<A, Q, B> extends express.Request {
+    interface IRequest<A, Q, B> extends express.Request {
         getEndpoint(): Endpoint<IRequest<A, Q, B>>;
         /** Api key sent in the request. */
         apiKey: string;
@@ -43,6 +43,124 @@ declare module 'resting-squirrel' {
     type RouteCallback<R extends IRequest<any, any, any>> = (req: R, res: IResponse, next: (error?: HttpSmartError | SmartError | Error | string | null, data?: any) => void) => void | Promise<any>;
 
     type MiddlewareNext = (error?: HttpSmartError | SmartError | Error | string | null) => void;
+
+    interface IAppOptions {
+        /** Port number where the app listens */
+        port?: number,
+        /** Name of the app. */
+        name?: string,
+        /** Key in response where the data are stored. */
+        dataKey?: string,
+        /** Key in response where the error is stored. */
+        errorKey?: string,
+        /** If true the app is logging. */
+        log?: boolean | {
+            /** If true the app is logging data according the log level. */
+            enabled?: boolean,
+            /** Level of logging data. */
+            level?: 'error' | 'warning' | 'verbose',
+            /** If true the app is logging the stack trace if error occures. */
+            stack?: boolean,
+        },
+        /** 
+         * If true the app is logging the stack trace if error occures. 
+         * @deprecated
+         */
+        logStack?: boolean,
+        /** Function to log a data. The `log.enabled` option must be set to true to call it. It's ignoring the log level. */
+        logger?: (data: {
+            /** HTTP status code. */
+            statusCode: number,
+            /** HTTP method. */
+            method: string,
+            /** Endpoint path. */
+            path: string,
+            /** Endpoint route spec. */
+            spec: string,
+            /** Request body. */
+            body: { [key: string]: any },
+            /** Request params. */
+            params: { [key: string]: any },
+            /** Request query. */
+            query: { [key: string]: any },
+            /** Request headers. */
+            headers: { [key: string]: any },
+            /** Execution time of the endpoint in milliseconds. */
+            took: number,
+            /** Response sent to the client. */
+            response: { data?: any, error?: HttpSmartError, _meta?: any },
+        }) => void,
+        /** Option to set meta data in the response. */
+        meta?: {
+            /** If true meta data are in the response in key `_meta`. */
+            enabled?: boolean,
+            /** Additional meta data. */
+            data?: { [key: string]: any },
+        },
+        /** Limit of the request body. */
+        requestLimit?: string,
+        /** Docs settings. */
+        docs?: {
+            /** If false the documentation is not accessible. */
+            enabled?: boolean,
+            /** Route of the documentation. */
+            route?: string,
+            /**
+             * If true the documentation requries authorization.
+             * @deprecated
+             */
+            auth?: boolean,
+            /** If true the params are as array in the documentation. */
+            paramsAsArray?: boolean,
+        },
+        /** Authorization settings. */
+        auth?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
+            /** Header key where the authorization token is located. */
+            key?: string,
+            /** Description of the authorization process. */
+            description?: string,
+            /** Validator function executed while validating authorization token in the endpoint lifecycle. */
+            validator?: <R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void,
+        },
+        /** Api key settings. */
+        apiKey?: {
+            /**
+             * If true all requests require api key parameter. It can be overriden in the endpoint config.
+             */
+            enabled?: boolean,
+            /**
+             * The location of the api key. 
+             * @deprecated
+             */
+            type?: 'qs' | 'body' | 'header',
+            /**
+             * Validator function executed while validating api key in the endpoint lifecycle.
+             */
+            validator?: ((apiKey: string) => Promise<boolean>) | ((apiKey: string, next: MiddlewareNext) => void),
+        },
+        /** Global timeout for all endpoints. After the time the 408 error is returned. */
+        timeout?: number;
+        /** Methods called before the endpoint callback execution. */
+        before?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
+            [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
+        },
+        /**
+         * Methods to call after the endpopint callback execution.
+         */
+        after?: (<R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void) | {
+            [route: string]: <R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void,
+        },
+        /** Default error to show. */
+        defaultError?: {
+            statusCode?: number,
+            message?: string,
+            code?: string,
+        },
+        /** If true the parameters are validated and warnings are returned if something is wrong. */
+        validateParams?: boolean,
+        /** If true the response data are strictly validated to types. It can throw an invalid type error. */
+        responseStrictValidation?: boolean,
+    }
 
     interface RouteOptions {
         /** If true the encpoint require authorization and the auth process of the module is executed. */
@@ -519,123 +637,11 @@ declare module 'resting-squirrel' {
         Param,
         Field,
         Endpoint,
+        IRequest,
+        IAppOptions,
     }
 
-    export default function (options?: {
-        /** Port number where the app listens */
-        port?: number,
-        /** Name of the app. */
-        name?: string,
-        /** Key in response where the data are stored. */
-        dataKey?: string,
-        /** Key in response where the error is stored. */
-        errorKey?: string,
-        /** If true the app is logging. */
-        log?: boolean | {
-            /** If true the app is logging data according the log level. */
-            enabled?: boolean,
-            /** Level of logging data. */
-            level?: 'error' | 'warning' | 'verbose',
-            /** If true the app is logging the stack trace if error occures. */
-            stack?: boolean,
-        },
-        /** 
-         * If true the app is logging the stack trace if error occures. 
-         * @deprecated
-         */
-        logStack?: boolean,
-        /** Function to log a data. The `log.enabled` option must be set to true to call it. It's ignoring the log level. */
-        logger?: (data: {
-            /** HTTP status code. */
-            statusCode: number,
-            /** HTTP method. */
-            method: string,
-            /** Endpoint path. */
-            path: string,
-            /** Endpoint route spec. */
-            spec: string,
-            /** Request body. */
-            body: { [key: string]: any },
-            /** Request params. */
-            params: { [key: string]: any },
-            /** Request query. */
-            query: { [key: string]: any },
-            /** Request headers. */
-            headers: { [key: string]: any },
-            /** Execution time of the endpoint in milliseconds. */
-            took: number,
-            /** Response sent to the client. */
-            response: { data?: any, error?: HttpSmartError, _meta?: any },
-        }) => void,
-        /** Option to set meta data in the response. */
-        meta?: {
-            /** If true meta data are in the response in key `_meta`. */
-            enabled?: boolean,
-            /** Additional meta data. */
-            data?: { [key: string]: any },
-        },
-        /** Limit of the request body. */
-        requestLimit?: string,
-        /** Docs settings. */
-        docs?: {
-            /** If false the documentation is not accessible. */
-            enabled?: boolean,
-            /** Route of the documentation. */
-            route?: string,
-            /**
-             * If true the documentation requries authorization.
-             * @deprecated
-             */
-            auth?: boolean,
-            /** If true the params are as array in the documentation. */
-            paramsAsArray?: boolean,
-        },
-        /** Authorization settings. */
-        auth?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
-            /** Header key where the authorization token is located. */
-            key?: string,
-            /** Description of the authorization process. */
-            description?: string,
-            /** Validator function executed while validating authorization token in the endpoint lifecycle. */
-            validator?: <R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void,
-        },
-        /** Api key settings. */
-        apiKey?: {
-            /**
-             * If true all requests require api key parameter. It can be overriden in the endpoint config.
-             */
-            enabled?: boolean,
-            /**
-             * The location of the api key. 
-             * @deprecated
-             */
-            type?: 'qs' | 'body' | 'header',
-            /**
-             * Validator function executed while validating api key in the endpoint lifecycle.
-             */
-            validator?: ((apiKey: string) => Promise<boolean>) | ((apiKey: string, next: MiddlewareNext) => void),
-        },
-        /** Global timeout for all endpoints. After the time the 408 error is returned. */
-        timeout?: number;
-        /** Methods called before the endpoint callback execution. */
-        before?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
-            [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
-        },
-        /**
-         * Methods to call after the endpopint callback execution.
-         */
-        after?: (<R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void) | {
-            [route: string]: <R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void,
-        },
-        /** Default error to show. */
-        defaultError?: {
-            statusCode?: number,
-            message?: string,
-            code?: string,
-        },
-        /** If true the parameters are validated and warnings are returned if something is wrong. */
-        validateParams?: boolean,
-        /** If true the response data are strictly validated to types. It can throw an invalid type error. */
-        responseStrictValidation?: boolean,
-    }): Application;
+    export type App = Application;
+
+    export default function (options?: IAppOptions): Application;
 }
