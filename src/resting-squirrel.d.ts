@@ -373,6 +373,13 @@ declare module 'resting-squirrel' {
          * @param cb Callback called after the app is listening.
          */
         start(cb?: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
+
+        /**
+         * Stops the application.
+         * 
+         * @param cb Callback called after the server stopped.
+         */
+        stop(cb?: () => void): void;
     }
 
     class Route {

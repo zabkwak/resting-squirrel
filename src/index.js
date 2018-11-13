@@ -148,6 +148,8 @@ class Application {
 
     /** @type {express.Express} */
     _app = null;
+    /** @type {http.Server} */
+    _server = null;
     /** @type {AppOptions} */
     _options = {};
 
@@ -425,10 +427,27 @@ class Application {
             delete err.statusCode;
             res._sendData(err.toJSON(), errorKey);
         });
-        this._app.listen(port, () => {
+        this._server = this._app.listen(port, () => {
             this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
             if (typeof cb === 'function') {
                 cb(undefined, { stats: this._stats });
+            }
+        });
+    }
+
+    /**
+     * Stops the application.
+     * @param {function} cb 
+     */
+    stop(cb = () => { }) {
+        if (!this._server) {
+            this._warn('Server cannot be stopped beceause it was not started.');
+            return;
+        }
+        this._server.close(() => {
+            this._log('The application is stopped.');
+            if (typeof cb === 'function') {
+                cb();
             }
         });
     }
