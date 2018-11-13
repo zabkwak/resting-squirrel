@@ -331,6 +331,7 @@ The module creates generic documentation by default. The documentation is on the
 - after methods using promises
 - handle Param and Field classes for typescript
 - 410 error code after the deprecation if needed
+- finish all requests before stop
 ### v3
 - remove auth option in the docs
 - remove POST api key support
