@@ -1,4 +1,40 @@
+class StorageWrapper {
+
+    set(key, value) {
+        if (!localStorage) {
+            return;
+        }
+        localStorage.setItem(key, JSON.stringify({ __data__: value }));
+    }
+
+    get(key) {
+        if (!localStorage) {
+            return null;
+        }
+        const data = localStorage.getItem(key);
+        if (!data) {
+            return null;
+        }
+        return JSON.parse(data).__data__;
+    }
+
+    remove(key) {
+        if (!localStorage) {
+            return;
+        }
+        localStorage.removeItem(key);
+    }
+
+    size() {
+        if (!localStorage) {
+            return 0;
+        }
+        return localStorage.length;
+    }
+}
+
 $(document).ready(() => {
+    const storage = new StorageWrapper();
     const $content = $('#content');
     const $index = $('#index');
     const $console = $('#console');
@@ -12,6 +48,7 @@ $(document).ready(() => {
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         consoleOpened = true;
         const [method, path] = endpoint.split(' ');
+        const storedHeaders = storage.get('headers');
         const $consoleContent = $(`
             <div>
                 <button type="button" class="close" aria-label="Close">
@@ -26,9 +63,23 @@ $(document).ready(() => {
                         ${required_auth ? `
                             <div class="form-group mb-2 form-inline">
                                 <input class="form-control" placeholder="Name" type="text" name="name" readonly value="${AUTH_KEY}" />
-                                <input class="form-control" placeholder="Value" type="text" name="value" />
+                                <input class="form-control" placeholder="Value" type="text" name="value" value="${storedHeaders[AUTH_KEY] || ''}" />
                             </div>
                             ` : ''}
+                            ${
+            Object.keys(storedHeaders || []).map((key) => {
+                if ([AUTH_KEY, 'x-agent'].includes(key)) {
+                    return null;
+                };
+                return `
+                                        <div class="form-group mb-2 form-inline">
+                                            <input class="form-control" placeholder="Name" type="text" name="name" value="${key}" />
+                                            <input class="form-control" placeholder="Value" type="text" name="value" value="${storedHeaders[key]}" />
+                                            <a href="#" class="btn btn-warning btn-sm form-control">x</a>
+                                        </div>
+                                    `
+            }).join('')
+            }
                     </div>
                     <a href="#" class="btn btn-link btn-sm add header">Add header</a>
                 </div>
@@ -135,6 +186,11 @@ $(document).ready(() => {
             });
             $headers.append($header);
         });
+        $headers.find('a.btn-warning').click((e) => {
+            e.preventDefault();
+            const $header = $(e.target).parent();
+            $header.remove();
+        });
 
         $console.find('#console-form a.add.element').click((e) => {
             e.preventDefault();
@@ -205,6 +261,7 @@ $(document).ready(() => {
                 const value = $group.find('input[name="value"]').val();
                 headers[name] = value || void 0;
             });
+            storage.set('headers', headers);
             const start = Date.now();
             let url = path;
             Object.keys(args).forEach((arg) => {
