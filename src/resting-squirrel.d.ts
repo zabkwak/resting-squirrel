@@ -120,7 +120,7 @@ declare module 'resting-squirrel' {
             /** Description of the authorization process. */
             description?: string,
             /** Validator function executed while validating authorization token in the endpoint lifecycle. */
-            validator?: <R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void,
+            validator?: (<R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse) => Promise<boolean>) | (<R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void),
         },
         /** Api key settings. */
         apiKey?: {
@@ -362,18 +362,32 @@ declare module 'resting-squirrel' {
         /**
          * Starts the application.
          * 
+         * @deprecated
+         */
+        listen(): void;
+        /**
+         * Starts the application.
+         * 
          * @param cb Callback called after the app is listening.
          * @deprecated
          */
-        listen(cb?: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
+        listen(cb: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
 
+        /**
+         * Starts the application.
+         */
+        start(): void;
         /**
          * Starts the application.
          * 
          * @param cb Callback called after the app is listening.
          */
-        start(cb?: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
+        start(cb: (err?: any, data?: { stats: { warning: number, error: number } }) => void): void;
 
+        /**
+         * Stops the application.
+         */
+        stop(): void;
         /**
          * Stops the application.
          * 

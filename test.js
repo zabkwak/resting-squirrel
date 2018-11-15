@@ -14,17 +14,12 @@ const app = RS.default({
     },
     auth: {
         key: 'authorization',
-        validator: (key, req, res, next) => {
+        validator: async (key, req, res, next) => {
             const [type, token] = req.headers[key].split(' ');
             if (type !== 'Bearer') {
-                next(HttpError.create(401));
-                return;
+                return false;
             }
-            if (token !== 'TOKEN') {
-                next(HttpError.create(401));
-                return;
-            }
-            next();
+            return token === 'TOKEN';
         },
     },
     meta: {

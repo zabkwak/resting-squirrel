@@ -326,7 +326,6 @@ The module creates generic documentation by default. The documentation is on the
 - custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
-- auth validator using promises
 - before methods using promises
 - after methods using promises
 - handle Param and Field classes for typescript

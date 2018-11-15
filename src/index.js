@@ -121,7 +121,7 @@ const DEFAULT_OPTIONS = {
     auth: {
         key: 'x-token',
         description: null,
-        validator: (key, req, res, next) => next(),
+        validator: (key, req, res, next) => new Promise(resolve => resolve(true)),
     },
     apiKey: {
         enabled: false,
@@ -620,13 +620,39 @@ class Application {
                 return;
             }
             req.accessToken = req.headers[key];
-            if (typeof validator === 'function') {
-                validator(key, req, res, (err) => {
-                    if (err) {
-                        reject(err);
+            let executed = false;
+            const p = validator(key, req, res, (err) => {
+                this._warn('Using a callback in auth validator is deprecated.');
+                if (executed) {
+                    this._warn('Middleware executed using a Promise.');
+                    return;
+                }
+                executed = true;
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+            if (p instanceof Promise) {
+                p.then((valid) => {
+                    if (executed) {
+                        this._warn('Middleware executed using a callback.');
+                        return;
+                    }
+                    if (typeof valid !== 'boolean') {
+                        this._warn('Access token validator should return Promise<boolean>.');
+                        return;
+                    }
+                    executed = true;
+                    if (!valid) {
+                        reject(HttpError.create(403, 'Access token is invalid.', 'invalid_access_token'));
                         return;
                     }
                     resolve();
+                }).catch((e) => {
+                    executed = true;
+                    process.nextTick(() => reject(e));
                 });
             }
         });
