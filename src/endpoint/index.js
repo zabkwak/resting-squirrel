@@ -188,6 +188,7 @@ class Endpoint {
             this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
         }
         if (this.requiredAuth) {
+            this.errors.unshift(new Error('ERR_INVALID_ACCESS_TOKEN', 'Returned if header with access token is not valid.'));
             this.errors.unshift(new Error('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
         }
         if (this.apiKeyEnabled) {

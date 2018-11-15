@@ -1045,6 +1045,7 @@ describe('Docs', () => {
             validateDocs(data['GET /']);
             validateDocs(data['GET /auth'], null, [], [], [
                 { code: 'ERR_MISSING_ACCESS_TOKEN', description: 'Returned if header with access token is missing.' },
+                { code: 'ERR_INVALID_ACCESS_TOKEN', description: 'Returned if header with access token is not valid.' },
             ], [], true);
             validateDocs(data['GET /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
                 { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
