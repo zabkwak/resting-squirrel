@@ -7,6 +7,7 @@ declare module 'resting-squirrel' {
 
     interface IRequest<A, Q, B> extends express.Request {
         getEndpoint(): Endpoint<IRequest<A, Q, B>>;
+        getBenchmark(): Benchmark;
         /** Api key sent in the request. */
         apiKey: string;
         /** Access token with which is the request signed. */
@@ -648,6 +649,19 @@ declare module 'resting-squirrel' {
          * @param description Description of the situations where the error is returned.
          */
         constructor(code: string, description: string);
+    }
+
+    class Benchmark {
+
+        total: number;
+        private _name: string;
+        private _map: { [label: string]: Date };
+        private _started: boolean;
+        constructor();
+        constructor(name: string);
+        start(): this;
+        mark(label: string): this;
+        toJSON(): { [label: string]: number, total: number };
     }
 
     export {

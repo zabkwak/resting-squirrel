@@ -59,6 +59,12 @@ app.get(1, '/endpoint', {
     next(null, req.query);
 });
 
+app.get(0, '/benchmark', {
+    description: 'Gets the benchmark info',
+}, async (req) => {
+    return req.getBenchmark();
+});
+
 app.get(0, '/empty-params', {
     description: 'Endpoint with empty params',
     response: [

@@ -7,12 +7,17 @@ export default class Benchmark {
 
     _name = null;
     _map = {};
+    _started = false;
 
     constructor(name) {
         this._name = name;
     }
 
     start() {
+        if (this._started) {
+            throw new Error('Benchmark already started');
+        }
+        this._started = true;
         return this.mark('start'); 
     }
 

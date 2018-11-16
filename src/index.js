@@ -856,6 +856,7 @@ class Application {
             const benchmark = new Benchmark().start();
             req.__benchmark = benchmark;
             req.getEndpoint = () => req.__endpoint;
+            req.getBenchmark = () => req.__benchmark;
             res.send204 = () => {
                 this._warn('res.send204 is deprecated. Use next callback in the route without data.');
                 res._sendData();
