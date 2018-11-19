@@ -62,6 +62,7 @@ app.get(1, '/endpoint', {
 app.get(0, '/benchmark', {
     description: 'Gets the benchmark info',
 }, async (req) => {
+    // console.table(req.getBenchmark().toJSON());
     return req.getBenchmark();
 });
 

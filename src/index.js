@@ -31,6 +31,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {function} logger
  * @property {AppOptions.Meta} meta
  * @property {string} requestLimit
+ * @property {string} charset
  * @property {AppOptions.Docs} docs
  * @property {AppOptions.Auth} auth
  * @property {AppOptions.ApiKey} apiKey
@@ -112,6 +113,7 @@ const DEFAULT_OPTIONS = {
         data: {},
     },
     requestLimit: '1mb',
+    charset: 'utf-8',
     docs: {
         enabled: true,
         route: '/docs',
@@ -848,11 +850,10 @@ class Application {
      * Creates the express application instance and registers middlewares.
      */
     _createApp() {
-        const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name } = this._options;
+        const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset } = this._options;
         this._app = express();
 
         this._app.use((req, res, next) => {
-            const d = new Date();
             const benchmark = new Benchmark().start();
             req.__benchmark = benchmark;
             req.getEndpoint = () => req.__endpoint;
@@ -929,7 +930,7 @@ class Application {
                             Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
                         }
                     }
-                    res.header('Content-Type', 'application/json; charset=utf-8');
+                    res.header('Content-Type', `application/json; charset=${charset}`);
                     const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
                     res.write(json);
                 } else {
@@ -1011,7 +1012,7 @@ class Application {
  */
 const m = (options = {}) => {
     const app = new Application(options);
-    const { docs, name } = app._options;
+    const { docs, name, charset } = app._options;
     app.use('/favicon.ico', (req, res) => {
         res.status(204);
         res.end();
@@ -1032,7 +1033,7 @@ const m = (options = {}) => {
             requireAuth,
             hideDocs: true,
         }, (req, res, next) => {
-            res.header('content-type', 'text/html; charset=utf-8');
+            res.header('content-type', `text/html; charset=${charset}`);
             fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
                 if (err) {
                     next(err);
@@ -1061,13 +1062,13 @@ const m = (options = {}) => {
         app.get(`${docs.route}.js`, {
             hideDocs: true,
         }, (req, res, next) => {
-            res.header('content-type', 'text/javascript; charset=utf-8');
+            res.header('content-type', `text/javascript; charset=${charset}`);
             res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
         });
         app.get(`${docs.route}.css`, {
             hideDocs: true,
         }, (req, res, next) => {
-            res.header('content-type', 'text/css; charset=utf-8');
+            res.header('content-type', `text/css; charset=${charset}`);
             res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
         });
     }

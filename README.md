@@ -60,6 +60,7 @@ This usage will create the app with default options.
 **dataKey** Key in the output where the data are sent. Default: data  
 **errorKey** Key in the output where the error is sent. Default: error  
 **requestLimit** Limit for input data. Default: 1mb  
+**charset** Charset of the response. Default: utf-8  
 **meta** Object for setting up the behaviour of meta data. 
 - **enabled** If true meta data are showed in every request. Default: true  
 - **data** Custom meta data for the application. This data are set for all endpoints. Default: {}
@@ -332,6 +333,7 @@ The module creates generic documentation by default. The documentation is on the
 - 410 error code after the deprecation if needed
 - finish all requests before stop
 - docs HTML in React
+- shapes with generic keys -> [key: string]: string
 ### v3
 - TypeScript source code
 - remove auth option in the docs

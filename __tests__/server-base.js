@@ -7,8 +7,8 @@ describe('Base app creation', () => {
 
     it('checks if the app has default values', () => {
         const app = rs();
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(8080);
         expect(name).to.be.equal('Resting Squirrel App');
         expect(dataKey).to.be.equal('data');
@@ -24,6 +24,7 @@ describe('Base app creation', () => {
         expect(meta.enabled).to.be.true;
         expect(JSON.stringify(meta.data)).to.be.equal('{}');
         expect(requestLimit).to.be.equal('1mb');
+        expect(charset).to.be.equal('utf-8');
         expect(docs).to.be.an('object');
         expect(docs.enabled).to.be.true;
         expect(docs.auth).to.be.false;
@@ -62,6 +63,7 @@ describe('Base app creation', () => {
                 enabled: false,
             },
             requestLimit: '10mb',
+            charset: 'cp-1250', // LOL
             docs: {
                 enabled: false,
                 auth: true,
@@ -86,8 +88,8 @@ describe('Base app creation', () => {
             },
             validateParams: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
-        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation } = app._options;
         expect(port).to.be.equal(9000);
         expect(name).to.be.equal('Test Api');
         expect(dataKey).to.be.equal('_data');
@@ -102,6 +104,7 @@ describe('Base app creation', () => {
         expect(meta.enabled).to.be.false;
         expect(JSON.stringify(meta.data)).to.be.equal('{}');
         expect(requestLimit).to.be.equal('10mb');
+        expect(charset).to.be.equal('cp-1250');
         expect(docs).to.be.an('object');
         expect(docs.enabled).to.be.false;
         expect(docs.auth).to.be.true;
@@ -132,7 +135,7 @@ describe('Base app creation', () => {
             log: false,
             logStack: false,
         });
-        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
+        expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation']);
         const { log, logStack } = app._options;
         expect(log).to.be.deep.equal({
             enabled: false,

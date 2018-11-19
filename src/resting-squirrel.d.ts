@@ -100,6 +100,8 @@ declare module 'resting-squirrel' {
         },
         /** Limit of the request body. */
         requestLimit?: string,
+        /** Charset of the response */
+        charset?: string,
         /** Docs settings. */
         docs?: {
             /** If false the documentation is not accessible. */
