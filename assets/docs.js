@@ -48,7 +48,7 @@ $(document).ready(() => {
     const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
         consoleOpened = true;
         const [method, path] = endpoint.split(' ');
-        const storedHeaders = storage.get('headers');
+        const storedHeaders = storage.get('headers') || {};
         const $consoleContent = $(`
             <div>
                 <button type="button" class="close" aria-label="Close">

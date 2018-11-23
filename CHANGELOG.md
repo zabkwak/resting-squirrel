@@ -1,8 +1,10 @@
 # Changelog
 
 ## 2.12.2
-### Features
+### Changes
 - Changelog
+### Docs
+- Fixed broken console if headers in storage are not stored
 
 ## 2.12.1
 ### Changes
@@ -37,7 +39,7 @@
 - Updated type definition
 
 ## 2.10.5
-### Features
+### Changes
 - Passing type error from `runtime-type` module in the response fields casting
 
 ## 2.10.4
