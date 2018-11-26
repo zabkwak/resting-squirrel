@@ -193,6 +193,9 @@ declare module 'resting-squirrel' {
         /** Version of the application. */
         version: string;
 
+        constructor();
+        constructor(options: IAppOptions);
+        
         /**
          * Registers the middleware callback to all routes.
          * 
@@ -676,6 +679,8 @@ declare module 'resting-squirrel' {
         Endpoint,
         IRequest,
         IAppOptions,
+        RouteOptions as IRouteOptions,
+        Application,
     }
 
     export type App = Application;

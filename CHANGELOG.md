@@ -1,4 +1,8 @@
 # Changelog
+## 2.12.3
+### Changes
+- Updated type definition
+- Exported `Application` class
 
 ## 2.12.2
 ### Changes

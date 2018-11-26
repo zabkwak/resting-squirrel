@@ -1084,4 +1084,5 @@ export {
     Type,
     Field,
     ErrorField,
+    Application,
 };
