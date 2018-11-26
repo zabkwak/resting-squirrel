@@ -204,6 +204,7 @@ class Application {
             this._options.log.stack = options.logStack;
         }
         this._createApp();
+        this._registerSupportRoutes();
     }
 
     use(route, callback) {
@@ -958,6 +959,72 @@ class Application {
         this._app.use(bodyParser.json({ limit: requestLimit }));
     }
 
+    /**
+     * Registers the /favicion.ico, /ping and /docs* routes.
+     */
+    _registerSupportRoutes() {
+        const { docs, name, charset } = this._options;
+        this.use('/favicon.ico', (req, res) => {
+            res.status(204);
+            res.end();
+        });
+        this.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
+        if (docs.enabled) {
+            let requireAuth = false;
+            if (docs.auth) {
+                this._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
+                requireAuth = true;
+            }
+            this.get(docs.route, {
+                requireAuth,
+                description: 'Documentation of this API.',
+                hideDocs: true,
+            }, ({ apiKey }) => this.docs(apiKey));
+            this.get(`${docs.route}.html`, {
+                requireAuth,
+                hideDocs: true,
+            }, (req, res, next) => {
+                res.header('content-type', `text/html; charset=${charset}`);
+                fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
+                    if (err) {
+                        next(err);
+                        return;
+                    }
+                    let html = buffer.toString();
+                    const vars = {
+                        name,
+                        apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
+                        rsVersion: pkg.version,
+                        version: APP_PACKAGE.version,
+                        dataKey: this._options.dataKey,
+                        errorKey: this._options.errorKey,
+                        meta: this._options.meta.enabled,
+                        authKey: this._options.auth.key,
+                        authDescription: this._options.auth.description || '',
+                        docsRoute: this._options.docs.route,
+                    };
+                    Object.keys(vars).forEach((key) => {
+                        const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+                        html = html.replace(r, vars[key]);
+                    });
+                    res.end(html);
+                });
+            });
+            this.get(`${docs.route}.js`, {
+                hideDocs: true,
+            }, (req, res, next) => {
+                res.header('content-type', `text/javascript; charset=${charset}`);
+                res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
+            });
+            this.get(`${docs.route}.css`, {
+                hideDocs: true,
+            }, (req, res, next) => {
+                res.header('content-type', `text/css; charset=${charset}`);
+                res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
+            });
+        }
+    }
+
     _mergeObjects(o1, o2, strict = true) {
         const o = {};
         if (!strict) {
@@ -1010,73 +1077,11 @@ class Application {
  * 
  * @param {AppOptions} options 
  */
-const m = (options = {}) => {
-    const app = new Application(options);
-    const { docs, name, charset } = app._options;
-    app.use('/favicon.ico', (req, res) => {
-        res.status(204);
-        res.end();
-    });
-    app.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
-    if (docs.enabled) {
-        let requireAuth = false;
-        if (docs.auth) {
-            app._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
-            requireAuth = true;
-        }
-        app.get(docs.route, {
-            requireAuth,
-            description: 'Documentation of this API.',
-            hideDocs: true,
-        }, ({ apiKey }) => app.docs(apiKey));
-        app.get(`${docs.route}.html`, {
-            requireAuth,
-            hideDocs: true,
-        }, (req, res, next) => {
-            res.header('content-type', `text/html; charset=${charset}`);
-            fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
-                if (err) {
-                    next(err);
-                    return;
-                }
-                let html = buffer.toString();
-                const vars = {
-                    name,
-                    apiKey: app._options.apiKey.enabled ? req.query.api_key : '',
-                    rsVersion: pkg.version,
-                    version: APP_PACKAGE.version,
-                    dataKey: app._options.dataKey,
-                    errorKey: app._options.errorKey,
-                    meta: app._options.meta.enabled,
-                    authKey: app._options.auth.key,
-                    authDescription: app._options.auth.description || '',
-                    docsRoute: app._options.docs.route,
-                };
-                Object.keys(vars).forEach((key) => {
-                    const r = new RegExp(`\\$\\{${key}\\}`, 'g');
-                    html = html.replace(r, vars[key]);
-                });
-                res.end(html);
-            });
-        });
-        app.get(`${docs.route}.js`, {
-            hideDocs: true,
-        }, (req, res, next) => {
-            res.header('content-type', `text/javascript; charset=${charset}`);
-            res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
-        });
-        app.get(`${docs.route}.css`, {
-            hideDocs: true,
-        }, (req, res, next) => {
-            res.header('content-type', `text/css; charset=${charset}`);
-            res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
-        });
-    }
-    return app;
-};
+const m = (options = {}) => new Application(options);
 
 export {
     m as default,
+    Application,
     HttpError,
     Endpoint,
     Err as Error,
@@ -1084,5 +1089,4 @@ export {
     Type,
     Field,
     ErrorField,
-    Application,
 };

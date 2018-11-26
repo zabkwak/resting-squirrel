@@ -1,4 +1,8 @@
 # Changelog
+## 2.12.4
+### Changes
+- Support routes registered from the constructor of the `Application`
+
 ## 2.12.3
 ### Changes
 - Updated type definition
