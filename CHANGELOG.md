@@ -1,4 +1,9 @@
 # Changelog
+
+## 2.12.5
+### Fixes
+- Crash if options are not defined directly in the `Application` class
+
 ## 2.12.4
 ### Changes
 - Support routes registered from the constructor of the `Application`

@@ -171,7 +171,7 @@ class Application {
      * 
      * @param {AppOptions} options 
      */
-    constructor(options) {
+    constructor(options = {}) {
         if (typeof options.before === 'function') {
             this._warn('Using \'before\' as a functions is deprecated');
             options.before = { '*': options.before };
