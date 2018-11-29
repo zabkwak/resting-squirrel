@@ -470,17 +470,7 @@ class Application {
                         callback();
                         return;
                     }
-                    docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = {
-                        docs: endpoint.docs,
-                        description: endpoint.description,
-                        args: endpoint.getRouteArguments(),
-                        params: endpoint.getParams(this._options.docs.paramsAsArray),
-                        required_params: endpoint.requiredParams,
-                        required_auth: endpoint.requiredAuth,
-                        response: endpoint.getResponse(),
-                        errors: endpoint.getErrors(),
-                        deprecated: endpoint.isDeprecated(),
-                    };
+                    docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
                     callback();
                 }, callback);
             }, (err) => {
@@ -489,6 +479,20 @@ class Application {
                     return;
                 }
                 resolve(docs);
+            });
+        });
+    }
+
+    getDocs() {
+        const docs = {};
+        Object.keys(this._routes).forEach((key) => {
+            const route = this._routes[key];
+            Object.keys(route.routes).forEach((v) => {
+                const endpoint = route.routes[v];
+                if (endpoint.hideDocs) {
+                    return;
+                }
+                docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
             });
         });
     }
@@ -1022,6 +1026,24 @@ class Application {
                 res.header('content-type', `text/css; charset=${charset}`);
                 res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
             });
+        }
+    }
+
+    /**
+     * 
+     * @param {Endpoint} endpoint 
+     */
+    _getDocsObject(endpoint) {
+        return {
+            docs: endpoint.docs,
+            description: endpoint.description,
+            args: endpoint.getRouteArguments(),
+            params: endpoint.getParams(this._options.docs.paramsAsArray),
+            required_params: endpoint.requiredParams,
+            required_auth: endpoint.requiredAuth,
+            response: endpoint.getResponse(),
+            errors: endpoint.getErrors(),
+            deprecated: endpoint.isDeprecated(),
         }
     }
 

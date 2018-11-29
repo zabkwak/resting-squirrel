@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.7
+### Changes
+- Access to docs synchronously
+
 ## 2.12.6
 ### Changes
 - Updated type definition

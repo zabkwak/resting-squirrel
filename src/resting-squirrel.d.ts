@@ -188,6 +188,44 @@ declare module 'resting-squirrel' {
         timeout?: number;
     }
 
+    interface IDocsField {
+        name: string;
+        /** @deprecated */
+        key: string;
+        description: string;
+        type: string;
+    }
+
+    interface IDocsParam extends IDocsField {
+        required: boolean;
+    }
+
+    interface IDocsFields {
+        [key: string]: IDocsField;
+    }
+
+    interface IDocsParams {
+        [key: string]: IDocsParam;
+    }
+
+    interface IDocsShape<T> {
+        shape?: IDocsShape<T> & T;
+        shape_array?: IDocsShape<T> & T;
+    }
+
+    interface IDocsItem {
+        /** @deprecated */
+        docs: string;
+        description: string;
+        args: { [key: string]: IDocsField };
+        params: IDocsParams & IDocsShape<IDocsParams>;
+        required_params: Array<string>;
+        required_auth: boolean;
+        response: IDocsFields & IDocsShape<IDocsFields>;
+        errors: { [code: string]: string };
+        deprecated: boolean;
+    }
+
     class Application {
 
         /** Version of the application. */
@@ -195,7 +233,7 @@ declare module 'resting-squirrel' {
 
         constructor();
         constructor(options: IAppOptions);
-        
+
         /**
          * Registers the middleware callback to all routes.
          * 
@@ -400,6 +438,11 @@ declare module 'resting-squirrel' {
          * @param cb Callback called after the server stopped.
          */
         stop(cb?: () => void): void;
+
+        docs(): Promise<{ [endpoint: string]: IDocsItem }>;
+        docs(apiKey: string): Promise<{ [endpoint: string]: IDocsItem }>;
+
+        getDocs(): { [endpoint: string]: IDocsItem };
     }
 
     class Route {
