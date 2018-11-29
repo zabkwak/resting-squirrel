@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.6
+### Changes
+- Updated type definition
+
 ## 2.12.5
 ### Fixes
 - Crash if options are not defined directly in the `Application` class
