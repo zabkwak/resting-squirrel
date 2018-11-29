@@ -495,6 +495,7 @@ class Application {
                 docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
             });
         });
+        return docs;
     }
 
     /**

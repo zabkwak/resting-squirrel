@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.8
+### Fixes
+- Missing return in `Application.getDocs` method
+
 ## 2.12.7
 ### Changes
 - Access to docs synchronously
