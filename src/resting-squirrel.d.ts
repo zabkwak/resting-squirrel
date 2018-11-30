@@ -188,40 +188,15 @@ declare module 'resting-squirrel' {
         timeout?: number;
     }
 
-    interface IDocsField {
-        name: string;
-        /** @deprecated */
-        key: string;
-        description: string;
-        type: string;
-    }
-
-    interface IDocsParam extends IDocsField {
-        required: boolean;
-    }
-
-    interface IDocsFields {
-        [key: string]: IDocsField;
-    }
-
-    interface IDocsParams {
-        [key: string]: IDocsParam;
-    }
-
-    interface IDocsShape<T> {
-        shape?: IDocsShape<T> & T;
-        shape_array?: IDocsShape<T> & T;
-    }
-
     interface IDocsItem {
         /** @deprecated */
         docs: string;
         description: string;
-        args: { [key: string]: IDocsField };
-        params: IDocsParams & IDocsShape<IDocsParams>;
+        args: { [key: string]: Field | FieldShape | FieldShapeArray };
+        params: { [key: string]: Param | ParamShape | ParamShapeArray };
         required_params: Array<string>;
         required_auth: boolean;
-        response: IDocsFields & IDocsShape<IDocsFields>;
+        response: { [key: string]: Field | FieldShape | FieldShapeArray };
         errors: { [code: string]: string };
         deprecated: boolean;
     }
