@@ -169,7 +169,7 @@ declare module 'resting-squirrel' {
         /** If true the encpoint require authorization and the auth process of the module is executed. */
         requireAuth?: boolean,
         /** List of params of the endpoint. */
-        params?: Param[] | string[],
+        params?: Array<Param | ParamShape | ParamShapeArray | string>,
         /** List of response fields. */
         response?: Array<Field | FieldShape | FieldShapeArray>,
         /** List of errors that the endpoint can return. */

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.10
+### Changes
+- Updated type definition
+
 ## 2.12.9
 ### Changes
 - Updated type definition
