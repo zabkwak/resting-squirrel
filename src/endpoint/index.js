@@ -1,6 +1,7 @@
 import Param, { ParamParser } from './param';
 import Field from './field';
 import Error from './error';
+import { BaseResponse, JSONResponse } from '../response';
 
 class Endpoint {
 
@@ -9,7 +10,7 @@ class Endpoint {
      * @property {number?} version
      * @property {boolean} requireAuth
      * @property {Param[]|string[]} params
-     * @property {Field[]} response
+     * @property {BaseResponse} response
      * @property {string[]|Error[]} errors
      * @property {string} description
      * @property {boolean} hideDocs
@@ -24,7 +25,7 @@ class Endpoint {
     requiredAuth = null;
     /** @type {Param[]} */
     params = null;
-    /** @type {Field[]} */
+    /** @type {BaseResponse} */
     response = null;
     /** @type {Error[]} */
     errors = null;
@@ -62,7 +63,7 @@ class Endpoint {
         this.version = options.version === undefined ? null : options.version;
         this.requiredAuth = options.requireAuth || false;
         this.params = ParamParser.parse(options.params || []);
-        this.response = options.response === undefined ? [] : options.response;
+        this.response = options.response === undefined ? new JSONResponse([]) : options.response;
         this.errors = (options.errors || []).map((e) => {
             if (e instanceof Error) {
                 return e;
@@ -101,15 +102,7 @@ class Endpoint {
     }
 
     getResponse(array = false) {
-        if (!this.response) {
-            return null;
-        }
-        if (array) {
-            return this.response;
-        }
-        const o = {};
-        this.response.forEach(p => o[p.name] = p);
-        return o;
+        return this.response ? this.response.get(array) : null;
     }
 
     getRouteArguments() {
