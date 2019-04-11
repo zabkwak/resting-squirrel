@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.12.11
+### Changes
+- Updated dependencies
+
 ## 2.12.10
 ### Changes
 - Updated type definition

@@ -681,7 +681,7 @@ class Application {
             try {
                 Object.keys(args).forEach((key) => {
                     const arg = args[key];
-                    if (!arg.type.isValid(req.params[key])) {
+                    if (!arg.type.canCast(req.params[key])) {
                         throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
                     }
                     req.params[key] = arg.type.cast(req.params[key]);
@@ -722,7 +722,7 @@ class Application {
                     } else if (mergedParams[p] === undefined) {
                         return;
                     }
-                    if (!param.type.isValid(mergedParams[p])) {
+                    if (!param.type.canCast(mergedParams[p])) {
                         throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
                     } else {
                         castedParams[p] = param.type.cast(mergedParams[p]);
