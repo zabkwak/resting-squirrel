@@ -15,6 +15,7 @@ import _ from 'lodash';
 import Endpoint, { Param, Field, Error as ErrorField } from './endpoint';
 import Route from './route';
 import Benchmark from './benchmark';
+import { BaseResponse, JSONResponse, CustomResponse } from './response';
 
 import pkg from '../package.json';
 
@@ -82,7 +83,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @typedef RouteOptions
  * @property {boolean} requireAuth
  * @property {Param[]|string[]} params
- * @property {Field[]} response
+ * @property {BaseResponse|Field[]} response
  * @property {string[]|ErrorField[]} errors
  * @property {string} description
  * @property {boolean} hideDocs
@@ -306,7 +307,10 @@ class Application {
         }
         if (typeof requireAuth === 'object') {
             // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
-            return this._registerRoute(method, version, route, { ...requireAuth, timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout }, params);
+            return this._registerRoute(method, version, route, {
+                ...requireAuth,
+                timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
+            }, params);
         }
         this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
         if (typeof params === 'function') {
@@ -318,7 +322,12 @@ class Application {
             callback = description;
             description = null;
         }
-        return this._registerRoute(method, version, route, { requireAuth, params, description, timeout: this._options.timeout }, callback);
+        return this._registerRoute(method, version, route, {
+            requireAuth,
+            params,
+            description,
+            timeout: this._options.timeout,
+        }, callback);
     }
 
     /**
@@ -514,6 +523,9 @@ class Application {
         const key = `${method}${route}`;
         if (!this._routes[key]) {
             this._routes[key] = new Route(method, route, options.args);
+        }
+        if (options.response && !(options.response instanceof BaseResponse)) {
+            options.response = new JSONResponse(options.response);
         }
         const endpoint = new Endpoint(this._routes[key], {
             version,
@@ -818,18 +830,20 @@ class Application {
             if (!data) {
                 this._warn('Endpoint has defined response data but the callback is sending undefined data.');
             } else {
-                endpoint.response.forEach((field) => {
-                    const { type, name } = field;
-                    try {
-                        data[name] = type.cast(data[name]);
-                    } catch (e) {
-                        const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
-                        if (this._options.responseStrictValidation) {
-                            throw new Err(message, 'invalid_response_cast', { type_error: e.toJSON() });
+                if (endpoint.response instanceof JSONResponse) {
+                    endpoint.response.fields.forEach((field) => {
+                        const { type, name } = field;
+                        try {
+                            data[name] = type.cast(data[name]);
+                        } catch (e) {
+                            const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
+                            if (this._options.responseStrictValidation) {
+                                throw new Err(message, 'invalid_response_cast', { type_error: e.toJSON() });
+                            }
+                            this._warn(`${message} -> ${e.message}`);
                         }
-                        this._warn(`${message} -> ${e.message}`);
-                    }
-                });
+                    });
+                }
             }
         }
         res._sendData(data);
@@ -905,10 +919,10 @@ class Application {
                 }
                 benchmark.mark('data handled');
                 const took = benchmark.total;
-                const endpoint = `${req.method} ${req.path}`;
+                const endpoint = req.getEndpoint();
                 let deprecated = false;
                 if (data) {
-                    if (req.__endpoint && req.__endpoint.isDeprecated()) {
+                    if (endpoint && endpoint.isDeprecated()) {
                         deprecated = true;
                         data.warning = 'This endpoint is deprecated. It can be removed in the future.';
                     }
@@ -921,7 +935,7 @@ class Application {
                                 module: `https://www.npmjs.com/package/${pkg.name}`,
                             },
                             request: {
-                                endpoint,
+                                endpoint: `${req.method} ${req.path}`,
                                 body,
                                 query: req.query,
                                 headers: req.headers,
@@ -936,9 +950,14 @@ class Application {
                             Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
                         }
                     }
-                    res.header('Content-Type', `application/json; charset=${charset}`);
-                    const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
-                    res.write(json);
+                    // res.header('Content-Type', `application/json; charset=${charset}`);
+                    // TODO check in what cases isn't endpoint set
+                    const response = endpoint && endpoint.response
+                        ? data[errorKey] ? new JSONResponse() : endpoint.response
+                        : new JSONResponse();
+                    res.header('Content-Type', response.getContentType(charset));
+                    // const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
+                    res.write(response.getData(data, req.query.pretty));
                 } else {
                     res.status(204);
                 }
@@ -988,8 +1007,8 @@ class Application {
             this.get(`${docs.route}.html`, {
                 requireAuth,
                 hideDocs: true,
+                response: new CustomResponse(`text/html; charset=${charset}`),
             }, (req, res, next) => {
-                res.header('content-type', `text/html; charset=${charset}`);
                 fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
                     if (err) {
                         next(err);
@@ -1012,20 +1031,20 @@ class Application {
                         const r = new RegExp(`\\$\\{${key}\\}`, 'g');
                         html = html.replace(r, vars[key]);
                     });
-                    res.end(html);
+                    next(null, html);
                 });
             });
             this.get(`${docs.route}.js`, {
                 hideDocs: true,
+                response: new CustomResponse(`text/javascript; charset=${charset}`),
             }, (req, res, next) => {
-                res.header('content-type', `text/javascript; charset=${charset}`);
-                res.sendFile(path.resolve(__dirname, '../assets/docs.js'));
+                fs.readFile(path.resolve(__dirname, '../assets/docs.js'), next);
             });
             this.get(`${docs.route}.css`, {
                 hideDocs: true,
+                response: new CustomResponse(`text/css; charset=${charset}`),
             }, (req, res, next) => {
-                res.header('content-type', `text/css; charset=${charset}`);
-                res.sendFile(path.resolve(__dirname, '../assets/docs.css'));
+                fs.readFile(path.resolve(__dirname, '../assets/docs.css'), next);
             });
         }
     }
@@ -1043,6 +1062,7 @@ class Application {
             required_params: endpoint.requiredParams,
             required_auth: endpoint.requiredAuth,
             response: endpoint.getResponse(),
+            response_type: endpoint.getResponseType(),
             errors: endpoint.getErrors(),
             deprecated: endpoint.isDeprecated(),
         }
@@ -1102,6 +1122,12 @@ class Application {
  */
 const m = (options = {}) => new Application(options);
 
+const Response = {
+    Base: BaseResponse,
+    JSON: JSONResponse,
+    Custom: CustomResponse,
+}
+
 export {
     m as default,
     Application,
@@ -1112,4 +1138,5 @@ export {
     Type,
     Field,
     ErrorField,
+    Response,
 };

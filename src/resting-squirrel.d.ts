@@ -5,6 +5,32 @@ declare module 'resting-squirrel' {
     import RuntimeType from 'runtime-type';
     import * as express from 'express';
 
+    namespace Response {
+
+        abstract class Base {
+            abstract getContentType(charset: string): string;
+            abstract get(array: boolean): Array<any> | any;
+            getData(data: { data: any, _meta?: any }, pretty: boolean): any;
+        }
+
+        class JSON extends Base {
+            fields: Array<Field | FieldShape | FieldShapeArray>;
+            constructor();
+            constructor(fields: Array<Field | FieldShape | FieldShapeArray>);
+            getContentType(charset: string): string;
+            get(array: boolean): Array<any> | any;
+        }
+
+        class Custom extends Base {
+            private _contentType: string;
+            constructor(contentType: string);
+            getContentType(charset: string): string;
+            get(array: boolean): Array<any> | any;
+        }
+    }
+
+
+
     interface IRequest<A, Q, B> extends express.Request {
         getEndpoint(): Endpoint<IRequest<A, Q, B>>;
         getBenchmark(): Benchmark;
@@ -171,7 +197,7 @@ declare module 'resting-squirrel' {
         /** List of params of the endpoint. */
         params?: Array<Param | ParamShape | ParamShapeArray | string>,
         /** List of response fields. */
-        response?: Array<Field | FieldShape | FieldShapeArray>,
+        response?: Response.Base | (Array<Field | FieldShape | FieldShapeArray>),
         /** List of errors that the endpoint can return. */
         errors?: ErrorField[] | string[],
         /** Description of the endpoint. */
@@ -449,7 +475,7 @@ declare module 'resting-squirrel' {
         version: number;
         requiredAuth: boolean;
         params: Param[];
-        response: Array<Field | FieldShape | FieldShapeArray>;
+        response: Response.Base;
         errors: ErrorField[];
         description: string;
         hideDocs: boolean;
@@ -485,7 +511,7 @@ declare module 'resting-squirrel' {
             /** List of params of the endpoint. */
             params?: Array<Param | ParamShape | ParamShapeArray | string>,
             /** List of response fields. */
-            response?: Array<Field | FieldShape | FieldShapeArray>,
+            response?: Response.Base,
             /** List of errors that the endpoint can return. */
             errors?: ErrorField[] | string[],
             /** Description of the endpoint. */
@@ -527,6 +553,10 @@ declare module 'resting-squirrel' {
          * @param array If true the returned value is array of fields. Otherwise it is the map of the fields.
          */
         getResponse(array: boolean): Field[] | { [key: string]: Field };
+        /**
+         * Gets the content type of the response.
+         */
+        getResponseType(): string;
         /**
          * Gets the map of arguments specified in the Route.
          */
@@ -699,6 +729,7 @@ declare module 'resting-squirrel' {
         IAppOptions,
         RouteOptions as IRouteOptions,
         Application,
+        Response,
     }
 
     export type App = Application;

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.13.0
+### Features
+- Option to set non-json response of the endpoint
+
 ## 2.12.11
 ### Changes
 - Updated dependencies

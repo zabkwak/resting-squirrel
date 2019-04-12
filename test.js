@@ -1,5 +1,6 @@
 const RS = require('./');
-const { HttpError } = RS;
+const { HttpError, Response } = RS;
+const request = require('request');
 
 const app = RS.default({
     name: 'RS DEV API',
@@ -181,5 +182,13 @@ app.get(0, '/some/fucking/long/endpoint/which/does/exactly/shit', {
 app.get(0, '/excluded', {
     excludedApiKeys: ['API_KEY_EXCLUDED'],
 }, (req, res, next) => next());
+
+app.get(0, '/image', {
+    response: new Response.Custom('image/png'),
+}, (req, res, next) => {
+    request.get('https://avatars1.githubusercontent.com/u/9919', { encoding: null }, (err, response, body) => {
+        next(err, body);
+    });
+});
 
 app.start();
