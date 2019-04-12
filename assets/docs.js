@@ -339,7 +339,16 @@ $(document).ready(() => {
         });
         return $table.prop('outerHTML');
     };
-    const formatDocs = (endpoint, { description, docs, params, response, required_auth, deprecated, args, errors }) => {
+    const renderResponse = (response, type) => {
+        if (response === null) {
+            return '<h5>No content response</h5>';
+        }
+        if (type.indexOf('application/json') >= 0) {
+            return formatParams(response, true);
+        }
+        return `<h5>${type}</h5>`;
+    };
+    const formatDocs = (endpoint, { description, docs, params, response, response_type, required_auth, deprecated, args, errors }) => {
         const id = getEndpointId(endpoint);
         const { origin, pathname, hash, search } = location;
         const link = `${origin}${pathname}${search}#${id}`;
@@ -354,7 +363,7 @@ $(document).ready(() => {
                     <div class="btn-group">
                         <a class="copy-link btn btn-outline-info" href="${link}">copy documentation link</a>     
                         <a class="copy-link btn btn-outline-info" href="${baseUrl}${endpoint.split(' ')[1]}">copy endpoint link</a>   
-                        <a class="test-link btn btn-outline-info" href="#${id}">test in console</a>
+                        <a class="test-link btn btn-outline-info${response_type && response_type.indexOf('application/json') < 0 ? ' disabled' : ''}" href="#${id}">test in console</a>
                     </div>        
                     <p class="description card card-body bg-light">${description || docs || ''}</p>
                     <h4>Arguments</h4>
@@ -362,7 +371,7 @@ $(document).ready(() => {
                     <h4>Params</h4>
                     ${formatParams(params)}
                     <h4>Response</h4>
-                    ${formatParams(response, true)}
+                    ${renderResponse(response, response_type)}
                     <h4>Errors</h4>
                     ${formatErrors(errors)}
                 </div>
@@ -441,7 +450,7 @@ $(document).ready(() => {
                 </p>
                 <h3 id="output">Output<a href="#output"></a></h3>
                 <p>
-                    The API is returning data in <code>JSON</code> string with <code>Content-Type: application/json</code> header.<br />
+                    The API is returning data in <code>JSON</code> string with <code>Content-Type: application/json</code> header if it's not defined otherwise.<br />
                     The response contains <code>${DATA_KEY}</code> key with data object as specified in endpoint documentation under the Response block.<br />
                     Or the <code>${ERROR_KEY}</code> key if some error occures in the request process. 
                     The <code>${ERROR_KEY}</code> contains <code>message</code> and <code>code</code> fields where the information about the error are stored. 

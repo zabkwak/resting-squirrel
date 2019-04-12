@@ -307,7 +307,10 @@ class Application {
         }
         if (typeof requireAuth === 'object') {
             // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
-            return this._registerRoute(method, version, route, { ...requireAuth, timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout }, params);
+            return this._registerRoute(method, version, route, {
+                ...requireAuth,
+                timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
+            }, params);
         }
         this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
         if (typeof params === 'function') {
@@ -319,7 +322,12 @@ class Application {
             callback = description;
             description = null;
         }
-        return this._registerRoute(method, version, route, { requireAuth, params, description, timeout: this._options.timeout }, callback);
+        return this._registerRoute(method, version, route, {
+            requireAuth,
+            params,
+            description,
+            timeout: this._options.timeout,
+        }, callback);
     }
 
     /**
@@ -1054,6 +1062,7 @@ class Application {
             required_params: endpoint.requiredParams,
             required_auth: endpoint.requiredAuth,
             response: endpoint.getResponse(),
+            response_type: endpoint.getResponseType(),
             errors: endpoint.getErrors(),
             deprecated: endpoint.isDeprecated(),
         }

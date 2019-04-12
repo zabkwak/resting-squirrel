@@ -1,7 +1,9 @@
 import { expect } from 'chai';
 import request from 'request';
 
-import rs, { Param, Type, Error, Field, HttpError } from '../src';
+import rs, { Param, Type, Error, Field, HttpError, Response } from '../src';
+
+const HTML_CONTENT = '<html><head></head><body><h1>TEST</h1></body></html>';
 
 const app = rs({ log: false, logStack: false });
 
@@ -103,6 +105,20 @@ app.get(0, '/shape-array', {
         new Field.ShapeArray('shape_array', 'Shape array.', new Field('id', Type.integer), new Field('number', Type.integer)),
     ],
 }, (req, res, next) => next(null, { shape_array: [{ id: 1, number: 2, text: 'text' }] }));
+
+app.get(0, '/html', {
+    response: new Response.Custom('text/html'),
+}, (req, res, next) => {
+    next(null, HTML_CONTENT);
+});
+
+app.get(0, '/image', {
+    response: new Response.Custom('image/png'),
+}, (req, res, next) => {
+    request.get('https://avatars1.githubusercontent.com/u/9919', { encoding: null }, (err, response, body) => {
+        next(err, body);
+    });
+});
 
 describe('Server start', () => {
 
@@ -981,12 +997,37 @@ describe('Responses', () => {
             done();
         });
     });
+
+    describe('HTML', () => {
+
+        it('calls the endpoint which sends html response', (done) => {
+            request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/html' }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.headers["content-type"]).to.be.equal('text/html; charset=utf-8');
+                expect(res.statusCode).to.equal(200);
+                expect(body).to.be.equal(HTML_CONTENT);
+                done();
+            });
+        });
+    });
+
+    describe('Image', () => {
+
+        it('calls the endpoint which sends image response', (done) => {
+            request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/image' }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.headers["content-type"]).to.be.equal('image/png');
+                expect(res.statusCode).to.equal(200);
+                done();
+            });
+        });
+    });
 });
 
 describe('Docs', () => {
 
     const validateDocs = (doc, docs = null, args = [], params = [], errors = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
-        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'errors', 'deprecated']);
+        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'response_type', 'errors', 'deprecated']);
         expect(doc.docs).to.be.equal(docs);
         expect(doc.docs).to.be.equal(doc.description);
         expect(doc.required_params).to.deep.equal(required_params);
@@ -1041,6 +1082,8 @@ describe('Docs', () => {
                 'POST /0/data-types',
                 'GET /0/args/:id/not-defined',
                 'GET /0/args/:id/defined',
+                'GET /0/html',
+                'GET /0/image',
             ]);
             validateDocs(data['GET /']);
             validateDocs(data['GET /auth'], null, [], [], [
@@ -1126,6 +1169,8 @@ describe('Docs', () => {
             validateDocs(data['GET /0/args/:id/defined'], null, [{ name: 'id', key: 'id', type: 'integer', description: 'Id of the argument.' }], [], [
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
             ]);
+            validateDocs(data['GET /0/html']);
+            validateDocs(data['GET /0/image']);
             expect(data['GET /docs']).to.be.undefined;
             expect(data['GET /docs.html']).to.be.undefined;
             expect(data['GET /docs.js']).to.be.undefined;

@@ -220,7 +220,7 @@ The `Param` class uses type definition from the [runtime-type](https://www.npmjs
 #### Response definition
 The list of response fields in the http methods is array of `Field` instances. Response data sent to `next` function in endpoint callback are validated with type checking to render correct data-types.
 ```javascript
-import rs, { Param, Field, Type } from 'resting-squirrel';
+import rs, { Param, Field, Type, Response } from 'resting-squirrel';
 
 const app = rs();
 
@@ -251,6 +251,16 @@ app.get(0, '/fields', {
     description: 'Test endpoint for field examples',
 }, (req, res, next) => next(null, doSomeStuff()));
 
+// Equivalent of the previous register but using a JSON Response instance.
+app.get(1, '/fields', {
+    response: new Response.JSON([f1, f2, f3]),
+    description: 'Test endpoint for field examples',
+}, (req, res, next) => next(null, doSomeStuff()));
+
+// Registers the GET endpoint which sends a image content.
+app.get(0, '/fields', {
+    response: new Custom.Response('image/png'),
+}, (req, res, next) => next(null, '[SOME IMAGE DATA]'));
 ```
 
 #### Shapes

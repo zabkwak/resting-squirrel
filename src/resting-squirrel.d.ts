@@ -554,6 +554,10 @@ declare module 'resting-squirrel' {
          */
         getResponse(array: boolean): Field[] | { [key: string]: Field };
         /**
+         * Gets the content type of the response.
+         */
+        getResponseType(): string;
+        /**
          * Gets the map of arguments specified in the Route.
          */
         getRouteArguments(): { [key: string]: Field };

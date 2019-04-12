@@ -14,7 +14,7 @@ export default class CustomResponse extends BaseResponse {
     }
 
     get(array = false) {
-        return null;
+        return array ? [] : {};
     }
 
     getData(data) {
