@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.0
+### Updates
+- Type error returned in error response if the params have invalid types
+
 ## 2.13.0
 ### Features
 - Option to set non-json response of the endpoint

@@ -353,7 +353,7 @@ describe('GET parameter validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'param\' has invalid type. It should be \'integer\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -390,7 +390,7 @@ describe('GET parameter validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -540,7 +540,7 @@ describe('POST parameter validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'param\' has invalid type. It should be \'integer\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -577,7 +577,7 @@ describe('POST parameter validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -715,7 +715,7 @@ describe('Endpoint defined with options', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'param\' has invalid type. It should be \'integer\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -762,7 +762,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'integer\' has invalid type. It should be \'integer\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -783,7 +783,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'float\' has invalid type. It should be \'float\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -804,7 +804,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'array\' has invalid type. It should be \'integer[]\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -825,7 +825,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'date\' has invalid type. It should be \'date\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -846,7 +846,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'enum\' has invalid type. It should be \'enum(\'a\',\'b\',\'c\')\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -867,7 +867,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
@@ -888,7 +888,7 @@ describe('Data types validation', () => {
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
-            expect(error).to.have.all.keys(['message', 'code']);
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
             expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();

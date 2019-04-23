@@ -730,10 +730,20 @@ class Application {
                     } else if (mergedParams[p] === undefined) {
                         return;
                     }
-                    if (!param.type.canCast(mergedParams[p])) {
-                        throw HttpError.create(400, `Parameter '${p}' has invalid type. It should be '${param.type}'.`, 'invalid_type');
-                    } else {
+                    try {
                         castedParams[p] = param.type.cast(mergedParams[p]);
+                    } catch (e) {
+                        switch (e.code) {
+                            case 'ERR_INVALID_CAST':
+                            case 'ERR_UNSUPPORTED_OPERATION':
+                                throw HttpError.create(
+                                    400,
+                                    `Parameter '${p}' has invalid type. It should be '${param.type}'.`,
+                                    'invalid_type',
+                                    { type_error: e }
+                                );
+                            default: throw e;
+                        }
                     }
                 });
             } catch (err) {
