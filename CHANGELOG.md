@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.14.1
+### Fixes
+- Removed stack in the type error response
+
 ## 2.14.0
 ### Updates
 - Type error returned in error response if the params have invalid types

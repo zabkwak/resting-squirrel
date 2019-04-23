@@ -740,7 +740,7 @@ class Application {
                                     400,
                                     `Parameter '${p}' has invalid type. It should be '${param.type}'.`,
                                     'invalid_type',
-                                    { type_error: e }
+                                    { type_error: { message: e.message, code: e.code } }
                                 );
                             default: throw e;
                         }
