@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import Type from 'runtime-type';
-import 'babel-polyfill';
+import '@babel/polyfill';
 
 import Endpoint, { Param, Field } from '../src/endpoint';
 

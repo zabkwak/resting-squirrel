@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.15.0
+### Updates
+- Migrated to babel 7
+
 ## 2.14.1
 ### Fixes
 - Removed stack in the type error response

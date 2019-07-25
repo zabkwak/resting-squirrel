@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "./dist/resting-squirrel.d.ts",
   "scripts": {
-    "test": "mocha ./__tests__ --recursive --compilers js:babel-core/register --timeout 5000",
+    "test": "./node_modules/.bin/mocha ./__tests__ --recursive --require @babel/register --timeout 5000",
     "create_index": "run-script-os",
     "create_index:win32": "echo module.exports = require('./dist'); > index.js",
     "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",
@@ -21,9 +21,9 @@
     "node": ">=4"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "@types/express": "^4.17.0",
     "async": "^2.6.3",
-    "babel-polyfill": "^6.26.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "express": "^4.17.1",
@@ -47,12 +47,14 @@
     "express"
   ],
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/register": "^7.5.5",
     "chai": "^3.5.0",
+    "mocha": "^6.2.0",
     "request": "^2.88.0",
     "run-script-os-fix": "^1.0.4"
   }
