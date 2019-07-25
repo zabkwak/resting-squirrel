@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2.15.0
+### Features
+- Optional authorization of the endpoint
 ### Updates
 - Migrated to babel 7
 

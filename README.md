@@ -10,7 +10,7 @@ $ npm install resting-squirrel
 
 ## Usage
 ```javascript
-import rs, { Param, Type, Field, ErrorField } from 'resting-squirrel';
+import rs, { Param, Type, Field, ErrorField, RouteAuth } from 'resting-squirrel';
 
 const app = rs();
 
@@ -29,7 +29,7 @@ app.get('/documented', false, [], 'I am documented endpoint.', (req, res, next) 
 // Complex definition
 app.post(0, '/user/:id', {
     // Endpoint requires authorization
-    requireAuth: true,
+    auth: RouteAuth.REQUIRED,
     // Route argument "id" must be an integer
     args: [
         new Field('id', Type.integer, 'Identificator of the user to update'),
@@ -151,7 +151,8 @@ app.get(1, '/user', async (req) => {
 For 204 response code just return `null` in the promise.
 
 #### Endpoint options
-**requireAuth** If true the endpoint requires authorization.  
+**auth** Indicates auth process of the endpoint.  
+**requireAuth** If true the endpoint requires authorization. DEPRECATED  
 **description** Description of the endpoint.  
 **args** List of `Field` instances to define endpoint arguments. If it's not defined all arguments defined in the route are of `any` type.  
 **params** List of `Param` instances to define endpoint parameters.  

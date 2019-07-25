@@ -1027,7 +1027,19 @@ describe('Responses', () => {
 describe('Docs', () => {
 
     const validateDocs = (doc, docs = null, args = [], params = [], errors = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
-        expect(doc).to.have.all.keys(['docs', 'description', 'args', 'params', 'required_params', 'required_auth', 'response', 'response_type', 'errors', 'deprecated']);
+        expect(doc).to.have.all.keys([
+            'docs',
+            'description',
+            'args',
+            'params',
+            'required_params',
+            'required_auth',
+            'response',
+            'response_type',
+            'errors',
+            'deprecated',
+            'auth',
+        ]);
         expect(doc.docs).to.be.equal(docs);
         expect(doc.docs).to.be.equal(doc.description);
         expect(doc.required_params).to.deep.equal(required_params);

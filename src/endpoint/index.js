@@ -8,6 +8,7 @@ class Endpoint {
     /**
      * @typedef Options
      * @property {number?} version
+     * @property {number?} auth
      * @property {boolean} requireAuth
      * @property {Param[]|string[]} params
      * @property {BaseResponse} response
@@ -22,7 +23,7 @@ class Endpoint {
      */
 
     version = null;
-    requiredAuth = null;
+    auth = 0;
     /** @type {Param[]} */
     params = null;
     /** @type {BaseResponse} */
@@ -54,6 +55,15 @@ class Endpoint {
         return this.description;
     }
 
+    get requiredAuth() {
+        switch (this.auth) {
+            case 2:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     /**
      * 
      * @param {*} route 
@@ -61,7 +71,7 @@ class Endpoint {
      */
     constructor(route, options = {}) {
         this.version = options.version === undefined ? null : options.version;
-        this.requiredAuth = options.requireAuth || false;
+        this.auth = options.auth || 0;
         this.params = ParamParser.parse(options.params || []);
         this.response = options.response === undefined ? new JSONResponse([]) : options.response;
         this.errors = (options.errors || []).map((e) => {
@@ -123,6 +133,14 @@ class Endpoint {
         const o = {};
         this.errors.forEach(p => o[p.code] = p.description);
         return o;
+    }
+
+    getAuth() {
+        switch (this.auth) {
+            case 2: return 'REQUIRED';
+            case 1: return 'OPTIONAL';
+            default: return 'DISABLED';
+        }
     }
 
     isDeprecated() {

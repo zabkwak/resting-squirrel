@@ -191,9 +191,22 @@ declare module 'resting-squirrel' {
         responseStrictValidation?: boolean,
     }
 
+    enum RouteAuth {
+        REQUIRED = 2,
+        DISABLED = 0,
+        OPTIONAL = 1,
+    }
+
     interface RouteOptions {
-        /** If true the encpoint require authorization and the auth process of the module is executed. */
+        /** 
+         * If true the encpoint require authorization and the auth process of the module is executed.
+         * @deprecated
+         */
         requireAuth?: boolean,
+        /**
+         * Auth mode of the route. If the value is optional the endpoint can take authorization and acts like endpoint which requires auth.
+         */
+        auth?: RouteAuth,
         /** List of params of the endpoint. */
         params?: Array<Param | ParamShape | ParamShapeArray | string>,
         /** List of response fields. */
@@ -508,6 +521,10 @@ declare module 'resting-squirrel' {
             version?: number,
             /** If true the encpoint require authorization and the auth process of the module is executed. */
             requireAuth?: boolean,
+            /**
+             * Auth mode of the route. If the value is optional the endpoint can take authorization and acts like endpoint which requires auth.
+             */
+            auth?: RouteAuth;
             /** List of params of the endpoint. */
             params?: Array<Param | ParamShape | ParamShapeArray | string>,
             /** List of response fields. */
@@ -730,6 +747,7 @@ declare module 'resting-squirrel' {
         RouteOptions as IRouteOptions,
         Application,
         Response,
+        RouteAuth,
     }
 
     export type App = Application;

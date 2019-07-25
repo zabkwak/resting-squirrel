@@ -82,6 +82,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
 /**
  * @typedef RouteOptions
  * @property {boolean} requireAuth
+ * @property {RouteAuth} auth
  * @property {Param[]|string[]} params
  * @property {BaseResponse|Field[]} response
  * @property {string[]|ErrorField[]} errors
@@ -145,6 +146,16 @@ const DEFAULT_OPTIONS = {
     },
     validateParams: true,
     responseStrictValidation: false,
+};
+
+/**
+ * @enum
+ * @readonly
+ */
+const RouteAuth = {
+    REQUIRED: 2,
+    DISABLED: 0,
+    OPTIONAL: 1,
 };
 
 class Application {
@@ -368,7 +379,7 @@ class Application {
                             throw new Err('Time out', '_timeout_internal');
                         }
                         b.mark('api key checking');
-                        await this._checkAuth(req, res, endpoint.requiredAuth, auth);
+                        await this._checkAuth(req, res, endpoint.auth, auth);
                         if (timedOut) {
                             throw new Err('Time out', '_timeout_internal');
                         }
@@ -527,6 +538,13 @@ class Application {
         if (options.response && !(options.response instanceof BaseResponse)) {
             options.response = new JSONResponse(options.response);
         }
+        if (options.requireAuth !== undefined) {
+            this._warn('Route option \'requireAuth\' is deprecated.');
+        }
+        if (options.auth === undefined) {
+            options.auth = options.requireAuth ? RouteAuth.REQUIRED : RouteAuth.DISABLED;
+        }
+        delete options.requireAuth;
         const endpoint = new Endpoint(this._routes[key], {
             version,
             ...options,
@@ -624,18 +642,22 @@ class Application {
      * 
      * @param {express.Request} req 
      * @param {express.Response} res 
-     * @param {*} requiredAuth 
+     * @param {RouteAuth} routeAuth 
      * @param {AppOptions.Auth} auth
      * @returns {Promise<void>}
      */
-    _checkAuth(req, res, requiredAuth, auth) {
+    _checkAuth(req, res, routeAuth, auth) {
         return new Promise((resolve, reject) => {
-            if (!requiredAuth) {
+            if (!routeAuth) {
                 resolve();
                 return;
             }
             const { key, validator } = auth;
             if (!req.headers[key]) {
+                if (routeAuth === RouteAuth.OPTIONAL) {
+                    resolve();
+                    return;
+                }
                 reject(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
                 return;
             }
@@ -1071,6 +1093,7 @@ class Application {
             params: endpoint.getParams(this._options.docs.paramsAsArray),
             required_params: endpoint.requiredParams,
             required_auth: endpoint.requiredAuth,
+            auth: endpoint.getAuth(),
             response: endpoint.getResponse(),
             response_type: endpoint.getResponseType(),
             errors: endpoint.getErrors(),
@@ -1149,4 +1172,5 @@ export {
     Field,
     ErrorField,
     Response,
+    RouteAuth,
 };

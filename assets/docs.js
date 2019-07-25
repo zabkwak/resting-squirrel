@@ -45,7 +45,7 @@ $(document).ready(() => {
 
     const getEndpointId = endpoint => endpoint.replace(/ |\//g, '-').replace(/\-+/g, '-').toLowerCase();
     const className = (...args) => args.filter(item => Boolean(item)).join(' ');
-    const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated }) => {
+    const testConsole = (endpoint, { description, docs, args, params, response, required_auth, deprecated, auth }) => {
         consoleOpened = true;
         const [method, path] = endpoint.split(' ');
         const storedHeaders = storage.get('headers') || {};
@@ -60,7 +60,7 @@ $(document).ready(() => {
                 <h3>Headers</h3>
                 <div>
                     <div class="headers">
-                        ${required_auth ? `
+                        ${['REQUIRED', 'OPTIONAL'].includes(auth) ? `
                             <div class="form-group mb-2 form-inline">
                                 <input class="form-control" placeholder="Name" type="text" name="name" readonly value="${AUTH_KEY}" />
                                 <input class="form-control" placeholder="Value" type="text" name="value" value="${storedHeaders[AUTH_KEY] || ''}" />
@@ -348,7 +348,7 @@ $(document).ready(() => {
         }
         return `<h5>${type}</h5>`;
     };
-    const formatDocs = (endpoint, { description, docs, params, response, response_type, required_auth, deprecated, args, errors }) => {
+    const formatDocs = (endpoint, { description, docs, params, response, response_type, required_auth, deprecated, args, errors, auth }) => {
         const id = getEndpointId(endpoint);
         const { origin, pathname, hash, search } = location;
         const link = `${origin}${pathname}${search}#${id}`;
@@ -358,7 +358,8 @@ $(document).ready(() => {
                 <div class="docs">
                     <div>
                         ${deprecated ? '<span class="badge badge-danger">DEPRECATED</span>' : ''}
-                        ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}     
+                        ${required_auth ? '<span class="badge badge-warning">REQUIRES AUTHORIZATION</span>' : ''}   
+                        ${auth === 'OPTIONAL' ? '<span class="badge badge-secondary">OPTIONAL AUTHORIZATION</span>' : ''}  
                     </div>  
                     <div class="btn-group">
                         <a class="copy-link btn btn-outline-info" href="${link}">copy documentation link</a>     
@@ -388,7 +389,7 @@ $(document).ready(() => {
         });
         $docs.find('a.test-link').click((e) => {
             e.preventDefault();
-            testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args });
+            testConsole(endpoint, { description, docs, params, response, required_auth, deprecated, args, auth });
             $console.show();
         });
         $docs.find('a.shape-visibility').click((e) => {

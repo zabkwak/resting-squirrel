@@ -1,5 +1,5 @@
 const RS = require('./');
-const { HttpError, Response } = RS;
+const { HttpError, Response, RouteAuth } = RS;
 const request = require('request');
 
 const app = RS.default({
@@ -48,7 +48,7 @@ app.get(0, '/endpoint', {
 });
 
 app.get(1, '/endpoint', {
-    requireAuth: false,
+    auth: RouteAuth.OPTIONAL,
     params: [
         new Param('integer', true, Type.integer, 'Integer param'),
     ],

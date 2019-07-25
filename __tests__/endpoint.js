@@ -310,8 +310,8 @@ describe('ParamParser', () => {
 describe('Endpoint', () => {
 
     it('creates the endpoint with null response', () => {
-        const endpoint = new Endpoint(null, { version: 0, requireAuth: false, params: [], response: null, description: null });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
+        const endpoint = new Endpoint(null, { version: 0, auth: 0, params: [], response: null, description: null });
+        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
         const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
@@ -327,6 +327,7 @@ describe('Endpoint', () => {
         expect(apiKeyEnabled).to.be.false;
         expect(excludedApiKeys).to.be.deep.equal([]);
         expect(timeout).to.be.null;
+        expect(endpoint.getAuth()).to.be.equal('DISABLED');
     });
 
     it('creates the endpoint with params defined on the old version of the module', () => {
@@ -341,7 +342,7 @@ describe('Endpoint', () => {
             excludedApiKeys: ['test'],
             timeout: 15000,
         });
-        expect(endpoint).to.have.all.keys(['version', 'requiredAuth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
+        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
         const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
