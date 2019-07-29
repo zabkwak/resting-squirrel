@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.16.0
+### Features
+- Custom props of the endpoint
+
 ## 2.15.0
 ### Features
 - Optional authorization of the endpoint

@@ -92,6 +92,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {boolean} requireApiKey
  * @property {string[]|function} excludedApiKeys
  * @property {number} timeout
+ * @property {any} props
  */
 
 /** @type {AppOptions} */
@@ -1159,7 +1160,7 @@ const Response = {
     Base: BaseResponse,
     JSON: JSONResponse,
     Custom: CustomResponse,
-}
+};
 
 export {
     m as default,

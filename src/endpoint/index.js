@@ -20,6 +20,7 @@ class Endpoint {
      * @property {boolean} apiKeyEnabled
      * @property {string[]|function} excludedApiKeys
      * @property {number} timeout
+     * @property {any} props
      */
 
     version = null;
@@ -38,6 +39,7 @@ class Endpoint {
     apiKeyEnabled = false;
     excludedApiKeys = [];
     timeout = null;
+    props = {};
 
     /** 
      * @type {string[]}
@@ -86,6 +88,7 @@ class Endpoint {
         this.apiKeyEnabled = options.apiKeyEnabled || false;
         this.excludedApiKeys = options.excludedApiKeys || [];
         this.timeout = options.timeout || null;
+        this.props = options.props || {};
         if (options.validateParams) {
             this._validateParams();
         }

@@ -160,6 +160,7 @@ For 204 response code just return `null` in the promise.
 **errors** List of `ErrorField` instances to define errors which could be returned during the execution.  
 **hideDocs** If true the endpoint is hidden from the documentation.  
 **requireApiKey** If false the endpoint doesn't require an api key in the request. This option overrides the `options.apiKey.enabled` option if it's false. It's not recommended to use this option.  
+**props** Custom props for the endpoint.  
 
 #### Arguments
 The list of arguments fields in the http methods is array of `Field` instances. The values are validated with type checking. 
@@ -335,7 +336,6 @@ The module creates generic documentation by default. The documentation is on the
 ## TODO
 - shape fields required status
 - custom warning of the endpoint
-- custom data to endpoint instance
 - non-array response definition
 - doc console shape fields
 - before methods using promises

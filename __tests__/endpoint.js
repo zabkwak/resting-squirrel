@@ -311,8 +311,8 @@ describe('Endpoint', () => {
 
     it('creates the endpoint with null response', () => {
         const endpoint = new Endpoint(null, { version: 0, auth: 0, params: [], response: null, description: null });
-        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
-        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout } = endpoint;
+        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout', 'props']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
@@ -327,6 +327,7 @@ describe('Endpoint', () => {
         expect(apiKeyEnabled).to.be.false;
         expect(excludedApiKeys).to.be.deep.equal([]);
         expect(timeout).to.be.null;
+        expect(props).to.be.deep.equal({});
         expect(endpoint.getAuth()).to.be.equal('DISABLED');
     });
 
@@ -341,9 +342,12 @@ describe('Endpoint', () => {
             apiKeyEnabled: true,
             excludedApiKeys: ['test'],
             timeout: 15000,
+            props: {
+                test: 'test',
+            },
         });
-        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout']);
-        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout } = endpoint;
+        expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout', 'props']);
+        const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props } = endpoint;
         expect(version).to.be.equal(0);
         expect(requiredAuth).to.be.false;
         expect(params).to.be.an.instanceOf(Array);
@@ -361,6 +365,7 @@ describe('Endpoint', () => {
         expect(apiKeyEnabled).to.be.true;
         expect(excludedApiKeys).to.be.deep.equal(['test']);
         expect(timeout).to.be.equal(15000);
+        expect(props).to.be.deep.equal({ test: 'test' });
 
         const [brand, type, dimensions] = params;
         expect(brand).to.be.an.instanceOf(Param);

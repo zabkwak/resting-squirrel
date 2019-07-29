@@ -29,10 +29,14 @@ declare module 'resting-squirrel' {
         }
     }
 
-
-
-    interface IRequest<A, Q, B> extends express.Request {
-        getEndpoint(): Endpoint<IRequest<A, Q, B>>;
+    /**
+     * @typeparam A Type of the args.
+     * @typeparam Q Type of the query.
+     * @typeparam B Type of the Body.
+     * @typeparam EP Type of the Endpoint props.
+     */
+    interface IRequest<A = any, Q = any, B = any, EP = { [key: string]: any }> extends express.Request {
+        getEndpoint(): Endpoint<IRequest<A, Q, B, EP>, EP>;
         getBenchmark(): Benchmark;
         /** Api key sent in the request. */
         apiKey: string;
@@ -197,9 +201,9 @@ declare module 'resting-squirrel' {
         OPTIONAL = 1,
     }
 
-    interface RouteOptions {
+    interface RouteOptions<IProps = { [key: string]: any }> {
         /** 
-         * If true the encpoint require authorization and the auth process of the module is executed.
+         * If true the endpoint require authorization and the auth process of the module is executed.
          * @deprecated
          */
         requireAuth?: boolean,
@@ -225,6 +229,8 @@ declare module 'resting-squirrel' {
         excludedApiKeys?: (() => Promise<string[]>) | string[];
         /** Time in milliseconds. After the timeout the 408 error is returned. It overrides the global timeout. */
         timeout?: number;
+        /** Custom properties for the endpoint. */
+        props?: IProps;
     }
 
     interface IDocsItem {
@@ -253,7 +259,7 @@ declare module 'resting-squirrel' {
          * 
          * @param callback Callback to execute as middleware.
          */
-        use<R extends IRequest<any, any, any>>(callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
+        use<R extends IRequest>(callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
         /**
          * Registers the middleware callback to the specific route.
@@ -261,28 +267,28 @@ declare module 'resting-squirrel' {
          * @param route Route where the middleware should be used.
          * @param callback Callback to execute as middleware.
          */
-        use<R extends IRequest<any, any, any>>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
+        use<R extends IRequest>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
         /**
          * Registers the GET endpoint without a version and with default options.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        get<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the GET endpoint without a version.
          * @param route Route of the endpoint.
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        get<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the GET endpoint with default options.
          * @param version Version of the endpoint.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        get<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the GET endpoint.
          * @param version Version of the endpoint.
@@ -290,28 +296,28 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        get<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        get<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Registers the PUT endpoint without a version and with default options.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        put<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the PUT endpoint without a version.
          * @param route Route of the endpoint.
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        put<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the PUT endpoint with default options.
          * @param version Version of the endpoint.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        put<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the PUT endpoint.
          * @param version Version of the endpoint.
@@ -319,28 +325,28 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        put<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        put<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Registers the POST endpoint without a version and with default options.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        post<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the POST endpoint without a version.
          * @param route Route of the endpoint.
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        post<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the POST endpoint with default options.
          * @param version Version of the endpoint.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        post<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the POST endpoint.
          * @param version Version of the endpoint.
@@ -348,28 +354,28 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        post<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        post<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Registers the DELETE endpoint without a version and with default options.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        delete<R extends IRequest<any, any, any>>(route: string, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the DELETE endpoint without a version.
          * @param route Route of the endpoint.
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        delete<R extends IRequest<any, any, any>>(route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the DELETE endpoint with default options.
          * @param version Version of the endpoint.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        delete<R extends IRequest<any, any, any>>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the DELETE endpoint.
          * @param version Version of the endpoint.
@@ -377,7 +383,7 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        delete<R extends IRequest<any, any, any>>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        delete<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Registers the API endpoint route without a version and with default options.
@@ -385,7 +391,7 @@ declare module 'resting-squirrel' {
          * @param route Route of the endpoint.
          * @param callback Callback to execute.
          */
-        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(method: string, route: string, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the API endpoint route without a version.
          * @param method HTTP method of the route.
@@ -393,7 +399,7 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        registerRoute<R extends IRequest<any, any, any>>(method: string, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(method: string, route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
         /**
          * Registers the API endpoint route.
          * @param method HTTP method of the route.
@@ -402,7 +408,7 @@ declare module 'resting-squirrel' {
          * @param options Options of the endpoint.
          * @param callback Callback to execute.
          */
-        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, options: RouteOptions, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(method: string, version: number, route: string, options: RouteOptions<EP>, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Registers the API endpoint route. 
@@ -411,11 +417,11 @@ declare module 'resting-squirrel' {
          * @param route Route of the endpoint.
          * @param requireAuth If true the endpoint requires an authorization.
          * @param params Definition of endpoint params.
-         * @param descripton Description of the ednpoint.
+         * @param description Description of the ednpoint.
          * @param callback Callback to execute.
          * @deprecated
          */
-        registerRoute<R extends IRequest<any, any, any>>(method: string, version: number, route: string, requireAuth: boolean, params: any, descripton: string, callback: RouteCallback<R>): Endpoint<R>;
+        registerRoute<R extends IRequest<any, any, any, EP>, EP = { [key: string]: any }>(method: string, version: number, route: string, requireAuth: boolean, params: any, description: string, callback: RouteCallback<R>): Endpoint<R, EP>;
 
         /**
          * Starts the application.
@@ -483,7 +489,7 @@ declare module 'resting-squirrel' {
         getMaxVersion(): number;
     }
 
-    class Endpoint<R extends IRequest<any, any, any> = any> {
+    class Endpoint<R extends IRequest<any, any, any> = any, IProps = { [key: string]: any }> {
 
         version: number;
         requiredAuth: boolean;
@@ -498,6 +504,7 @@ declare module 'resting-squirrel' {
         apiKeyEnabled: boolean;
         excludedApiKeys: (() => Promise<string[]>) | string[];
         timeout: number;
+        props: IProps;
 
         requiredParams: string[];
         /**
@@ -599,18 +606,18 @@ declare module 'resting-squirrel' {
         /**
          * Sets the endpoint as deprecated.
          */
-        deprecate(): Endpoint<R>;
+        deprecate(): Endpoint<R, IProps>;
         /**
          * Sets the endpoint as requiring auth.
          * @deprecated
          */
-        auth(): Endpoint<R>;
+        auth(): Endpoint<R, IProps>;
         /**
          * Sets the description.
          * @param docs Endpoint description.
          * @deprecated
          */
-        setDocs(docs: string): Endpoint<R>;
+        setDocs(docs: string): Endpoint<R, IProps>;
     }
 
     class FieldShape {
