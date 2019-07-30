@@ -173,12 +173,16 @@ declare module 'resting-squirrel' {
         },
         /** Global timeout for all endpoints. After the time the 408 error is returned. */
         timeout?: number;
-        /** Methods called before the endpoint callback execution. */
+        /** 
+         * Methods called before the endpoint callback execution.
+         * @deprecated
+         */
         before?: (<R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void) | {
             [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
         },
         /**
          * Methods to call after the endpopint callback execution.
+         * @deprecated
          */
         after?: (<R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void) | {
             [route: string]: <R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void,

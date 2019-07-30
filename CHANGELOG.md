@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.0
+### Fixes
+- Unknown log options in the deprecated options validation.
+
 ## 2.16.0
 ### Features
 - Custom props of the endpoint

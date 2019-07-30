@@ -351,6 +351,7 @@ The module creates generic documentation by default. The documentation is on the
 - remove POST api key support
 - remove headers api key support
 - remove function arguments support in http methods.
+- remove after and before options
 - send access token to the auth.validator instead of key
 - change auth default key to authorization
 

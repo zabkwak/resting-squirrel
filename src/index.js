@@ -185,15 +185,28 @@ class Application {
      * @param {AppOptions} options 
      */
     constructor(options = {}) {
-        if (typeof options.before === 'function') {
-            this._warn('Using \'before\' as a functions is deprecated');
-            options.before = { '*': options.before };
-        }
-        if (typeof options.after === 'function') {
-            this._warn('Using \'after\' as a functions is deprecated');
-            options.after = { '*': options.after };
-        }
         this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
+        if (typeof options.log === 'boolean') {
+            this._options.log = {
+                ...this._mergeObjects({}, DEFAULT_OPTIONS.log),
+                enabled: options.log,
+            };
+            this._warn('Using log option as boolean is deprecated.');
+        }
+        if (typeof this._options.before === 'function') {
+            this._warn('Using \'before\' as a functions is deprecated');
+            this._options.before = { '*': this._options.before };
+        }
+        if (typeof this._options.after === 'function') {
+            this._warn('Using \'after\' as a functions is deprecated');
+            this._options.after = { '*': this._options.after };
+        }
+        if (this._options.before) {
+            this._warn('Using \'before\' option is deprecated');
+        }
+        if (this._options.after) {
+            this._warn('Using \'after\' option is deprecated');
+        }
         // Object merge cannot merge not existing keys, so this adds custom meta data to the options.
         if (options.meta && options.meta.data) {
             Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
@@ -205,15 +218,8 @@ class Application {
                 options.auth(req, res, cb);
             };
         }
-        if (typeof options.log === 'boolean') {
-            this._warn('Using log option as boolean is deprecated.');
-            this._options.log = {
-                ...this._mergeObjects({}, DEFAULT_OPTIONS.log),
-                enabled: options.log,
-            };
-        }
         if (typeof options.logStack === 'boolean') {
-            this._warn('Using logStack options is deprecated.');
+            this._warn('Using logStack option is deprecated.');
             this._options.log.stack = options.logStack;
         }
         this._createApp();
