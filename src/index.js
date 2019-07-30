@@ -171,6 +171,9 @@ class Application {
     /** @type {Object.<string, Route>} */
     _routes = {};
 
+    _beforeExecution = [];
+    _afterExecution = [];
+
     _stats = {
         error: 0,
         warning: 0,
@@ -203,9 +206,35 @@ class Application {
         }
         if (this._options.before) {
             this._warn('Using \'before\' option is deprecated');
+            Object.keys(this._options.before).forEach((route) => {
+                this.registerBeforeExecution(route, (req, res) => {
+                    return new Promise((resolve, reject) => {
+                        this._options.before[route](req, res, (err) => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            resolve();
+                        });
+                    });
+                });
+            });
         }
         if (this._options.after) {
             this._warn('Using \'after\' option is deprecated');
+            Object.keys(this._options.after).forEach((route) => {
+                this.registerAfterExecution(route, (err, data, req, res) => {
+                    return new Promise((resolve, reject) => {
+                        this._options.after[route](err, data, req, res, (err) => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            resolve();
+                        });
+                    });
+                });
+            });
         }
         // Object merge cannot merge not existing keys, so this adds custom meta data to the options.
         if (options.meta && options.meta.data) {
@@ -232,6 +261,26 @@ class Application {
             return;
         }
         this._app.use(route, callback);
+    }
+
+    registerBeforeExecution(spec, callback) {
+        const index = this._beforeExecution.map(({ spec }) => spec).indexOf(spec);
+        if (index >= 0) {
+            this._warn(`Before execution callback for '${spec}' is already registered. Rewriting.`);
+            this._beforeExecution.splice(index, 1);
+        }
+        this._beforeExecution.push({ spec, callback });
+        return this;
+    }
+
+    registerAfterExecution(spec, callback) {
+        const index = this._afterExecution.map(({ spec }) => spec).indexOf(spec);
+        if (index >= 0) {
+            this._warn(`After execution callback for '${spec}' is already registered. Rewriting.`);
+            this._afterExecution.splice(index, 1);
+        }
+        this._afterExecution.push({ spec, callback });
+        return this;
     }
 
     /**
@@ -401,7 +450,7 @@ class Application {
                             throw new Err('Time out', '_timeout_internal');
                         }
                         b.mark('params checking');
-                        await this._beforeCallback(req, res, before);
+                        await this._beforeCallback(req, res);
                         if (timedOut) {
                             throw new Err('Time out', '_timeout_internal');
                         }
@@ -786,33 +835,25 @@ class Application {
     /**
      * 
      * @param {express.Request} req 
-     * @param {express.Response} res 
-     * @param {*} map 
+     * @param {express.Response} res
      * @returns {Promise<void>}
      */
-    _beforeCallback(req, res, map) {
-        return new Promise((resolve, reject) => {
-            async.eachSeries(Object.keys(map), (spec, callback) => {
+    async _beforeCallback(req, res) {
+        if (this._beforeExecution.length) {
+            for (let i = 0; i < this._beforeExecution.length; i++) {
+                const { spec, callback } = this._beforeExecution[i];
                 if (spec === '*') {
-                    map[spec](req, res, callback);
-                    return;
+                    await callback(req, res);
+                    continue;
                 }
                 const r = new RouteParser(spec);
                 const match = r.match(req.path);
                 if (!match) {
-                    callback();
-                    return;
+                    continue;
                 }
-                map[spec](req, res, callback);
-                return;
-            }, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-        });
+                await callback(req, res);
+            }
+        }
     }
 
     /**
@@ -888,21 +929,22 @@ class Application {
         res._sendData(data);
     }
 
-    _afterCallback(err, data, req, res, map, cb) {
-        async.eachSeries(Object.keys(map), (spec, callback) => {
-            if (spec === '*') {
-                map[spec](err, data, req, res, callback);
-                return;
+    async _afterCallback(err, data, req, res) {
+        if (this._afterExecution.length) {
+            for (let i = 0; i < this._afterExecution.length; i++) {
+                const { spec, callback } = this._afterExecution[i];
+                if (spec === '*') {
+                    await callback(err, data, req, res);
+                    continue;
+                }
+                const r = new RouteParser(spec);
+                const match = r.match(req.path);
+                if (!match) {
+                    continue;
+                }
+                await callback(err, data, req, res);
             }
-            const r = new RouteParser(spec);
-            const match = r.match(req.path);
-            if (!match) {
-                callback();
-                return;
-            }
-            map[spec](err, data, req, res, callback);
-            return;
-        }, cb);
+        }
     }
 
     /**
@@ -942,14 +984,14 @@ class Application {
                 this._warn('res.sendData is deprecated. Use next callback in route or Promises.');
                 res._sendData(data, key);
             };
-            res._sendData = (data, key = dataKey) => {
-                this._afterCallback(key === errorKey, data, req, res, after, (err) => {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-                    res._end(data !== undefined && data !== null ? { [key]: data } : null);
-                });
+            res._sendData = async (data, key = dataKey) => {
+                try {
+                    await this._afterCallback(key === errorKey, data, req, res);
+                } catch (e) {
+                    process.nextTick(() => next(e));
+                    return;
+                }
+                res._end(data !== undefined && data !== null ? { [key]: data } : null);
             };
             res._end = (data) => {
                 let body = req.body;
@@ -1134,14 +1176,14 @@ class Application {
 
     _log(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['verbose'].includes(level)) {
+        if (enabled && ['error', 'warn', 'verbose'].includes(level)) {
             console.log(new Date(), message);
         }
     }
 
     _warn(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['warning', 'verbose'].includes(level)) {
+        if (enabled && ['error', 'warn'].includes(level)) {
             console.warn(new Date(), message);
         }
         this._stats.warning++;
@@ -1149,7 +1191,7 @@ class Application {
 
     _error(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['error', 'warning', 'verbose'].includes(level)) {
+        if (enabled && ['error'].includes(level)) {
             console.error(new Date(), message);
         }
         this._stats.error++;

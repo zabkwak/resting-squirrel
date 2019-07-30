@@ -11,40 +11,37 @@ import rs from '../src';
 
 describe('Endpoint lifecycle', function () {
     const app = rs({
-        log: false,
+        log: {
+            level: 'warn',
+            enabled: false,
+        },
         port: 8081,
         auth(req, res, next) {
             req.lifecycle.auth = true;
             if (!req.headers['x-token']) { return res.send401(); }
             return next();
         },
-        before: {
-            '*': (req, res, next) => {
-                req.lifecycle.before = true;
-                return next();
-            },
-            '/param/*param': (req, res, next) => {
-                req.lifecycle.before_custom = true;
-                return next();
-            },
-            '/model/*modelData': (req, res, next) => {
-                if (req.route.path.indexOf('/model/:id') < 0) { return next(); }
-                req.lifecycle.before_custom = true;
-                return next();
-            }
-        },
-        after: {
-            '/param/*param': (isError, data, req, res, next) => {
-                req.lifecycle.after_custom = true;
-                return next();
-            },
-            '*': (isError, data, req, res, next) => {
-                req.lifecycle.after = true;
-                res.header('lifecycle', JSON.stringify(req.lifecycle));
-                return next();
-            }
-        }
     });
+    app
+        .registerBeforeExecution('*', async (req, res) => {
+            req.lifecycle.before = true;
+        })
+        .registerBeforeExecution('/param/*param', async (req, res) => {
+            req.lifecycle.before_custom = true;
+        })
+        .registerBeforeExecution('/model/*modelData', async (req, res) => {
+            if (req.route.path.indexOf('/model/:id') < 0) {
+                return;
+            }
+            req.lifecycle.before_custom = true;
+        })
+        .registerAfterExecution('/param/*param', async (isError, data, req, res) => {
+            req.lifecycle.after_custom = true;
+        })
+        .registerAfterExecution('*', async (isError, data, req, res) => {
+            req.lifecycle.after = true;
+            res.header('lifecycle', JSON.stringify(req.lifecycle));
+        });
     // Force __meta key to the res for add meta data for counting callbacks
     app.use(function (req, res, next) {
         req.lifecycle = {

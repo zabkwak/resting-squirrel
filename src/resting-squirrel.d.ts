@@ -274,6 +274,28 @@ declare module 'resting-squirrel' {
         use<R extends IRequest>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
 
         /**
+         * Registers a function to execute before the endpoint execution.
+         *
+         * @param spec Specification of the route where the callback is used.
+         * @param callback Function to execute before the endpoint execution.
+         */
+        registerBeforeExecution<R extends IRequest>(
+            spec: string,
+            callback: (req: R, res: IResponse) => Promise<void>
+        ): this;
+
+        /**
+         * Registers a function to execute after the endpoint execution.
+         *
+         * @param spec Specification of the route where the callback is used.
+         * @param callback Function to execute after the endpoint execution.
+         */
+        registerAfterExecution<R extends IRequest>(
+            spec: string,
+            callback: (isError: boolean, data: any, req: R, res: IResponse) => Promise<void>
+        ): this;
+
+        /**
          * Registers the GET endpoint without a version and with default options.
          * @param route Route of the endpoint.
          * @param callback Callback to execute.

@@ -1,8 +1,10 @@
 # Changelog
 
 ## 2.17.0
+### Features
+- Methods to register before and after execution instead of options
 ### Fixes
-- Unknown log options in the deprecated options validation.
+- Unknown log options in the deprecated options validation
 
 ## 2.16.0
 ### Features

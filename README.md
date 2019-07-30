@@ -71,6 +71,7 @@ This usage will create the app with default options.
 - **stack** If true the error stack is logged if logging is enabled. Default: true  
 **logStack** If true and log is enabled the stack trace is written in stdout. This option should be false on the production app -> the request process is longer if the complete stack is printed to the console. Default: true DEPRECATED  
 **logger({ statusCode, method, path, spec, body, params, query, headers, took, response })** Custom logging function which is called before the request ends. Default function logs the data in the console like in previous versions.  
+
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
@@ -88,8 +89,8 @@ This usage will create the app with default options.
 - **validator(apiKey, next)** Validator of api key. It should return `Promise<boolean>`.  
 
 **timeout** Time in milliseconds. After this time the endpoints return 408 status code. Default: null  
-**before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next().  
-**after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next().   
+**before** Object of functions with key as a route spec. The functions `(req, res, next)` are called before the endpoint execution. Default object on all endpoints just calls next(). DEPRECATED  
+**after(isError, data, req, res, next)** Object of functions with key as a route spec. The functions `(err, data, req, res, next)` are called after the endpoint execution. Default object on all endpoints just calls next(). DEPRECATED  
 **defaultError** Default error for response if no error is defined  
 - **statusCode** Default HTTP status code on error. Default: 500
 - **message** Default error message. Default: Server error  
@@ -119,6 +120,8 @@ console.log(HttpError.create(400)); // Http error with 400 status code, message 
 
 ### Functions
 **use(route, callback)** Registers express middleware. Route can be callback.  
+**registerBeforeExecution(spec, callback)** Registers callback `(req, res)` to the route spec which is executed before the endpoint execution.  
+**registerAfterExecution(spec, callback)** Registers callback `(isError, data, req, res)` to the route spec wich is executed after the endpoint execution.   
 **get(version, route, options = {}, callback)** Registers route on the GET method. options can be callback. Callback is taken from express.  
 **post(version, route, options = {}, callback)** Registers route on the POST method. options can be callback. Callback is taken from express.  
 **put(version, route, options = {}, callback)** Registers route on the PUT method. options can be callback. Callback is taken from express.  
