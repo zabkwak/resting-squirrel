@@ -341,8 +341,6 @@ The module creates generic documentation by default. The documentation is on the
 - custom warning of the endpoint
 - non-array response definition
 - doc console shape fields
-- before methods using promises
-- after methods using promises
 - handle Param and Field classes for typescript
 - 410 error code after the deprecation if needed
 - finish all requests before stop
