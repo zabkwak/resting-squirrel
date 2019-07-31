@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.1
+### Fixes
+- Wrong handling of log level
+
 ## 2.17.0
 ### Features
 - Methods to register before and after execution instead of options

@@ -1176,14 +1176,14 @@ class Application {
 
     _log(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['error', 'warn', 'verbose'].includes(level)) {
+        if (enabled && ['verbose'].includes(level)) {
             console.log(new Date(), message);
         }
     }
 
     _warn(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['error', 'warn'].includes(level)) {
+        if (enabled && ['warn', 'verbose'].includes(level)) {
             console.warn(new Date(), message);
         }
         this._stats.warning++;
@@ -1191,7 +1191,7 @@ class Application {
 
     _error(message) {
         const { enabled, level } = this._options.log;
-        if (enabled && ['error'].includes(level)) {
+        if (enabled && ['error', 'warn', 'verbose'].includes(level)) {
             console.error(new Date(), message);
         }
         this._stats.error++;
