@@ -911,6 +911,11 @@ class Application {
                 this._warn('Endpoint has defined response data but the callback is sending undefined data.');
             } else {
                 if (endpoint.response instanceof JSONResponse) {
+                    try {
+                        data = data.toJSON();
+                    } catch (e) {
+                        this._warn('Data do not have toJSON method.');
+                    }
                     endpoint.response.fields.forEach((field) => {
                         const { type, name } = field;
                         try {

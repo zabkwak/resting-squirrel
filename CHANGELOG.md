@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.2
+### Updates
+- Data are converted to json before the types validation
+
 ## 2.17.1
 ### Fixes
 - Wrong handling of log level
