@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.3
+### Updates
+- Locked `@types/express-serve-static-core` dependency. 
+
 ## 2.17.2
 ### Updates
 - Data are converted to json before the types validation
