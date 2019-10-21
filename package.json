@@ -1,6 +1,6 @@
 {
   "name": "resting-squirrel",
-  "version": "2.17.3",
+  "version": "2.17.4",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "types": "./dist/resting-squirrel.d.ts",
