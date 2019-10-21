@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.4
+### Updates
+- package-lock.json not included in the package
+
 ## 2.17.3
 ### Updates
 - Locked `@types/express-serve-static-core` dependency. 

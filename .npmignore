@@ -4,3 +4,4 @@
 /.babelrc
 /__tests__
 /test.js
+/package-lock.json
