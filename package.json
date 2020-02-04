@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "./dist/resting-squirrel.d.ts",
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./__tests__ --recursive --require @babel/register --timeout 5000",
+    "test": "./node_modules/.bin/mocha ./__tests__ --recursive --require @babel/register --timeout 5000 --exit",
     "create_index": "run-script-os",
     "create_index:win32": "echo module.exports = require('./dist'); > index.js",
     "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",
@@ -21,18 +21,18 @@
     "node": ">=4"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.7.0",
-    "@types/express-serve-static-core": "4.16.7",
+    "@babel/polyfill": "^7.8.3",
     "@types/express": "4.17.0",
+    "@types/express-serve-static-core": "4.16.7",
     "async": "^2.6.3",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "express": "^4.17.1",
-    "http-smart-error": "^1.1.1",
+    "http-smart-error": "^3.0.0",
     "lodash": "^4.17.15",
     "route-parser": "0.0.5",
-    "runtime-type": "^3.1.0",
-    "smart-error": "^1.2.2"
+    "runtime-type": "^3.3.0",
+    "smart-error": "^3.0.0"
   },
   "repository": {
     "type": "git",
@@ -48,12 +48,12 @@
     "express"
   ],
   "devDependencies": {
-    "@babel/cli": "^7.7.0",
-    "@babel/core": "^7.7.0",
-    "@babel/plugin-proposal-class-properties": "^7.7.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
-    "@babel/preset-env": "^7.7.1",
-    "@babel/register": "^7.7.0",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/register": "^7.8.3",
     "chai": "^3.5.0",
     "mocha": "^6.2.2",
     "request": "^2.88.0",

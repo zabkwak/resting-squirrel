@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.17.7
+### Updates
+- Updated dependencies.
+
 ## 2.17.6
 ### Updates
 - Locked express types.
