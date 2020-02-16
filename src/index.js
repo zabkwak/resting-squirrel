@@ -906,20 +906,26 @@ class Application {
      */
     _handleData(req, res, data) {
         const endpoint = req.getEndpoint();
+        let responseData;
         if (endpoint.response) {
             if (!data) {
                 this._warn('Endpoint has defined response data but the callback is sending undefined data.');
             } else {
                 if (endpoint.response instanceof JSONResponse) {
                     try {
-                        data = data.toJSON();
+                        // convert data to json
+                        responseData = data.toJSON();
                     } catch (e) {
                         this._warn('Data do not have toJSON method.');
+                        // if data don't have toJSON method copy the data to new object
+                        responseData = {
+                            ...data,
+                        };
                     }
                     endpoint.response.fields.forEach((field) => {
                         const { type, name } = field;
                         try {
-                            data[name] = type.cast(data[name]);
+                            responseData[name] = type.cast(responseData[name]);
                         } catch (e) {
                             const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
                             if (this._options.responseStrictValidation) {
@@ -931,7 +937,7 @@ class Application {
                 }
             }
         }
-        res._sendData(data);
+        res._sendData(responseData || data);
     }
 
     async _afterCallback(err, data, req, res) {

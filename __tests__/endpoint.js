@@ -214,7 +214,13 @@ describe('Endpoint.Param', () => {
     describe('.Shape', () => {
 
         it('checks the Param.Shape with a description', () => {
-            const shape = new Param.Shape('shape', true, 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+            const shape = new Param.Shape(
+                'shape',
+                true,
+                'Description',
+                new Param('string', true, Type.string, 'String field in the shape.'),
+                new Param('integer', false, Type.integer),
+            );
             expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description', 'required']);
             const { name, fields, type, description, required } = shape;
             expect(name).to.be.equal('shape');
@@ -223,7 +229,7 @@ describe('Endpoint.Param', () => {
             expect(fields).to.be.an.instanceOf(Array);
             expect(fields.length).to.be.equal(2);
             expect(type).to.be.an.instanceOf(Type.Type);
-            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', integer: 'integer' })})`);
+            expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', 'integer?': 'integer' })})`);
             const json = shape.toJSON();
             expect(json).to.have.all.keys(['name', 'description', 'shape', 'required', 'type']);
             expect(json).to.deep.equal({
@@ -243,7 +249,7 @@ describe('Endpoint.Param', () => {
                         key: 'integer',
                         type: Type.integer,
                         description: null,
-                        required: true,
+                        required: false,
                     },
                 },
                 type: shape.type.toString(),

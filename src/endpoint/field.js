@@ -26,7 +26,7 @@ class Shape {
         this.fields = fields;
         const shape = {};
         this.fields.forEach((field) => {
-            shape[field.name] = field.type;
+            shape[this._getFieldName(field)] = field.type;
         });
         this.type = Type.shape(shape);
     }
@@ -42,6 +42,13 @@ class Shape {
             o.shape[field.name] = field;
         });
         return o;
+    }
+
+    _getFieldName(field) {
+        if (field.required === undefined) {
+            return field.name;
+        }
+        return field.required ? field.name : `${field.name}?`;
     }
 }
 

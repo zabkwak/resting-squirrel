@@ -26,7 +26,7 @@ class Shape extends Field.Shape {
             if (field instanceof Shape || field instanceof ShapeArray) {
                 return field;
             }
-            return Param.createFromField(field, true);
+            return Param.createFromField(field, typeof field.required === 'boolean' ? field.required : true);
         });
     }
 

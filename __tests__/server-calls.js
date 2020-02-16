@@ -60,7 +60,17 @@ app.post(0, '/data-types', {
         new Param('enum', false, Type.enum('a', 'a', 'b', 'c')),
         new Param('shape', false, Type.shape({
             integer: Type.integer,
+            'float?': Type.float,
         })),
+    ],
+}, (req, res, next) => next(null, req.body));
+
+app.post(0, '/shape', {
+    params: [
+        new Param.Shape('required_shape', true, new Param('integer', true, Type.integer), new Param('float', true, Type.float)),
+        new Param.Shape('not_required_shape', false, new Param('integer', true, Type.integer), new Param('float', true, Type.float)),
+        new Param.Shape('required_shape_without_required_param', true, new Param('integer', true, Type.integer), new Param('float', false, Type.float)),
+        new Param.Shape('not_required_shape_without_required_param', false, new Param('integer', true, Type.integer), new Param('float', false, Type.float)),
     ],
 }, (req, res, next) => next(null, req.body));
 
@@ -135,7 +145,7 @@ describe('Base calls', () => {
     it('calls the documentation endpoint', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/docs' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             done();
@@ -145,7 +155,7 @@ describe('Base calls', () => {
     it('calls the base endpoint', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -158,7 +168,7 @@ describe('Base calls', () => {
     it('calls the base endpoint with nometa parameter', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080?nometa' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data']);
             const { data } = body;
@@ -171,7 +181,7 @@ describe('Base calls', () => {
     it('calls the non-existing endpoint', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/non-existing' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(404);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -188,7 +198,7 @@ describe('Authorization', () => {
     it('calls the endpoint which requires the authorization without the token', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/auth' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(401);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -202,7 +212,7 @@ describe('Authorization', () => {
     it('calls the endpoint which requires the authorization with the token', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/auth', headers: { 'x-token': 'some-token' } }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -222,7 +232,7 @@ describe('Arguments validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -239,7 +249,7 @@ describe('Arguments validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -256,7 +266,7 @@ describe('Arguments validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -273,7 +283,7 @@ describe('Arguments validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -295,7 +305,7 @@ describe('GET parameter validation', () => {
             qs: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -313,7 +323,7 @@ describe('GET parameter validation', () => {
             qs: { param: 0 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -330,7 +340,7 @@ describe('GET parameter validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -349,7 +359,7 @@ describe('GET parameter validation', () => {
             qs: { param: 'test' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -368,7 +378,7 @@ describe('GET parameter validation', () => {
             qs: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -386,7 +396,7 @@ describe('GET parameter validation', () => {
             qs: { param: 1, date: 'date' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -405,7 +415,7 @@ describe('GET parameter validation', () => {
             qs: { param: 1, date: new Date() },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -423,7 +433,7 @@ describe('GET parameter validation', () => {
             qs: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -440,7 +450,7 @@ describe('GET parameter validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -459,7 +469,7 @@ describe('GET parameter validation', () => {
             qs: { int: 1, float: 1.1, not_defined_param: 'not defined' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -482,7 +492,7 @@ describe('POST parameter validation', () => {
             body: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -500,7 +510,7 @@ describe('POST parameter validation', () => {
             body: { param: 0 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -517,7 +527,7 @@ describe('POST parameter validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -536,7 +546,7 @@ describe('POST parameter validation', () => {
             body: { param: 'test' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -555,7 +565,7 @@ describe('POST parameter validation', () => {
             body: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -573,7 +583,7 @@ describe('POST parameter validation', () => {
             body: { param: 1, date: 'date' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -592,7 +602,7 @@ describe('POST parameter validation', () => {
             body: { param: 1, date: new Date() },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -610,7 +620,7 @@ describe('POST parameter validation', () => {
             body: { param: 1 },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -627,7 +637,7 @@ describe('POST parameter validation', () => {
             json: true,
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -646,7 +656,7 @@ describe('POST parameter validation', () => {
             body: { int: '1', float: '1.1', not_defined_param: 'not defined' },
         }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -664,7 +674,7 @@ describe('Special responses', () => {
     it('calls the endpoint with 204 response code', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/204' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.headers['content-type']).to.be.undefined;
             expect(res.statusCode).to.equal(204);
             expect(body).to.be.undefined;
             done();
@@ -674,7 +684,7 @@ describe('Special responses', () => {
     it('calls the endpoint which will resolve a Promise', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/promise' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.headers['content-type']).to.be.undefined;
             expect(res.statusCode).to.equal(204);
             expect(body).to.be.undefined;
             done();
@@ -684,7 +694,7 @@ describe('Special responses', () => {
     it('calls the enpdoint which has defined response but the callback sends undefined data', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/response/definition/with/null/data' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.headers['content-type']).to.be.undefined;
             expect(res.statusCode).to.equal(204);
             expect(body).to.be.undefined;
             done();
@@ -738,7 +748,7 @@ describe('Endpoint defined with options', () => {
     it('calls the endpoint with defined response as null', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/options/null-response' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.undefined;
+            expect(res.headers['content-type']).to.be.undefined;
             expect(res.statusCode).to.equal(204);
             expect(body).to.be.undefined;
             done();
@@ -868,7 +878,7 @@ describe('Data types validation', () => {
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
             expect(error).to.have.all.keys(['message', 'code', 'type_error']);
-            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
+            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer","float?":"float"})\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
         });
@@ -889,13 +899,48 @@ describe('Data types validation', () => {
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
             expect(error).to.have.all.keys(['message', 'code', 'type_error']);
-            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer"})\'.');
+            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer","float?":"float"})\'.');
             expect(error.code).to.be.equal('ERR_INVALID_TYPE');
             done();
         });
     });
 
     it('calls the data-types endpoint with all valid parameters', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                integer: 5,
+                float: 5.5,
+                string: 'string',
+                array: [1, 2, 3, 4, 5],
+                date: new Date('2018-06-01T00:00:00.000Z'),
+                enum: 'a',
+                shape: {
+                    integer: 5,
+                    float: 5.5,
+                },
+            }
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.have.all.keys(['integer', 'float', 'string', 'array', 'date', 'enum', 'shape']);
+            expect(data.integer).to.be.equal(5);
+            expect(data.float).to.be.equal(5.5);
+            expect(data.string).to.be.equal('string');
+            expect(data.array).to.deep.equal([1, 2, 3, 4, 5]);
+            expect(data.date).to.be.equal('2018-06-01T00:00:00.000Z');
+            expect(data.enum).to.be.equal('a');
+            expect(data.shape).to.deep.equal({ integer: 5, float: 5.5 });
+            done();
+        });
+    });
+
+    it('calls the data-types endpoint without optional shape field', (done) => {
         request.post({
             gzip: true,
             json: true,
@@ -928,6 +973,123 @@ describe('Data types validation', () => {
             done();
         });
     });
+
+    it('calls the data-types endpoint with invalid shape field', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/data-types',
+            body: {
+                integer: 5,
+                float: 5.5,
+                string: 'string',
+                array: [1, 2, 3, 4, 5],
+                date: new Date('2018-06-01T00:00:00.000Z'),
+                enum: 'a',
+                shape: {
+                    integer: 5,
+                    float: 'string',
+                },
+            }
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(400);
+            expect(body).to.have.all.keys(['error', '_meta']);
+            const { error } = body;
+            expect(error).to.have.all.keys(['message', 'code', 'type_error']);
+            expect(error.message).to.be.equal('Parameter \'shape\' has invalid type. It should be \'shape({"integer":"integer","float?":"float"})\'.');
+            expect(error.code).to.be.equal('ERR_INVALID_TYPE');
+            done();
+        });
+    });
+
+    describe('Shapes', () => {
+
+        it('calls the shape endpoint with valid and filled params', (done) => {
+            request.post({
+                gzip: true,
+                json: true,
+                url: 'http://localhost:8080/0/shape',
+                body: {
+                    required_shape: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    not_required_shape: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    required_shape_without_required_param: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    not_required_shape_without_required_param: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                },
+            }, (err, res, body) => {
+                expect(err).to.be.null;
+                expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+                expect(res.statusCode).to.equal(200);
+                expect(body).to.have.all.keys(['data', '_meta']);
+                const { data } = body;
+                expect(data).to.deep.equal({
+                    required_shape: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    not_required_shape: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    required_shape_without_required_param: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                    not_required_shape_without_required_param: {
+                        integer: 5,
+                        float: 5.5,
+                    },
+                });
+                done();
+            });
+        });
+    });
+
+    it('calls the shape endpoint with valid and without required params', (done) => {
+        request.post({
+            gzip: true,
+            json: true,
+            url: 'http://localhost:8080/0/shape',
+            body: {
+                required_shape: {
+                    integer: 5,
+                    float: 5.5,
+                },
+                required_shape_without_required_param: {
+                    integer: 5,
+                },
+            },
+        }, (err, res, body) => {
+            expect(err).to.be.null;
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
+            expect(res.statusCode).to.equal(200);
+            expect(body).to.have.all.keys(['data', '_meta']);
+            const { data } = body;
+            expect(data).to.deep.equal({
+                required_shape: {
+                    integer: 5,
+                    float: 5.5,
+                },
+                required_shape_without_required_param: {
+                    integer: 5,
+                },
+            });
+            done();
+        });
+    });
 });
 
 describe('Errors', () => {
@@ -935,7 +1097,7 @@ describe('Errors', () => {
     it('calls endpoint with custom error with payload', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/error/custom' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(500);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -950,7 +1112,7 @@ describe('Errors', () => {
     it('calls endpoint that rejects a Promise without try-catch', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/promise', qs: { error: true } }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(400);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -964,7 +1126,7 @@ describe('Errors', () => {
     it('calls endpoint that throws an error in callback', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/error/throw' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(403);
             expect(body).to.have.all.keys(['error', '_meta']);
             const { error } = body;
@@ -981,7 +1143,7 @@ describe('Responses', () => {
     it('calls the endpoint which sends field not defined in the shape array', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/shape-array' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -1003,7 +1165,7 @@ describe('Responses', () => {
         it('calls the endpoint which sends html response', (done) => {
             request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/html' }, (err, res, body) => {
                 expect(err).to.be.null;
-                expect(res.headers["content-type"]).to.be.equal('text/html; charset=utf-8');
+                expect(res.headers['content-type']).to.be.equal('text/html; charset=utf-8');
                 expect(res.statusCode).to.equal(200);
                 expect(body).to.be.equal(HTML_CONTENT);
                 done();
@@ -1016,7 +1178,7 @@ describe('Responses', () => {
         it('calls the endpoint which sends image response', (done) => {
             request.get({ gzip: true, json: true, url: 'http://localhost:8080/0/image' }, (err, res, body) => {
                 expect(err).to.be.null;
-                expect(res.headers["content-type"]).to.be.equal('image/png');
+                expect(res.headers['content-type']).to.be.equal('image/png');
                 expect(res.statusCode).to.equal(200);
                 done();
             });
@@ -1070,7 +1232,7 @@ describe('Docs', () => {
     it('validates the docs data', (done) => {
         request.get({ gzip: true, json: true, url: 'http://localhost:8080/docs' }, (err, res, body) => {
             expect(err).to.be.null;
-            expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+            expect(res.headers['content-type']).to.be.equal('application/json; charset=utf-8');
             expect(res.statusCode).to.equal(200);
             expect(body).to.have.all.keys(['data', '_meta']);
             const { data } = body;
@@ -1092,6 +1254,7 @@ describe('Docs', () => {
                 'GET /0/options',
                 'GET /0/options/null-response',
                 'POST /0/data-types',
+                'POST /0/shape',
                 'GET /0/args/:id/not-defined',
                 'GET /0/args/:id/defined',
                 'GET /0/html',
@@ -1110,9 +1273,9 @@ describe('Docs', () => {
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
             ], [
-                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
-                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-                ], ['param']);
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['param']);
             validateDocs(data['GET /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
                 { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
@@ -1121,9 +1284,9 @@ describe('Docs', () => {
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
             ], [
-                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
-                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-                ], ['int', 'float']);
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['int', 'float']);
             validateDocs(data['POST /params'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
                 { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
@@ -1132,9 +1295,9 @@ describe('Docs', () => {
                 { name: 'param', description: null, key: 'param', required: true, type: 'integer' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
             ], [
-                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
-                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-                ], ['param']);
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['param']);
             validateDocs(data['POST /params/back'], null, [], [{ name: 'param', description: null, key: 'param', required: true, type: 'any' }], [
                 { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
@@ -1143,9 +1306,9 @@ describe('Docs', () => {
                 { name: 'int', description: null, key: 'int', required: true, type: 'integer' },
                 { name: 'float', description: null, key: 'float', required: true, type: 'float' },
             ], [
-                    { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
-                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-                ], ['int', 'float']);
+                { code: 'ERR_MISSING_PARAMETER', description: 'Returned if one of the required parameters is not defined.' },
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['int', 'float']);
             validateDocs(data['GET /204']);
             validateDocs(data['GET /error/custom']);
             validateDocs(data['GET /1/version'], null, [], [], [], [], false, [], true);
@@ -1171,10 +1334,20 @@ describe('Docs', () => {
                 { name: 'array', description: null, key: 'array', required: false, type: 'integer[]' },
                 { name: 'date', description: null, key: 'date', required: false, type: 'date' },
                 { name: 'enum', description: null, key: 'enum', required: false, type: 'enum(\'a\',\'b\',\'c\')' },
-                { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer"})' },
+                { name: 'shape', description: null, key: 'shape', required: false, type: 'shape({"integer":"integer","float?":"float"})' },
             ], [
-                    { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-                ]);
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ]);
+            /*
+            validateDocs(data['POST /0/shape'], null, [], [
+                { name: 'required_shape', description: null, required: true, type: 'shape({"integer":"integer","float":"float"})' },
+                { name: 'not_required_shape', description: null, required: false, type: 'shape({"integer":"integer","float":"float"})' },
+                { name: 'required_shape_without_required_param', description: null, required: true, type: 'shape({"integer":"integer","float?":"float"})' },
+                { name: 'not_required_shape_without_required_param', description: null, required: false, type: 'shape({"integer":"integer","float?":"float"})' },
+            ], [
+                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+            ], ['required_shape', 'required_shape_without_required_param']);
+            */
             validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }], [], [
                 { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
             ]);
