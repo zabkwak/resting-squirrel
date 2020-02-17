@@ -646,7 +646,7 @@ declare module 'resting-squirrel' {
         setDocs(docs: string): Endpoint<R, IProps>;
     }
 
-    class FieldShape {
+    export class FieldShape {
         name: string;
         description: string;
         fields: Field[];
@@ -656,7 +656,7 @@ declare module 'resting-squirrel' {
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string };
     }
 
-    class FieldShapeArray {
+    export class FieldShapeArray {
         name: string;
         description: string;
         shape: FieldShape;
@@ -691,14 +691,14 @@ declare module 'resting-squirrel' {
         toJSON(): { name: string, key: string, description: string, type: string };
     }
 
-    class ParamShape extends FieldShape {
+    export class ParamShape extends FieldShape {
         required: boolean;
         constructor(name: string, required: boolean, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
         constructor(name: string, required: boolean, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
         toJSON(): { name: string, description: string, shape: { [key: string]: Field }, type: string, required: boolean };
     }
 
-    class ParamShapeArray extends FieldShapeArray {
+    export class ParamShapeArray extends FieldShapeArray {
         required: boolean;
         constructor(name: string, required: boolean, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);
         constructor(name: string, required: boolean, description: string, ...fields: Array<Field | FieldShape | FieldShapeArray | Param | ParamShape | ParamShapeArray>);

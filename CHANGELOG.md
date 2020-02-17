@@ -4,6 +4,10 @@
 ### Features
 - Optional `Shape` properties.
 
+## 2.17.9
+### Updates
+- Updated type definition.
+
 ## 2.17.8
 ### Updates
 - Updated dependencies.
