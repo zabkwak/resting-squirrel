@@ -2,7 +2,7 @@ declare module 'resting-squirrel' {
 
     import SmartError from 'smart-error';
     import HttpSmartError from 'http-smart-error';
-    import RuntimeType from 'runtime-type';
+    import RuntimeType, { Model } from 'runtime-type';
     import * as express from 'express';
 
     namespace Response {
@@ -769,6 +769,7 @@ declare module 'resting-squirrel' {
 
     export {
         RuntimeType as Type,
+        Model as TypeModel,
         SmartError as Error,
         HttpSmartError as HttpError,
         ErrorField,
