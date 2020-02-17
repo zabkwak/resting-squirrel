@@ -4,6 +4,10 @@
 ### Features
 - Optional `Shape` properties.
 
+## 2.17.8
+### Updates
+- Updated dependencies.
+
 ## 2.17.7
 ### Updates
 - Updated dependencies.

@@ -7,7 +7,7 @@ import Err, { SmartError } from 'smart-error';
 import HttpError from 'http-smart-error';
 import RouteParser from 'route-parser';
 import async from 'async';
-import Type from 'runtime-type';
+import Type, { Model } from 'runtime-type';
 import path from 'path';
 import fs from 'fs';
 import _ from 'lodash';
@@ -1229,6 +1229,7 @@ export {
     Err as Error,
     Param,
     Type,
+    Model as TypeModel,
     Field,
     ErrorField,
     Response,
