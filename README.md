@@ -336,6 +336,12 @@ The module creates generic documentation by default. The documentation is on the
 - Do not use `Type.any` in args, params and fields definition. Any type is not validated as a type so it can be anything.
 - Use `HttpError` for errors sent to the endpoint callback.
 
+## Support modules
+### [resting-squirrel-dto](https://www.npmjs.com/package/resting-squirrel-dto)
+Module to define DTOs to simply define documentation.
+### [resting-squirrel-controller](https://www.npmjs.com/package/resting-squirrel-controller)
+Module to use class controllers to define endpoints.
+
 ## TODO
 - shape fields required status
 - custom warning of the endpoint
