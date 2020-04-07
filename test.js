@@ -140,7 +140,7 @@ app.post(1, '/param/shape', {
             true,
             'Field defined as Field.Shape.',
             new Param('string', true, Type.string, 'String field as part of the shape.'),
-            new Field('integer', Type.integer, 'Integer field as part of the shape.'),
+            new Param('integer', false, Type.integer, 'Integer field as part of the shape.'),
             new Param.Shape('shape', true, 'Nested shape', new Field('string', Type.string, 'String field as part of the nested shape.')),
         ),
         new Param.ShapeArray('shape_array', true, 'Array of shapes defined as Field.ShapeArray.', new Param('string', false, Type.string, 'String field as part of the shape.')),
