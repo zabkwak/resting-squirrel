@@ -97,56 +97,56 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
 
 /** @type {AppOptions} */
 const DEFAULT_OPTIONS = {
-    port: 8080,
-    name: 'Resting Squirrel App',
-    dataKey: 'data',
-    errorKey: 'error',
-    log: {
-        enabled: true,
-        level: 'verbose',
-        stack: true,
-    },
-    logStack: true,
-    logger: ({ statusCode, method, path, spec, body, params, query, headers, took, response }) => {
-        console.log(new Date(), `${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(query)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`);
-        console.log('');
-    },
-    meta: {
-        enabled: true,
-        data: {},
-    },
-    requestLimit: '1mb',
-    charset: 'utf-8',
-    docs: {
-        enabled: true,
-        route: '/docs',
-        auth: false,
-        paramsAsArray: false,
-    },
-    auth: {
-        key: 'x-token',
-        description: null,
-        validator: (key, req, res, next) => new Promise(resolve => resolve(true)),
-    },
-    apiKey: {
-        enabled: false,
-        type: 'qs',
-        validator: (apiKey, next) => new Promise(resolve => resolve(true)),
-    },
-    timeout: null,
-    before: {
-        '*': (req, res, next) => next(),
-    },
-    after: {
-        '*': (err, data, req, res, next) => next(),
-    },
-    defaultError: {
-        statusCode: 500,
-        message: 'Server error',
-        code: 'unknown',
-    },
-    validateParams: true,
-    responseStrictValidation: false,
+	port: 8080,
+	name: 'Resting Squirrel App',
+	dataKey: 'data',
+	errorKey: 'error',
+	log: {
+		enabled: true,
+		level: 'verbose',
+		stack: true,
+	},
+	logStack: true,
+	logger: ({ statusCode, method, path, spec, body, params, query, headers, took, response }) => {
+		console.log(new Date(), `${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(query)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`);
+		console.log('');
+	},
+	meta: {
+		enabled: true,
+		data: {},
+	},
+	requestLimit: '1mb',
+	charset: 'utf-8',
+	docs: {
+		enabled: true,
+		route: '/docs',
+		auth: false,
+		paramsAsArray: false,
+	},
+	auth: {
+		key: 'x-token',
+		description: null,
+		validator: (key, req, res, next) => new Promise(resolve => resolve(true)),
+	},
+	apiKey: {
+		enabled: false,
+		type: 'qs',
+		validator: (apiKey, next) => new Promise(resolve => resolve(true)),
+	},
+	timeout: null,
+	before: {
+		'*': (req, res, next) => next(),
+	},
+	after: {
+		'*': (err, data, req, res, next) => next(),
+	},
+	defaultError: {
+		statusCode: 500,
+		message: 'Server error',
+		code: 'unknown',
+	},
+	validateParams: true,
+	responseStrictValidation: false,
 };
 
 /**
@@ -154,147 +154,134 @@ const DEFAULT_OPTIONS = {
  * @readonly
  */
 const RouteAuth = {
-    REQUIRED: 2,
-    DISABLED: 0,
-    OPTIONAL: 1,
+	REQUIRED: 2,
+	DISABLED: 0,
+	OPTIONAL: 1,
 };
 
 class Application {
 
-    /** @type {express.Express} */
-    _app = null;
-    /** @type {http.Server} */
-    _server = null;
-    /** @type {AppOptions} */
-    _options = {};
+	/** @type {express.Express} */
+	_app = null;
+	/** @type {http.Server} */
+	_server = null;
+	/** @type {AppOptions} */
+	_options = {};
 
-    /** @type {Object.<string, Route>} */
-    _routes = {};
+	/** @type {Object.<string, Route>} */
+	_routes = {};
 
-    _beforeExecution = [];
-    _afterExecution = [];
+	_beforeExecution = [];
+	_afterExecution = [];
 
-    _stats = {
-        error: 0,
-        warning: 0,
-    };
+	_stats = {
+		error: 0,
+		warning: 0,
+	};
 
-    get version() {
-        return APP_PACKAGE.version;
-    }
+	get version() {
+		return APP_PACKAGE.version;
+	}
 
     /**
      * 
      * @param {AppOptions} options 
      */
-    constructor(options = {}) {
-        this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
-        if (typeof options.log === 'boolean') {
-            this._options.log = {
-                ...this._mergeObjects({}, DEFAULT_OPTIONS.log),
-                enabled: options.log,
-            };
-            this._warn('Using log option as boolean is deprecated.');
-        }
-        if (typeof this._options.before === 'function') {
-            this._warn('Using \'before\' as a functions is deprecated');
-            this._options.before = { '*': this._options.before };
-        }
-        if (typeof this._options.after === 'function') {
-            this._warn('Using \'after\' as a functions is deprecated');
-            this._options.after = { '*': this._options.after };
-        }
-        if (this._options.before) {
-            this._warn('Using \'before\' option is deprecated');
-            Object.keys(this._options.before).forEach((route) => {
-                this.registerBeforeExecution(route, (req, res) => {
-                    return new Promise((resolve, reject) => {
-                        this._options.before[route](req, res, (err) => {
-                            if (err) {
-                                reject(err);
-                                return;
-                            }
-                            resolve();
-                        });
-                    });
-                });
-            });
-        }
-        if (this._options.after) {
-            this._warn('Using \'after\' option is deprecated');
-            Object.keys(this._options.after).forEach((route) => {
-                this.registerAfterExecution(route, (err, data, req, res) => {
-                    return new Promise((resolve, reject) => {
-                        this._options.after[route](err, data, req, res, (err) => {
-                            if (err) {
-                                reject(err);
-                                return;
-                            }
-                            resolve();
-                        });
-                    });
-                });
-            });
-        }
-        // Object merge cannot merge not existing keys, so this adds custom meta data to the options.
-        if (options.meta && options.meta.data) {
-            Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
-        }
-        if (typeof options.auth === 'function') {
-            this._warn('Using auth option as a function is deprecated.');
-            this._options.auth = this._mergeObjects({}, DEFAULT_OPTIONS.auth);
-            this._options.auth.validator = (key, req, res, cb) => {
-                options.auth(req, res, cb);
-            };
-        }
-        if (typeof options.logStack === 'boolean') {
-            this._warn('Using logStack option is deprecated.');
-            this._options.log.stack = options.logStack;
-        }
-        this._createApp();
-        this._registerSupportRoutes();
-    }
+	constructor(options = {}) {
+		this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
+		if (typeof options.log === 'boolean') {
+			this._options.log = {
+				...this._mergeObjects({}, DEFAULT_OPTIONS.log),
+				enabled: options.log,
+			};
+			this._warn('Using log option as boolean is deprecated.');
+		}
+		if (typeof this._options.before === 'function') {
+			this._warn('Using \'before\' as a functions is deprecated');
+			this._options.before = { '*': this._options.before };
+		}
+		if (typeof this._options.after === 'function') {
+			this._warn('Using \'after\' as a functions is deprecated');
+			this._options.after = { '*': this._options.after };
+		}
+		if (this._options.before) {
+			this._warn('Using \'before\' option is deprecated');
+			Object.keys(this._options.before).forEach((route) => {
+				this.registerBeforeExecution(route, (req, res) => {
+					return new Promise((resolve, reject) => {
+						this._options.before[route](req, res, (err) => {
+							if (err) {
+								reject(err);
+								return;
+							}
+							resolve();
+						});
+					});
+				});
+			});
+		}
+		if (this._options.after) {
+			this._warn('Using \'after\' option is deprecated');
+			Object.keys(this._options.after).forEach((route) => {
+				this.registerAfterExecution(route, (err, data, req, res) => {
+					return new Promise((resolve, reject) => {
+						this._options.after[route](err, data, req, res, (err) => {
+							if (err) {
+								reject(err);
+								return;
+							}
+							resolve();
+						});
+					});
+				});
+			});
+		}
+		// Object merge cannot merge not existing keys, so this adds custom meta data to the options.
+		if (options.meta && options.meta.data) {
+			Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
+		}
+		if (typeof options.auth === 'function') {
+			this._warn('Using auth option as a function is deprecated.');
+			this._options.auth = this._mergeObjects({}, DEFAULT_OPTIONS.auth);
+			this._options.auth.validator = (key, req, res, cb) => {
+				options.auth(req, res, cb);
+			};
+		}
+		if (typeof options.logStack === 'boolean') {
+			this._warn('Using logStack option is deprecated.');
+			this._options.log.stack = options.logStack;
+		}
+		this._createApp();
+		this._registerSupportRoutes();
+	}
 
-    use(route, callback) {
-        if (!callback) {
-            this._app.use(route);
-            return;
-        }
-        this._app.use(route, callback);
-    }
+	use(route, callback) {
+		if (!callback) {
+			this._app.use(route);
+			return;
+		}
+		this._app.use(route, callback);
+	}
 
-    registerBeforeExecution(spec, callback) {
-        const index = this._beforeExecution.map(({ spec }) => spec).indexOf(spec);
-        if (index >= 0) {
-            this._warn(`Before execution callback for '${spec}' is already registered. Rewriting.`);
-            this._beforeExecution.splice(index, 1);
-        }
-        this._beforeExecution.push({ spec, callback });
-        return this;
-    }
+	registerBeforeExecution(spec, callback) {
+		const index = this._beforeExecution.map(({ spec }) => spec).indexOf(spec);
+		if (index >= 0) {
+			this._warn(`Before execution callback for '${spec}' is already registered. Rewriting.`);
+			this._beforeExecution.splice(index, 1);
+		}
+		this._beforeExecution.push({ spec, callback });
+		return this;
+	}
 
-    registerAfterExecution(spec, callback) {
-        const index = this._afterExecution.map(({ spec }) => spec).indexOf(spec);
-        if (index >= 0) {
-            this._warn(`After execution callback for '${spec}' is already registered. Rewriting.`);
-            this._afterExecution.splice(index, 1);
-        }
-        this._afterExecution.push({ spec, callback });
-        return this;
-    }
-
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
-    get(version, route, requireAuth, params, docs, callback) {
-        return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
-    }
+	registerAfterExecution(spec, callback) {
+		const index = this._afterExecution.map(({ spec }) => spec).indexOf(spec);
+		if (index >= 0) {
+			this._warn(`After execution callback for '${spec}' is already registered. Rewriting.`);
+			this._afterExecution.splice(index, 1);
+		}
+		this._afterExecution.push({ spec, callback });
+		return this;
+	}
 
     /**
      * 
@@ -305,9 +292,9 @@ class Application {
      * @param {string|function} description 
      * @param {function} callback 
      */
-    post(version, route, requireAuth, params, docs, callback) {
-        return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
-    }
+	get(version, route, requireAuth, params, docs, callback) {
+		return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
+	}
 
     /**
      * 
@@ -318,9 +305,9 @@ class Application {
      * @param {string|function} description 
      * @param {function} callback 
      */
-    put(version, route, requireAuth, params, docs, callback) {
-        return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
-    }
+	post(version, route, requireAuth, params, docs, callback) {
+		return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
+	}
 
     /**
      * 
@@ -331,9 +318,9 @@ class Application {
      * @param {string|function} description 
      * @param {function} callback 
      */
-    delete(version, route, requireAuth, params, docs, callback) {
-        return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
-    }
+	put(version, route, requireAuth, params, docs, callback) {
+		return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
+	}
 
     /**
      * 
@@ -344,9 +331,22 @@ class Application {
      * @param {string|function} description 
      * @param {function} callback 
      */
-    head(version, route, requireAuth, params, docs, callback) {
-        return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
-    }
+	delete(version, route, requireAuth, params, docs, callback) {
+		return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
+	}
+
+    /**
+     * 
+     * @param {number} version 
+     * @param {string} route 
+     * @param {RouteOptions|boolean|function} requireAuth 
+     * @param {Param[]|function} params 
+     * @param {string|function} description 
+     * @param {function} callback 
+     */
+	head(version, route, requireAuth, params, docs, callback) {
+		return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
+	}
 
     /**
      * 
@@ -358,221 +358,221 @@ class Application {
      * @param {string|function} description 
      * @param {function} callback 
      */
-    registerRoute(method, version, route, requireAuth, params, description, callback) {
-        if (isNaN(parseFloat(version))) {
-            callback = description;
-            description = params;
-            params = requireAuth;
-            requireAuth = route;
-            route = version;
-            version = null;
-        }
-        // Mismatch for back compatibility. If the requireAuth parameter is a function it means that it's the callback and RouteOptions are empty.
-        if (typeof requireAuth === 'function') {
-            params = requireAuth;
-            requireAuth = {};
-        }
-        if (typeof requireAuth === 'object') {
-            // Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
-            return this._registerRoute(method, version, route, {
-                ...requireAuth,
-                timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
-            }, params);
-        }
-        this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
-        if (typeof params === 'function') {
-            callback = params;
-            params = [];
-            description = null;
-        }
-        if (typeof description === 'function') {
-            callback = description;
-            description = null;
-        }
-        return this._registerRoute(method, version, route, {
-            requireAuth,
-            params,
-            description,
-            timeout: this._options.timeout,
-        }, callback);
-    }
+	registerRoute(method, version, route, requireAuth, params, description, callback) {
+		if (isNaN(parseFloat(version))) {
+			callback = description;
+			description = params;
+			params = requireAuth;
+			requireAuth = route;
+			route = version;
+			version = null;
+		}
+		// Mismatch for back compatibility. If the requireAuth parameter is a function it means that it's the callback and RouteOptions are empty.
+		if (typeof requireAuth === 'function') {
+			params = requireAuth;
+			requireAuth = {};
+		}
+		if (typeof requireAuth === 'object') {
+			// Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
+			return this._registerRoute(method, version, route, {
+				...requireAuth,
+				timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
+			}, params);
+		}
+		this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
+		if (typeof params === 'function') {
+			callback = params;
+			params = [];
+			description = null;
+		}
+		if (typeof description === 'function') {
+			callback = description;
+			description = null;
+		}
+		return this._registerRoute(method, version, route, {
+			requireAuth,
+			params,
+			description,
+			timeout: this._options.timeout,
+		}, callback);
+	}
 
     /**
      * 
      * @param {function} cb 
      * @deprecated
      */
-    listen(cb = () => { }) {
-        this.start(cb);
-    }
+	listen(cb = () => { }) {
+		this.start(cb);
+	}
 
     /**
      * Starts the application.
      * @param {function} cb 
      */
-    start(cb = () => { }) {
-        const { port, auth, before, log, errorKey } = this._options;
-        Object.keys(this._routes).forEach((key) => {
-            const route = this._routes[key];
-            Object.keys(route.routes).forEach((v) => {
-                const endpoint = route.routes[v];
-                this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
-                    req.__endpoint = endpoint;
-                    const b = req.__benchmark;
-                    let timeout;
-                    let timedOut = false;
-                    if (endpoint.timeout) {
-                        timeout = setTimeout(() => {
-                            timedOut = true;
-                            req.emit('timeout');
-                            next(HttpError.create(408));
-                        }, endpoint.timeout);
-                    }
-                    b.mark('bootstrap');
-                    try {
-                        await this._checkApiKey(req);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('api key checking');
-                        await this._checkAuth(req, res, endpoint.auth, auth);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('auth checking');
-                        await this._checkArguments(endpoint.getRouteArguments(), req);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('arguments checking');
-                        await this._checkParams(endpoint.params, req);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('params checking');
-                        await this._beforeCallback(req, res);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('before callback executing');
-                        const data = await this._execute(req, res);
-                        if (timedOut) {
-                            throw new Err('Time out', '_timeout_internal');
-                        }
-                        b.mark('callback executed');
-                        clearTimeout(timeout);
-                        this._handleData(req, res, data);
-                    } catch (e) {
-                        clearTimeout(timeout);
-                        switch (e.code) {
-                            case 'ERR_NOT_FOUND':
-                                res.send404();
-                                break;
-                            case 'ERR__TIMEOUT_INTERNAL':
-                                // This does nothing. The error is sent in the setTimeout.
-                                break;
-                            default:
-                                next(e);
-                        }
-                        return;
-                    }
-                });
-            });
-        });
-        this._app.use('*', async (req, res, next) => {
-            try {
-                await this._checkApiKey(req);
-            } catch (e) {
-                next(e);
-                return;
-            }
-            res.send404();
-        });
-        this._app.use((err, req, res, next) => {
-            const b = req.__benchmark;
-            if (!(err instanceof HttpError)) {
-                err = HttpError.create(err.statusCode || 500, err);
-            }
+	start(cb = () => { }) {
+		const { port, auth, before, log, errorKey } = this._options;
+		Object.keys(this._routes).forEach((key) => {
+			const route = this._routes[key];
+			Object.keys(route.routes).forEach((v) => {
+				const endpoint = route.routes[v];
+				this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
+					req.__endpoint = endpoint;
+					const b = req.__benchmark;
+					let timeout;
+					let timedOut = false;
+					if (endpoint.timeout) {
+						timeout = setTimeout(() => {
+							timedOut = true;
+							req.emit('timeout');
+							next(HttpError.create(408));
+						}, endpoint.timeout);
+					}
+					b.mark('bootstrap');
+					try {
+						await this._checkApiKey(req);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('api key checking');
+						await this._checkAuth(req, res, endpoint.auth, auth);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('auth checking');
+						await this._checkArguments(endpoint.getRouteArguments(), req);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('arguments checking');
+						await this._checkParams(endpoint.params, req);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('params checking');
+						await this._beforeCallback(req, res);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('before callback executing');
+						const data = await this._execute(req, res);
+						if (timedOut) {
+							throw new Err('Time out', '_timeout_internal');
+						}
+						b.mark('callback executed');
+						clearTimeout(timeout);
+						this._handleData(req, res, data);
+					} catch (e) {
+						clearTimeout(timeout);
+						switch (e.code) {
+							case 'ERR_NOT_FOUND':
+								res.send404();
+								break;
+							case 'ERR__TIMEOUT_INTERNAL':
+								// This does nothing. The error is sent in the setTimeout.
+								break;
+							default:
+								next(e);
+						}
+						return;
+					}
+				});
+			});
+		});
+		this._app.use('*', async (req, res, next) => {
+			try {
+				await this._checkApiKey(req);
+			} catch (e) {
+				next(e);
+				return;
+			}
+			res.send404();
+		});
+		this._app.use((err, req, res, next) => {
+			const b = req.__benchmark;
+			if (!(err instanceof HttpError)) {
+				err = HttpError.create(err.statusCode || 500, err);
+			}
 
-            this._error(`${err.message}${log.stack ? `\n${err.stack}` : ''}`);
-            b.mark('error logging');
-            if (req.__endpoint) {
-                const errors = Object.keys(req.__endpoint.getErrors());
-                if (!errors.includes(err.code)) {
-                    this._warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
-                }
-            }
-            res.status(err.statusCode);
-            delete err.statusCode;
-            res._sendData(err.toJSON(), errorKey);
-        });
-        this._server = this._app.listen(port, () => {
-            this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
-            if (typeof cb === 'function') {
-                cb(undefined, { stats: this._stats });
-            }
-        });
-    }
+			this._error(`${err.message}${log.stack ? `\n${err.stack}` : ''}`);
+			b.mark('error logging');
+			if (req.__endpoint) {
+				const errors = Object.keys(req.__endpoint.getErrors());
+				if (!errors.includes(err.code)) {
+					this._warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
+				}
+			}
+			res.status(err.statusCode);
+			delete err.statusCode;
+			res._sendData(err.toJSON(), errorKey);
+		});
+		this._server = this._app.listen(port, () => {
+			this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
+			if (typeof cb === 'function') {
+				cb(undefined, { stats: this._stats });
+			}
+		});
+	}
 
     /**
      * Stops the application.
      * @param {function} cb 
      */
-    stop(cb = () => { }) {
-        if (!this._server) {
-            this._warn('Server cannot be stopped beceause it was not started.');
-            return;
-        }
-        this._server.close(() => {
-            this._log('The application is stopped.');
-            if (typeof cb === 'function') {
-                cb();
-            }
-        });
-    }
+	stop(cb = () => { }) {
+		if (!this._server) {
+			this._warn('Server cannot be stopped beceause it was not started.');
+			return;
+		}
+		this._server.close(() => {
+			this._log('The application is stopped.');
+			if (typeof cb === 'function') {
+				cb();
+			}
+		});
+	}
 
-    docs(apiKey = null) {
-        return new Promise((resolve, reject) => {
-            const docs = {};
-            async.eachSeries(Object.keys(this._routes), (key, callback) => {
-                const route = this._routes[key];
-                async.eachSeries(Object.keys(route.routes), async (v, callback) => {
-                    const endpoint = route.routes[v];
-                    if (endpoint.hideDocs) {
-                        callback();
-                        return;
-                    }
-                    if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
-                        callback();
-                        return;
-                    }
-                    docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
-                    callback();
-                }, callback);
-            }, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(docs);
-            });
-        });
-    }
+	docs(apiKey = null) {
+		return new Promise((resolve, reject) => {
+			const docs = {};
+			async.eachSeries(Object.keys(this._routes), (key, callback) => {
+				const route = this._routes[key];
+				async.eachSeries(Object.keys(route.routes), async (v, callback) => {
+					const endpoint = route.routes[v];
+					if (endpoint.hideDocs) {
+						callback();
+						return;
+					}
+					if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
+						callback();
+						return;
+					}
+					docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
+					callback();
+				}, callback);
+			}, (err) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(docs);
+			});
+		});
+	}
 
-    getDocs() {
-        const docs = {};
-        Object.keys(this._routes).forEach((key) => {
-            const route = this._routes[key];
-            Object.keys(route.routes).forEach((v) => {
-                const endpoint = route.routes[v];
-                if (endpoint.hideDocs) {
-                    return;
-                }
-                docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
-            });
-        });
-        return docs;
-    }
+	getDocs() {
+		const docs = {};
+		Object.keys(this._routes).forEach((key) => {
+			const route = this._routes[key];
+			Object.keys(route.routes).forEach((v) => {
+				const endpoint = route.routes[v];
+				if (endpoint.hideDocs) {
+					return;
+				}
+				docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
+			});
+		});
+		return docs;
+	}
 
     /**
      * 
@@ -582,117 +582,117 @@ class Application {
      * @param {RouteOptions} options
      * @param {function} callback 
      */
-    _registerRoute(method, version, route, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = {};
-        }
-        const key = `${method}${route}`;
-        if (!this._routes[key]) {
-            this._routes[key] = new Route(method, route, options.args);
-        }
-        if (options.response && !(options.response instanceof BaseResponse)) {
-            options.response = new JSONResponse(options.response);
-        }
-        if (options.requireAuth !== undefined) {
-            this._warn('Route option \'requireAuth\' is deprecated.');
-        }
-        if (options.auth === undefined) {
-            options.auth = options.requireAuth ? RouteAuth.REQUIRED : RouteAuth.DISABLED;
-        }
-        delete options.requireAuth;
-        const endpoint = new Endpoint(this._routes[key], {
-            version,
-            ...options,
-            callback,
-            validateParams: this._options.validateParams,
-            apiKeyEnabled: options.requireApiKey === false ? false : this._options.apiKey.enabled,
-        });
-        return endpoint;
-    }
+	_registerRoute(method, version, route, options, callback) {
+		if (typeof options === 'function') {
+			callback = options;
+			options = {};
+		}
+		const key = `${method}${route}`;
+		if (!this._routes[key]) {
+			this._routes[key] = new Route(method, route, options.args);
+		}
+		if (options.response && !(options.response instanceof BaseResponse)) {
+			options.response = new JSONResponse(options.response);
+		}
+		if (options.requireAuth !== undefined) {
+			this._warn('Route option \'requireAuth\' is deprecated.');
+		}
+		if (options.auth === undefined) {
+			options.auth = options.requireAuth ? RouteAuth.REQUIRED : RouteAuth.DISABLED;
+		}
+		delete options.requireAuth;
+		const endpoint = new Endpoint(this._routes[key], {
+			version,
+			...options,
+			callback,
+			validateParams: this._options.validateParams,
+			apiKeyEnabled: options.requireApiKey === false ? false : this._options.apiKey.enabled,
+		});
+		return endpoint;
+	}
 
     /**
      * 
      * @param {express.Request} req
      * @returns {Promise<void>}
      */
-    _checkApiKey(req) {
-        return new Promise(async (resolve, reject) => {
-            const { apiKey } = this._options;
-            if (!apiKey.enabled) {
-                resolve();
-                return;
-            }
-            if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
-                resolve();
-                return;
-            }
-            let key = null;
-            switch (apiKey.type) {
-                case 'qs':
-                    key = req.query.api_key;
-                    break;
-                case 'body':
-                    key = req.body.api_key;
-                    break;
-                case 'header':
-                    key = req.headers.api_key;
-                    break;
-            }
-            if (!key) {
-                reject(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
-                return;
-            }
-            req.apiKey = key;
-            if (req.__endpoint) {
-                try {
-                    if (await req.__endpoint.isApiKeyExcluded(key)) {
-                        reject(HttpError.create(404));
-                        return;
-                    }
-                } catch (e) {
-                    reject(e);
-                    return;
-                }
-            }
-            let executed = false;
-            const p = apiKey.validator(key, (err) => {
-                this._warn('Using a callback in api key validator is deprecated.');
-                if (executed) {
-                    this._warn('Middleware executed using a Promise.');
-                    return;
-                }
-                executed = true;
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-            if (p instanceof Promise) {
-                p.then((valid) => {
-                    if (executed) {
-                        this._warn('Middleware executed using a callback.');
-                        return;
-                    }
-                    if (typeof valid !== 'boolean') {
-                        this._warn('Api key validator should return Promise<boolean>.');
-                        return;
-                    }
-                    executed = true;
-                    if (!valid) {
-                        reject(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
-                        return;
-                    }
-                    resolve();
-                }).catch((e) => {
-                    executed = true;
-                    process.nextTick(() => reject(e));
-                });
-            }
-        });
+	_checkApiKey(req) {
+		return new Promise(async (resolve, reject) => {
+			const { apiKey } = this._options;
+			if (!apiKey.enabled) {
+				resolve();
+				return;
+			}
+			if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
+				resolve();
+				return;
+			}
+			let key = null;
+			switch (apiKey.type) {
+				case 'qs':
+					key = req.query.api_key;
+					break;
+				case 'body':
+					key = req.body.api_key;
+					break;
+				case 'header':
+					key = req.headers.api_key;
+					break;
+			}
+			if (!key) {
+				reject(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
+				return;
+			}
+			req.apiKey = key;
+			if (req.__endpoint) {
+				try {
+					if (await req.__endpoint.isApiKeyExcluded(key)) {
+						reject(HttpError.create(404));
+						return;
+					}
+				} catch (e) {
+					reject(e);
+					return;
+				}
+			}
+			let executed = false;
+			const p = apiKey.validator(key, (err) => {
+				this._warn('Using a callback in api key validator is deprecated.');
+				if (executed) {
+					this._warn('Middleware executed using a Promise.');
+					return;
+				}
+				executed = true;
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve();
+			});
+			if (p instanceof Promise) {
+				p.then((valid) => {
+					if (executed) {
+						this._warn('Middleware executed using a callback.');
+						return;
+					}
+					if (typeof valid !== 'boolean') {
+						this._warn('Api key validator should return Promise<boolean>.');
+						return;
+					}
+					executed = true;
+					if (!valid) {
+						reject(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
+						return;
+					}
+					resolve();
+				}).catch((e) => {
+					executed = true;
+					process.nextTick(() => reject(e));
+				});
+			}
+		});
 
-    }
+	}
 
     /**
      * 
@@ -702,59 +702,59 @@ class Application {
      * @param {AppOptions.Auth} auth
      * @returns {Promise<void>}
      */
-    _checkAuth(req, res, routeAuth, auth) {
-        return new Promise((resolve, reject) => {
-            if (!routeAuth) {
-                resolve();
-                return;
-            }
-            const { key, validator } = auth;
-            if (!req.headers[key]) {
-                if (routeAuth === RouteAuth.OPTIONAL) {
-                    resolve();
-                    return;
-                }
-                reject(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
-                return;
-            }
-            req.accessToken = req.headers[key];
-            let executed = false;
-            const p = validator(key, req, res, (err) => {
-                this._warn('Using a callback in auth validator is deprecated.');
-                if (executed) {
-                    this._warn('Middleware executed using a Promise.');
-                    return;
-                }
-                executed = true;
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
-            if (p instanceof Promise) {
-                p.then((valid) => {
-                    if (executed) {
-                        this._warn('Middleware executed using a callback.');
-                        return;
-                    }
-                    if (typeof valid !== 'boolean') {
-                        this._warn('Access token validator should return Promise<boolean>.');
-                        return;
-                    }
-                    executed = true;
-                    if (!valid) {
-                        reject(HttpError.create(403, 'Access token is invalid.', 'invalid_access_token'));
-                        return;
-                    }
-                    resolve();
-                }).catch((e) => {
-                    executed = true;
-                    process.nextTick(() => reject(e));
-                });
-            }
-        });
-    }
+	_checkAuth(req, res, routeAuth, auth) {
+		return new Promise((resolve, reject) => {
+			if (!routeAuth) {
+				resolve();
+				return;
+			}
+			const { key, validator } = auth;
+			if (!req.headers[key]) {
+				if (routeAuth === RouteAuth.OPTIONAL) {
+					resolve();
+					return;
+				}
+				reject(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
+				return;
+			}
+			req.accessToken = req.headers[key];
+			let executed = false;
+			const p = validator(key, req, res, (err) => {
+				this._warn('Using a callback in auth validator is deprecated.');
+				if (executed) {
+					this._warn('Middleware executed using a Promise.');
+					return;
+				}
+				executed = true;
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve();
+			});
+			if (p instanceof Promise) {
+				p.then((valid) => {
+					if (executed) {
+						this._warn('Middleware executed using a callback.');
+						return;
+					}
+					if (typeof valid !== 'boolean') {
+						this._warn('Access token validator should return Promise<boolean>.');
+						return;
+					}
+					executed = true;
+					if (!valid) {
+						reject(HttpError.create(403, 'Access token is invalid.', 'invalid_access_token'));
+						return;
+					}
+					resolve();
+				}).catch((e) => {
+					executed = true;
+					process.nextTick(() => reject(e));
+				});
+			}
+		});
+	}
 
     /**
      * 
@@ -762,22 +762,22 @@ class Application {
      * @param {express.Request} req 
      * @returns {Promise<void>}
      */
-    _checkArguments(args, req) {
-        return new Promise((resolve, reject) => {
-            try {
-                Object.keys(args).forEach((key) => {
-                    const arg = args[key];
-                    if (!arg.type.canCast(req.params[key])) {
-                        throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
-                    }
-                    req.params[key] = arg.type.cast(req.params[key]);
-                });
-            } catch (err) {
-                reject(err);
-            }
-            resolve();
-        });
-    }
+	_checkArguments(args, req) {
+		return new Promise((resolve, reject) => {
+			try {
+				Object.keys(args).forEach((key) => {
+					const arg = args[key];
+					if (!arg.type.canCast(req.params[key])) {
+						throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+					}
+					req.params[key] = arg.type.cast(req.params[key]);
+				});
+			} catch (err) {
+				reject(err);
+			}
+			resolve();
+		});
+	}
 
     /**
      * 
@@ -785,52 +785,52 @@ class Application {
      * @param {express.Request} req
      * @returns {Promise<void>}
      */
-    _checkParams(params, req) {
-        return new Promise((resolve, reject) => {
-            if (!params.length) {
-                resolve();
-                return;
-            }
-            const mergedParams = { ...req.query, ...req.body };
-            const castedParams = {};
-            const paramsKey = req.method === 'GET' ? 'query' : 'body';
-            try {
-                params.forEach((param) => {
-                    const p = param.name;
-                    if (param.required) {
-                        const requiredParam = req[paramsKey][p];
-                        if (requiredParam === null || requiredParam === undefined) {
-                            throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
-                        }
-                        if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
-                            throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
-                        }
-                    } else if (mergedParams[p] === undefined) {
-                        return;
-                    }
-                    try {
-                        castedParams[p] = param.type.cast(mergedParams[p]);
-                    } catch (e) {
-                        switch (e.code) {
-                            case 'ERR_INVALID_CAST':
-                            case 'ERR_UNSUPPORTED_OPERATION':
-                                throw HttpError.create(
-                                    400,
-                                    `Parameter '${p}' has invalid type. It should be '${param.type}'.`,
-                                    'invalid_type',
-                                    { type_error: { message: e.message, code: e.code } }
-                                );
-                            default: throw e;
-                        }
-                    }
-                });
-            } catch (err) {
-                reject(err);
-            }
-            req[paramsKey] = { ...req[paramsKey], ...castedParams };
-            resolve();
-        });
-    }
+	_checkParams(params, req) {
+		return new Promise((resolve, reject) => {
+			if (!params.length) {
+				resolve();
+				return;
+			}
+			const mergedParams = { ...req.query, ...req.body };
+			const castedParams = {};
+			const paramsKey = req.method === 'GET' ? 'query' : 'body';
+			try {
+				params.forEach((param) => {
+					const p = param.name;
+					if (param.required) {
+						const requiredParam = req[paramsKey][p];
+						if (requiredParam === null || requiredParam === undefined) {
+							throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
+						}
+						if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
+							throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
+						}
+					} else if (mergedParams[p] === undefined) {
+						return;
+					}
+					try {
+						castedParams[p] = param.type.cast(mergedParams[p]);
+					} catch (e) {
+						switch (e.code) {
+							case 'ERR_INVALID_CAST':
+							case 'ERR_UNSUPPORTED_OPERATION':
+								throw HttpError.create(
+									400,
+									`Parameter '${p}' has invalid type. It should be '${param.type}'.`,
+									'invalid_type',
+									{ type_error: { message: e.message, code: e.code } }
+								);
+							default: throw e;
+						}
+					}
+				});
+			} catch (err) {
+				reject(err);
+			}
+			req[paramsKey] = { ...req[paramsKey], ...castedParams };
+			resolve();
+		});
+	}
 
     /**
      * 
@@ -838,23 +838,23 @@ class Application {
      * @param {express.Response} res
      * @returns {Promise<void>}
      */
-    async _beforeCallback(req, res) {
-        if (this._beforeExecution.length) {
-            for (let i = 0; i < this._beforeExecution.length; i++) {
-                const { spec, callback } = this._beforeExecution[i];
-                if (spec === '*') {
-                    await callback(req, res);
-                    continue;
-                }
-                const r = new RouteParser(spec);
-                const match = r.match(req.path);
-                if (!match) {
-                    continue;
-                }
-                await callback(req, res);
-            }
-        }
-    }
+	async _beforeCallback(req, res) {
+		if (this._beforeExecution.length) {
+			for (let i = 0; i < this._beforeExecution.length; i++) {
+				const { spec, callback } = this._beforeExecution[i];
+				if (spec === '*') {
+					await callback(req, res);
+					continue;
+				}
+				const r = new RouteParser(spec);
+				const match = r.match(req.path);
+				if (!match) {
+					continue;
+				}
+				await callback(req, res);
+			}
+		}
+	}
 
     /**
      * 
@@ -862,41 +862,41 @@ class Application {
      * @param {express.Response} res 
      * @returns {Promise<any>}
      */
-    _execute(req, res) {
-        return new Promise((resolve, reject) => {
-            const endpoint = req.__endpoint;
-            let dataSent = false;
-            const p = endpoint.callback(req, res, (err, data) => {
-                if (dataSent) {
-                    this._warn('Data already sent using a Promise.');
-                    return;
-                }
-                dataSent = true;
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(data);
-            });
-            if (p instanceof Promise) {
-                p.then((data) => {
-                    if (dataSent) {
-                        this._warn('Data already sent using a callback.');
-                        return;
-                    }
-                    if (data === undefined) {
-                        this._warn('Methods using Promises shouldn\'t return undefined.');
-                        return;
-                    }
-                    dataSent = true;
-                    resolve(data);
-                }).catch((e) => {
-                    dataSent = true;
-                    reject(e); // TODO? process.nextTick
-                });
-            }
-        });
-    }
+	_execute(req, res) {
+		return new Promise((resolve, reject) => {
+			const endpoint = req.__endpoint;
+			let dataSent = false;
+			const p = endpoint.callback(req, res, (err, data) => {
+				if (dataSent) {
+					this._warn('Data already sent using a Promise.');
+					return;
+				}
+				dataSent = true;
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(data);
+			});
+			if (p instanceof Promise) {
+				p.then((data) => {
+					if (dataSent) {
+						this._warn('Data already sent using a callback.');
+						return;
+					}
+					if (data === undefined) {
+						this._warn('Methods using Promises shouldn\'t return undefined.');
+						return;
+					}
+					dataSent = true;
+					resolve(data);
+				}).catch((e) => {
+					dataSent = true;
+					reject(e); // TODO? process.nextTick
+				});
+			}
+		});
+	}
 
     /**
      * Validates the data with defined response of the endpoint. After the validation the data are sent to output.
@@ -904,309 +904,349 @@ class Application {
      * @param {express.Response} res 
      * @param {any} data 
      */
-    _handleData(req, res, data) {
-        const endpoint = req.getEndpoint();
-        let responseData;
-        if (endpoint.response) {
-            if (!data) {
-                this._warn('Endpoint has defined response data but the callback is sending undefined data.');
-            } else {
-                if (endpoint.response instanceof JSONResponse) {
-                    try {
-                        // convert data to json
-                        responseData = data.toJSON();
-                    } catch (e) {
-                        this._warn('Data do not have toJSON method.');
-                        // if data don't have toJSON method copy the data to new object
-                        responseData = {
-                            ...data,
-                        };
-                    }
-                    endpoint.response.fields.forEach((field) => {
-                        const { type, name } = field;
-                        try {
-                            responseData[name] = type.cast(responseData[name]);
-                        } catch (e) {
-                            const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
-                            if (this._options.responseStrictValidation) {
-                                throw new Err(message, 'invalid_response_cast', { type_error: e.toJSON() });
-                            }
-                            this._warn(`${message} -> ${e.message}`);
-                        }
-                    });
-                }
-            }
-        }
-        res._sendData(responseData || data);
-    }
+	_handleData(req, res, data) {
+		const endpoint = req.getEndpoint();
+		let responseData;
+		if (endpoint.response) {
+			if (!data) {
+				this._warn('Endpoint has defined response data but the callback is sending undefined data.');
+			} else {
+				if (endpoint.response instanceof JSONResponse) {
+					try {
+						// convert data to json
+						responseData = data.toJSON();
+					} catch (e) {
+						this._warn('Data do not have toJSON method.');
+						// if data don't have toJSON method copy the data to new object
+						responseData = {
+							...data,
+						};
+					}
+					endpoint.response.fields.forEach((field) => {
+						const { type, name } = field;
+						try {
+							responseData[name] = type.cast(responseData[name]);
+						} catch (e) {
+							const message = `Response on key '${name}' has invalid type. It should be ${type}.`;
+							if (this._options.responseStrictValidation) {
+								throw new Err(message, 'invalid_response_cast', { type_error: e.toJSON() });
+							}
+							this._warn(`${message} -> ${e.message}`);
+						}
+					});
+				}
+			}
+		}
+		res._sendData(responseData || data);
+	}
 
-    async _afterCallback(err, data, req, res) {
-        if (this._afterExecution.length) {
-            for (let i = 0; i < this._afterExecution.length; i++) {
-                const { spec, callback } = this._afterExecution[i];
-                if (spec === '*') {
-                    await callback(err, data, req, res);
-                    continue;
-                }
-                const r = new RouteParser(spec);
-                const match = r.match(req.path);
-                if (!match) {
-                    continue;
-                }
-                await callback(err, data, req, res);
-            }
-        }
-    }
+	async _afterCallback(err, data, req, res) {
+		if (this._afterExecution.length) {
+			for (let i = 0; i < this._afterExecution.length; i++) {
+				const { spec, callback } = this._afterExecution[i];
+				if (spec === '*') {
+					await callback(err, data, req, res);
+					continue;
+				}
+				const r = new RouteParser(spec);
+				const match = r.match(req.path);
+				if (!match) {
+					continue;
+				}
+				await callback(err, data, req, res);
+			}
+		}
+	}
 
     /**
      * Creates the express application instance and registers middlewares.
      */
-    _createApp() {
-        const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset } = this._options;
-        this._app = express();
+	_createApp() {
+		const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset } = this._options;
+		this._app = express();
 
-        this._app.use((req, res, next) => {
-            const benchmark = new Benchmark().start();
-            req.__benchmark = benchmark;
-            req.getEndpoint = () => req.__endpoint;
-            req.getBenchmark = () => req.__benchmark;
-            res.send204 = () => {
-                this._warn('res.send204 is deprecated. Use next callback in the route without data.');
-                res._sendData();
-            };
-            res.send404 = (message = 'Page not found', code = 'page_not_found') => res.sendError(HttpError.create(404, message, code));
-            res.send401 = (message, code) => res.sendError(HttpError.create(401, message, code));
-            res.send501 = (message, code) => res.sendError(HttpError.create(501, message, code));
-            res.addMeta = (key, value) => {
-                if (!res.__meta) {
-                    res.__meta = {};
-                }
-                res.__meta[key] = value;
-            };
-            res.sendError = (code = defaultError.statusCode, message = defaultError.message, errorCode = defaultError.code) => {
-                if (code instanceof HttpError) {
-                    next(code);
-                    return;
-                }
-                this._warn('res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.');
-                next(new Err(message, errorCode));
-            };
-            res.sendData = (data, key = dataKey) => {
-                this._warn('res.sendData is deprecated. Use next callback in route or Promises.');
-                res._sendData(data, key);
-            };
-            res._sendData = async (data, key = dataKey) => {
-                try {
-                    await this._afterCallback(key === errorKey, data, req, res);
-                } catch (e) {
-                    process.nextTick(() => next(e));
-                    return;
-                }
-                res._end(data !== undefined && data !== null ? { [key]: data } : null);
-            };
-            res._end = (data) => {
-                let body = req.body;
-                if (JSON.stringify(body).length > 1024) {
-                    body = 'Body too long';
-                }
-                benchmark.mark('data handled');
-                const took = benchmark.total;
-                const endpoint = req.getEndpoint();
-                let deprecated = false;
-                if (data) {
-                    if (endpoint && endpoint.isDeprecated()) {
-                        deprecated = true;
-                        data.warning = 'This endpoint is deprecated. It can be removed in the future.';
-                    }
-                    if (meta.enabled && req.query.nometa === undefined) {
-                        data._meta = _.merge({
-                            took,
-                            deprecated: deprecated || undefined,
-                            rs: {
-                                version: pkg.version,
-                                module: `https://www.npmjs.com/package/${pkg.name}`,
-                            },
-                            request: {
-                                endpoint: `${req.method} ${req.path}`,
-                                body,
-                                query: req.query,
-                                headers: req.headers,
-                            },
-                            app: {
-                                name,
-                                version: APP_PACKAGE.version,
-                            },
-                            // benchmark,
-                        }, meta.data);
-                        if (typeof res.__meta === 'object') {
-                            Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
-                        }
-                    }
-                    // res.header('Content-Type', `application/json; charset=${charset}`);
-                    // TODO check in what cases isn't endpoint set
-                    const response = endpoint && endpoint.response
-                        ? data[errorKey] ? new JSONResponse() : endpoint.response
-                        : new JSONResponse();
-                    res.header('Content-Type', response.getContentType(charset));
-                    // const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
-                    res.write(response.getData(data, req.query.pretty));
-                } else {
-                    res.status(204);
-                }
-                res.end();
-                if (log.enabled && typeof logger === 'function') {
-                    logger({
-                        statusCode: res.statusCode,
-                        method: req.method,
-                        path: req.path,
-                        spec: req.route ? req.route.path : req.path,
-                        body: req.body,
-                        params: req.params,
-                        query: req.query,
-                        headers: req.headers,
-                        took,
-                        response: data,
-                    });
-                }
-            };
-            next();
-        });
-        this._app.use(compression());
-        this._app.use(bodyParser.json({ limit: requestLimit }));
-    }
+		this._app.use((req, res, next) => {
+			const benchmark = new Benchmark().start();
+			req.__benchmark = benchmark;
+			req.getEndpoint = () => req.__endpoint;
+			req.getBenchmark = () => req.__benchmark;
+			res.send204 = () => {
+				this._warn('res.send204 is deprecated. Use next callback in the route without data.');
+				res._sendData();
+			};
+			res.send404 = (message = 'Page not found', code = 'page_not_found') => res.sendError(HttpError.create(404, message, code));
+			res.send401 = (message, code) => res.sendError(HttpError.create(401, message, code));
+			res.send501 = (message, code) => res.sendError(HttpError.create(501, message, code));
+			res.addMeta = (key, value) => {
+				if (!res.__meta) {
+					res.__meta = {};
+				}
+				res.__meta[key] = value;
+			};
+			res.sendError = (code = defaultError.statusCode, message = defaultError.message, errorCode = defaultError.code) => {
+				if (code instanceof HttpError) {
+					next(code);
+					return;
+				}
+				this._warn('res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.');
+				next(new Err(message, errorCode));
+			};
+			res.sendData = (data, key = dataKey) => {
+				this._warn('res.sendData is deprecated. Use next callback in route or Promises.');
+				res._sendData(data, key);
+			};
+			res._sendData = async (data, key = dataKey) => {
+				try {
+					await this._afterCallback(key === errorKey, data, req, res);
+				} catch (e) {
+					process.nextTick(() => next(e));
+					return;
+				}
+				res._end(data !== undefined && data !== null ? { [key]: data } : null);
+			};
+			res._end = (data) => {
+				let body = req.body;
+				if (JSON.stringify(body).length > 1024) {
+					body = 'Body too long';
+				}
+				benchmark.mark('data handled');
+				const took = benchmark.total;
+				const endpoint = req.getEndpoint();
+				let deprecated = false;
+				if (data) {
+					if (endpoint && endpoint.isDeprecated()) {
+						deprecated = true;
+						data.warning = 'This endpoint is deprecated. It can be removed in the future.';
+					}
+					if (meta.enabled && req.query.nometa === undefined) {
+						data._meta = _.merge({
+							took,
+							deprecated: deprecated || undefined,
+							rs: {
+								version: pkg.version,
+								module: `https://www.npmjs.com/package/${pkg.name}`,
+							},
+							request: {
+								endpoint: `${req.method} ${req.path}`,
+								body,
+								query: req.query,
+								headers: req.headers,
+							},
+							app: {
+								name,
+								version: APP_PACKAGE.version,
+							},
+							// benchmark,
+						}, meta.data);
+						if (typeof res.__meta === 'object') {
+							Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
+						}
+					}
+					// res.header('Content-Type', `application/json; charset=${charset}`);
+					// TODO check in what cases isn't endpoint set
+					const response = endpoint && endpoint.response
+						? data[errorKey] ? new JSONResponse() : endpoint.response
+						: new JSONResponse();
+					res.header('Content-Type', response.getContentType(charset));
+					// const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
+					res.write(response.getData(data, req.query.pretty));
+				} else {
+					res.status(204);
+				}
+				res.end();
+				if (log.enabled && typeof logger === 'function') {
+					logger({
+						statusCode: res.statusCode,
+						method: req.method,
+						path: req.path,
+						spec: req.route ? req.route.path : req.path,
+						body: req.body,
+						params: req.params,
+						query: req.query,
+						headers: req.headers,
+						took,
+						response: data,
+					});
+				}
+			};
+			next();
+		});
+		this._app.use(compression());
+		this._app.use(bodyParser.json({ limit: requestLimit }));
+	}
 
     /**
      * Registers the /favicion.ico, /ping and /docs* routes.
      */
-    _registerSupportRoutes() {
-        const { docs, name, charset } = this._options;
-        this.use('/favicon.ico', (req, res) => {
-            res.status(204);
-            res.end();
-        });
-        this.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
-        if (docs.enabled) {
-            let requireAuth = false;
-            if (docs.auth) {
-                this._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
-                requireAuth = true;
-            }
-            this.get(docs.route, {
-                requireAuth,
-                description: 'Documentation of this API.',
-                hideDocs: true,
-            }, ({ apiKey }) => this.docs(apiKey));
-            this.get(`${docs.route}.html`, {
-                requireAuth,
-                hideDocs: true,
-                response: new CustomResponse(`text/html; charset=${charset}`),
-            }, (req, res, next) => {
-                fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-                    let html = buffer.toString();
-                    const vars = {
-                        name,
-                        apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
-                        rsVersion: pkg.version,
-                        version: APP_PACKAGE.version,
-                        dataKey: this._options.dataKey,
-                        errorKey: this._options.errorKey,
-                        meta: this._options.meta.enabled,
-                        authKey: this._options.auth.key,
-                        authDescription: this._options.auth.description || '',
-                        docsRoute: this._options.docs.route,
-                    };
-                    Object.keys(vars).forEach((key) => {
-                        const r = new RegExp(`\\$\\{${key}\\}`, 'g');
-                        html = html.replace(r, vars[key]);
-                    });
-                    next(null, html);
-                });
-            });
-            this.get(`${docs.route}.js`, {
-                hideDocs: true,
-                response: new CustomResponse(`text/javascript; charset=${charset}`),
-            }, (req, res, next) => {
-                fs.readFile(path.resolve(__dirname, '../assets/docs.js'), next);
-            });
-            this.get(`${docs.route}.css`, {
-                hideDocs: true,
-                response: new CustomResponse(`text/css; charset=${charset}`),
-            }, (req, res, next) => {
-                fs.readFile(path.resolve(__dirname, '../assets/docs.css'), next);
-            });
-        }
-    }
+	_registerSupportRoutes() {
+		const { docs, name, charset } = this._options;
+		this.use('/favicon.ico', (req, res) => {
+			res.status(204);
+			res.end();
+		});
+		this.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
+		if (docs.enabled) {
+			let requireAuth = false;
+			if (docs.auth) {
+				this._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
+				requireAuth = true;
+			}
+			this.get(docs.route, {
+				requireAuth,
+				description: 'Documentation of this API.',
+				hideDocs: true,
+			}, ({ apiKey }) => this.docs(apiKey));
+			this.get(`${docs.route}-legacy.html`, {
+				requireAuth,
+				hideDocs: true,
+				response: new CustomResponse(`text/html; charset=${charset}`),
+			}, (req, res, next) => {
+				fs.readFile(path.resolve(__dirname, '../assets/docs-legacy.html'), (err, buffer) => {
+					if (err) {
+						next(err);
+						return;
+					}
+					let html = buffer.toString();
+					const vars = {
+						name,
+						apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
+						rsVersion: pkg.version,
+						version: APP_PACKAGE.version,
+						dataKey: this._options.dataKey,
+						errorKey: this._options.errorKey,
+						meta: this._options.meta.enabled,
+						authKey: this._options.auth.key,
+						authDescription: this._options.auth.description || '',
+						docsRoute: this._options.docs.route,
+					};
+					Object.keys(vars).forEach((key) => {
+						const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+						html = html.replace(r, vars[key]);
+					});
+					next(null, html);
+				});
+			});
+			this.get(`${docs.route}.html`, {
+				requireAuth,
+				hideDocs: true,
+				response: new CustomResponse(`text/html; charset=${charset}`),
+			}, (req, res, next) => {
+				fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
+					if (err) {
+						next(err);
+						return;
+					}
+					let html = buffer.toString();
+					const vars = {
+						name,
+						apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
+						data: JSON.stringify({
+							name,
+							apiKey: this._options.apiKey.enabled ? req.query.api_key : null,
+							rsVersion: pkg.version,
+							version: APP_PACKAGE.version,
+							dataKey: this._options.dataKey,
+							errorKey: this._options.errorKey,
+							meta: this._options.meta.enabled,
+							authKey: this._options.auth.key,
+							authDescription: this._options.auth.description || '',
+							docsRoute: this._options.docs.route,
+						}),
+					};
+					Object.keys(vars).forEach((key) => {
+						const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+						html = html.replace(r, vars[key]);
+					});
+					next(null, html);
+				});
+			});
+			this.get(`${docs.route}.js`, {
+				hideDocs: true,
+				response: new CustomResponse(`text/javascript; charset=${charset}`),
+			}, (req, res, next) => {
+				fs.readFile(path.resolve(__dirname, '../assets/docs.js'), next);
+			});
+			this.get('/bundle.js', {
+				hideDocs: true,
+				response: new CustomResponse(`text/javascript; charset=${charset}`),
+			}, (req, res, next) => {
+				fs.readFile(path.resolve(__dirname, '../assets/bundle.js'), next);
+			});
+			this.get(`${docs.route}.css`, {
+				hideDocs: true,
+				response: new CustomResponse(`text/css; charset=${charset}`),
+			}, (req, res, next) => {
+				fs.readFile(path.resolve(__dirname, '../assets/docs.css'), next);
+			});
+		}
+	}
 
     /**
      * 
      * @param {Endpoint} endpoint 
      */
-    _getDocsObject(endpoint) {
-        return {
-            docs: endpoint.docs,
-            description: endpoint.description,
-            args: endpoint.getRouteArguments(),
-            params: endpoint.getParams(this._options.docs.paramsAsArray),
-            required_params: endpoint.requiredParams,
-            required_auth: endpoint.requiredAuth,
-            auth: endpoint.getAuth(),
-            response: endpoint.getResponse(),
-            response_type: endpoint.getResponseType(),
-            errors: endpoint.getErrors(),
-            deprecated: endpoint.isDeprecated(),
-        }
-    }
+	_getDocsObject(endpoint) {
+		return {
+			docs: endpoint.docs,
+			description: endpoint.description,
+			args: endpoint.getRouteArguments(),
+			params: endpoint.getParams(this._options.docs.paramsAsArray),
+			required_params: endpoint.requiredParams,
+			required_auth: endpoint.requiredAuth,
+			auth: endpoint.getAuth(),
+			response: endpoint.getResponse(),
+			response_type: endpoint.getResponseType(this._options.charset),
+			errors: endpoint.getErrors(),
+			deprecated: endpoint.isDeprecated(),
+		}
+	}
 
-    _mergeObjects(o1, o2, strict = true) {
-        const o = {};
-        if (!strict) {
-            Object.keys(o1).forEach((k) => {
-                if (o2[k] === undefined) {
-                    o[k] = o1[k];
-                }
-            });
-        }
-        Object.keys(o2).forEach((k) => {
-            const v = o2[k];
-            if (o1[k] === undefined) {
-                o[k] = v;
-                return;
-            }
-            if (typeof v !== 'object' || v === null) {
-                o[k] = o1[k];
-                return;
-            }
-            o[k] = this._mergeObjects(o1[k], v, ['before', 'after'].indexOf(k) < 0);
-        });
-        return o;
-    }
+	_mergeObjects(o1, o2, strict = true) {
+		const o = {};
+		if (!strict) {
+			Object.keys(o1).forEach((k) => {
+				if (o2[k] === undefined) {
+					o[k] = o1[k];
+				}
+			});
+		}
+		Object.keys(o2).forEach((k) => {
+			const v = o2[k];
+			if (o1[k] === undefined) {
+				o[k] = v;
+				return;
+			}
+			if (typeof v !== 'object' || v === null) {
+				o[k] = o1[k];
+				return;
+			}
+			o[k] = this._mergeObjects(o1[k], v, ['before', 'after'].indexOf(k) < 0);
+		});
+		return o;
+	}
 
-    _log(message) {
-        const { enabled, level } = this._options.log;
-        if (enabled && ['verbose'].includes(level)) {
-            console.log(new Date(), message);
-        }
-    }
+	_log(message) {
+		const { enabled, level } = this._options.log;
+		if (enabled && ['verbose'].includes(level)) {
+			console.log(new Date(), message);
+		}
+	}
 
-    _warn(message) {
-        const { enabled, level } = this._options.log;
-        if (enabled && ['warn', 'verbose'].includes(level)) {
-            console.warn(new Date(), message);
-        }
-        this._stats.warning++;
-    }
+	_warn(message) {
+		const { enabled, level } = this._options.log;
+		if (enabled && ['warn', 'verbose'].includes(level)) {
+			console.warn(new Date(), message);
+		}
+		this._stats.warning++;
+	}
 
-    _error(message) {
-        const { enabled, level } = this._options.log;
-        if (enabled && ['error', 'warn', 'verbose'].includes(level)) {
-            console.error(new Date(), message);
-        }
-        this._stats.error++;
-    }
+	_error(message) {
+		const { enabled, level } = this._options.log;
+		if (enabled && ['error', 'warn', 'verbose'].includes(level)) {
+			console.error(new Date(), message);
+		}
+		this._stats.error++;
+	}
 }
 
 /**
@@ -1216,22 +1256,22 @@ class Application {
 const m = (options = {}) => new Application(options);
 
 const Response = {
-    Base: BaseResponse,
-    JSON: JSONResponse,
-    Custom: CustomResponse,
+	Base: BaseResponse,
+	JSON: JSONResponse,
+	Custom: CustomResponse,
 };
 
 export {
-    m as default,
-    Application,
-    HttpError,
-    Endpoint,
-    Err as Error,
-    Param,
-    Type,
-    Model as TypeModel,
-    Field,
-    ErrorField,
-    Response,
-    RouteAuth,
+	m as default,
+	Application,
+	HttpError,
+	Endpoint,
+	Err as Error,
+	Param,
+	Type,
+	Model as TypeModel,
+	Field,
+	ErrorField,
+	Response,
+	RouteAuth,
 };

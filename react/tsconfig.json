@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "declaration": false,
+        "target": "es5",
+        "jsx": "react",
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "resolveJsonModule": true,
+        "experimentalDecorators": true
+    },
+    "__include": [
+        "../**/*"
+    ],
+    "__exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,12 @@
+.MuiListItem-button {
+	&.deprecated {
+		span {
+			text-decoration: line-through;
+		}
+	}
+	span {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+}

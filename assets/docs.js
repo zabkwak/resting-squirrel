@@ -39,7 +39,7 @@ $(document).ready(() => {
     const $index = $('#index');
     const $console = $('#console');
     const { protocol, host, pathname } = location;
-    const baseUrl = `${protocol}//${host}${pathname.replace(`${DOCS_ROUTE}.html`, '')}`;
+    const baseUrl = `${protocol}//${host}${pathname.replace(`${DOCS_ROUTE}-legacy.html`, '')}`;
 
     let consoleOpened = false;
 

@@ -118,8 +118,8 @@ class Endpoint {
         return this.response ? this.response.get(array) : null;
     }
 
-    getResponseType() {
-        return this.response ? this.response.getContentType() : null;
+    getResponseType(charset) {
+        return this.response ? this.response.getContentType(charset) : null;
     }
 
     getRouteArguments() {

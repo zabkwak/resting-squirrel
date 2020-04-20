@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <script type="text/javascript">
+        const API_KEY = '${apiKey}';
+        const VERSION = '${version}';
+        const RS_VERSION = '${rsVersion}';
+        const DATA_KEY = '${dataKey}';
+        const ERROR_KEY = '${errorKey}';
+        const META = '${meta}';
+        const AUTH_KEY = '${authKey}';
+        const AUTH_DESCRIPTION = '${authDescription}';
+        const DOCS_ROUTE = '${docsRoute}';
+    </script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="docs.js?api_key=${apiKey}"></script>
+    <link rel="stylesheet" type="text/css" href="docs.css?api_key=${apiKey}" />
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+    <title>${name} documentation</title>
+</head>
+
+<body>
+    <div id="app">
+        <header class="bg-light">
+            <h1>${name} documentation</h1>
+        </header>
+        <div id="container" class="container-fluid">
+            <div id="content-wrapper" class="container-fluid">
+                <div id="index" class="float-left"></div>
+                <div id="content" class="float-left">
+                    <div class="text-center">
+                        <img src="//cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif" alt="loading" />
+                    </div>
+                </div>
+                <div id="console" class="float-left"></div>
+            </div>
+        </div>
+        <footer class="bg-light">
+            <p>
+                The documentation is automatically generetad based on the module app setup. There can be differences between the documented
+                informations and the final result. In that case please contact the API developer if needed.
+                <br /> Powered by
+                <a href="https://www.npmjs.com/package/resting-squirrel/" target="_blank">Resting Squirrel</a> v${rsVersion}. Documentation is using
+                <a href="https://jquery.com/" target="_blank">jQuery</a> and
+                <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> with
+                <a href="https://fontawesome.com" target="_blank">Font Awesome</a>.
+            </p>
+        </footer>
+    </div>
+</body>
+
+</html>
