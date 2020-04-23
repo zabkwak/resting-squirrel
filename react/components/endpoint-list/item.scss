@@ -10,3 +10,13 @@
 		overflow: hidden;
 	}
 }
+
+.container {
+	height: 100%;
+	flex-direction: column;
+	display: flex;
+}
+
+.list {
+	overflow-y: auto;
+}

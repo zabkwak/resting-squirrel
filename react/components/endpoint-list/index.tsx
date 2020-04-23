@@ -25,9 +25,7 @@ export default class EndpointList extends React.Component<IProps, IState> {
 		const { docs } = this.props;
 		const { showDeprecated, active } = this.state;
 		return (
-			<div
-				style={{ height: '100%', position: 'relative' }}
-			>
+			<div className="container">
 				<FormControlLabel
 					control={
 						<Switch
@@ -39,7 +37,7 @@ export default class EndpointList extends React.Component<IProps, IState> {
 					}
 					label="Show deprecated"
 				/>
-				<List>
+				<List className="list">
 					{
 						Object
 							.entries(docs)

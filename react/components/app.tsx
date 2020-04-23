@@ -73,23 +73,22 @@ export default class Application extends React.Component<IProps, IState> {
 				</AppBar>
 				<main
 					style={{
+						minHeight: 0,
 						flex: '1 1 100%',
 					}}
 				>
-					<Grid item xs style={{ height: '100%', position: 'relative' }}>
-						<Grid container style={{ height: '100%', position: 'relative' }}>
-							{
-								list &&
-								<Grid item xs={2}>									
-									<EndpointList docs={docs} />
-								</Grid>
-							}
-							<Grid item xs>
-								DOCS
+					<Grid container style={{ height: '100%', position: 'relative' }}>
+						{
+							list &&
+							<Grid item xs={2} style={{ height: '100%' }}>
+								<EndpointList docs={docs} />
+							</Grid>
+						}
+						<Grid item xs>
+							DOCS
 						</Grid>
-							<Grid item xs={2}>
-								CONSOLE
-					</Grid>
+						<Grid item xs={2}>
+							CONSOLE
 						</Grid>
 					</Grid>
 				</main>
