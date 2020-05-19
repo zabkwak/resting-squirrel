@@ -346,11 +346,9 @@ Module to use class controllers to define endpoints.
 - shape fields required status
 - custom warning of the endpoint
 - non-array response definition
-- doc console shape fields
 - handle Param and Field classes for typescript
 - 410 error code after the deprecation if needed
 - finish all requests before stop
-- docs HTML in React
 - shapes with generic keys -> [key: string]: string
 ### v3
 - TypeScript source code

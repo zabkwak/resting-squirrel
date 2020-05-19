@@ -11,11 +11,12 @@
     "create_index:linux:darwin": "echo \"module.exports = require('./dist');\" > index.js",
     "build_es6": "./node_modules/.bin/babel ./src --out-dir ./dist --copy-files && npm run create_index",
     "clear": "rm -rf ./dist && rm -f ./index.js",
-    "prepublish": "npm run build_es6",
+    "prepublish": "npm run build_es6 && npm run bundle:doc",
     "postpublish": "npm run clear",
     "test_app": "npm run build_es6 && node ./test.js",
-    "preversion": "git branch %npm_package_version% && git checkout %npm_package_version%",
-    "bundle:doc:dev": "./node_modules/.bin/webpack --config ./react/webpack.config.js --progress --display-error-details --watch"
+	"preversion": "git branch %npm_package_version% && git checkout %npm_package_version%",
+	"bundle:doc": "./node_modules/.bin/webpack --config ./react/webpack.config.js --progress --display-error-details",
+    "bundle:doc:dev": "./node_modules/.bin/webpack --config ./react/webpack.config.dev.js --progress --display-error-details --watch"
   },
   "license": "MIT",
   "engines": {

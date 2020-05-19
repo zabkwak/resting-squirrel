@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.19.0
+### Updates
+- React documentation based on Material UI.
+
 ## 2.18.0
 ### Features
 - Optional `Shape` properties.
