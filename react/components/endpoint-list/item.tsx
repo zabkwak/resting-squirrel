@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ListItem, ListItemText, Tooltip, IconButton } from '@material-ui/core';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { Lock as LockIcon, LockOpen } from '@material-ui/icons';
 
 import { IDocsItem } from '../../typings';

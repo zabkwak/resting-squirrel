@@ -51,13 +51,12 @@ class ShapeArray extends Field.ShapeArray {
      */
     constructor(name, required, description, ...fields) {
         super(name, description, ...fields);
-        this.required = required;
-        // force all shape parameters to be required -> temp solution
+		this.required = required;
         this.shape.fields = this.shape.fields.map((field) => {
             if (field instanceof Shape || field instanceof ShapeArray) {
                 return field;
             }
-            return Param.createFromField(field, true);
+            return Param.createFromField(field, typeof field.required === 'boolean' ? field.required : true);
         });
     }
 

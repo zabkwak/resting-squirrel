@@ -32,8 +32,12 @@ export interface IField {
 	key: string;
 	description: string;
 	type: string;
+	shape?: { [key: string]: IField };
+	shape_array?: { [key: string]: IField };
 }
 
 export interface IParam extends IField {
 	required: boolean;
+	shape?: { [key: string]: IParam };
+	shape_array?: { [key: string]: IParam };
 }

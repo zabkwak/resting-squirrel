@@ -1,8 +1,9 @@
-import * as ReactDom from 'react-dom';
-import * as React from 'react';
+import 'whatwg-fetch';
+import 'promise-polyfill/src/polyfill';
+import 'es7-object-polyfill';
+import 'polyfill-array-includes';
 
 import Application from './components/app';
-import { IResponse, IDocs } from './typings';
 
 (async() => {
 	await Application.start();

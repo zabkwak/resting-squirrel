@@ -13,7 +13,9 @@
             "dom"
         ],
         "resolveJsonModule": true,
-        "experimentalDecorators": true
+		"experimentalDecorators": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
     },
     "__include": [
         "../**/*"

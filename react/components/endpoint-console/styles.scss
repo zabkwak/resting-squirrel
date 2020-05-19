@@ -1,0 +1,10 @@
+.console-response-status {
+	color: white!important;
+	margin: 10px;
+	&.ok {
+		background-color: green;
+	}
+	&.error {
+		background-color: red;
+	}
+}

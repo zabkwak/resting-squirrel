@@ -1,0 +1,16 @@
+.MuiChip-root {
+	text-transform: uppercase;
+	font-weight: bold;
+	&.deprecated {
+		background-color: red;
+		color: white;
+	}
+	&.auth {
+		&.required {
+			background-color: orange;
+		}
+		&.optional {
+			background-color: yellow;
+		}
+	}
+}
