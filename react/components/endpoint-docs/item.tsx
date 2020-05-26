@@ -150,7 +150,7 @@ export default class Item extends React.Component<IProps, IState> {
 					response
 						? response_type.indexOf('application/json') >= 0
 							? this.renderFields('Response', response)
-							: <Panel title="Response"><Typography>Non JSON response -> <code>{response_type}</code></Typography></Panel>
+							: <Panel title="Response"><Typography>Non JSON response -{'>'} <code>{response_type}</code></Typography></Panel>
 						: null
 				}
 				{this.renderErrors(errors)}
