@@ -191,4 +191,20 @@ app.get(0, '/image', {
     });
 });
 
+app.post(0, '/buggy', {
+	params: [
+		new Param('from', true, Type.string),
+		new Param('to', true, Type.arrayOf(Type.string)),
+		new Param('subject', true, Type.string),
+		new Param('html', true, Type.string),
+		new Param.ShapeArray('attachments', false,
+			new Param('content', true, Type.string),
+			new Param('filename', true, Type.string),
+		),
+	],
+	response: null,
+}, () => {
+	return null;
+});
+
 app.start();

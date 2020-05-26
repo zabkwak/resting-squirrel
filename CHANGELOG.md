@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.19.1
+### Fixes
+- Array fields in docs console.
+
 ## 2.19.0
 ### Updates
 - React documentation based on Material UI.
