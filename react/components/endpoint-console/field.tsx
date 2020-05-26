@@ -137,6 +137,7 @@ export default class Field<T> extends React.Component<IProps<T>, IState<T>> {
 				fullWidth
 				label={`${name} (${type})`}
 				required={required}
+				InputProps={{ required: false }}
 				disabled={disabled}
 				value={value}
 				onChange={(e) => {

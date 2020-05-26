@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.19.2
+### Docs
+- Removed browser check of required fields in the console.
+
 ## 2.19.1
 ### Fixes
 - Array fields in docs console.
