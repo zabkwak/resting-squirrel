@@ -45,6 +45,8 @@ interface IState {
 	executing: boolean;
 }
 
+const AUTH_STORAGE_KEY = 'auth-header';
+
 export default class EndpointConsole extends React.Component<IProps, IState> {
 
 	public static defaultProps: IOptionalProps = {
@@ -79,7 +81,12 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 		const { response, executing, headers } = this.state;
 		const { args, params } = item;
 		if (item.auth !== 'DISABLED' && !headers.length) {
-			headers.push({ key: this.props.authHeader, value: '', disabled: true, id: uniqid() });
+			headers.push({
+				key: this.props.authHeader,
+				value: this._getFromStorage(AUTH_STORAGE_KEY),
+				disabled: true,
+				id: uniqid(),
+			});
 		}
 		return (
 			<>
@@ -96,7 +103,13 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 					<Title component="h3" variant="h5">Headers</Title>
 					<Headers
 						headers={headers}
-						onChange={(headers) => this.setState({ headers })}
+						onChange={(headers) => {
+							const authHeader = headers.find(({ key }) => key === this.props.authHeader);
+							if (authHeader) {
+								this._saveToStorage(AUTH_STORAGE_KEY, authHeader.value);
+							}
+							this.setState({ headers });
+						}}
 						disabled={executing}
 					/>
 					{this.renderFields('Arguments', args, 'args')}
@@ -262,4 +275,12 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 			});
 		}
 	};
+
+	private _getFromStorage(key: string): string {
+		return localStorage?.getItem(key) || '';
+	}
+
+	private _saveToStorage(key: string, value: string): void {
+		localStorage?.setItem(key, value);
+	}
 }

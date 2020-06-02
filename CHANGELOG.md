@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.19.3
+### Docs
+- Saving auth header to the `localStorage`.
+
 ## 2.19.2
 ### Docs
 - Removed browser check of required fields in the console.
