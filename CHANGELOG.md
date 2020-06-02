@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.19.4
+### Updates
+- Updated dependencies.
+
 ## 2.19.3
 ### Docs
 - Saving auth header to the `localStorage`.
