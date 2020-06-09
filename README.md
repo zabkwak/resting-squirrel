@@ -343,13 +343,16 @@ Module to define DTOs to simply define documentation.
 Module to use class controllers to define endpoints.
 
 ## TODO
-- shape fields required status
 - custom warning of the endpoint
-- non-array response definition
 - handle Param and Field classes for typescript
 - 410 error code after the deprecation if needed
 - finish all requests before stop
 - shapes with generic keys -> [key: string]: string
+- proxy requests
+- JSON input in docs
+- global errors
+- array responses wrapped with items and count
+- remove deprecations warnings in default settings
 ### v3
 - TypeScript source code
 - remove auth option in the docs

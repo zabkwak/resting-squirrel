@@ -37,7 +37,7 @@ declare module 'resting-squirrel' {
      */
     interface IRequest<A = any, Q = any, B = any, EP = { [key: string]: any }> extends express.Request {
         getEndpoint(): Endpoint<IRequest<A, Q, B, EP>, EP>;
-        getBenchmark(): Benchmark;
+		getBenchmark(): Benchmark;
         /** Api key sent in the request. */
         apiKey: string;
         /** Access token with which is the request signed. */

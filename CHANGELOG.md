@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.20.0
+### Docs
+- JSON input of data.
+
 ## 2.19.4
 ### Updates
 - Updated dependencies.

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LinearProgress, Button, Chip, Typography, Box, IconButton, Tooltip } from '@material-ui/core';
+import { LinearProgress, Button, Chip, Typography, Box, IconButton, Tooltip, ButtonGroup, TextField } from '@material-ui/core';
 import SendIcon from '@material-ui/icons/Send';
 import CloseIcon from '@material-ui/icons/Close';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -28,6 +28,7 @@ interface IProps extends Partial<IOptionalProps> {
 
 interface IState {
 	jsonParams: boolean;
+	jsonData: string;
 	args: { [key: string]: any };
 	params: { [key: string]: any };
 	headers: Array<{ key: string, value: string, disabled?: boolean, id: string }>;
@@ -55,6 +56,7 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 
 	public state: IState = {
 		jsonParams: false,
+		jsonData: '{\n\t\n}',
 		params: {},
 		response: null,
 		executing: false,
@@ -68,6 +70,7 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 		}
 		this.setState({
 			jsonParams: false,
+			jsonData: '{\n\t\n}',
 			params: {},
 			response: null,
 			executing: false,
@@ -184,9 +187,9 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 	public renderFields(
 		title: string,
 		fields: { [key: string]: IField | IParam },
-		stateKey: keyof Omit<IState, 'jsonParams' | 'response' | 'executing' | 'headers'>,
+		stateKey: keyof Omit<IState, 'jsonParams' | 'jsonData' | 'response' | 'executing' | 'headers'>,
 	): JSX.Element {
-		const { executing, ...state } = this.state;
+		const { executing, jsonParams, jsonData, ...state } = this.state;
 		if (!fields) {
 			return null;
 		}
@@ -195,10 +198,59 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 			return null;
 		}
 		const params = stateKey === 'params';
+		const renderJSONInput = params && jsonParams;
 		return (
 			<>
 				<Title component="h3" variant="h5">{title}</Title>
 				{
+					params &&
+					<ButtonGroup>
+						<Button
+							size="small"
+							color={!jsonParams ? 'primary' : 'default'}
+							onClick={() => this.setState({ jsonParams: false })}
+						>
+							Form
+						</Button>
+						<Button
+							size="small"
+							color={jsonParams ? 'primary' : 'default'}
+							onClick={() => this.setState({ jsonParams: true })}
+						>
+							JSON
+						</Button>
+					</ButtonGroup>
+				}
+				{
+					renderJSONInput &&
+					<TextField
+						fullWidth
+						multiline
+						label="JSON input (ctrl + enter to submit)"
+						value={jsonData}
+						onChange={({ target }) => this.setState({ jsonData: target.value })}
+						onKeyDown={(e) => {
+							if (e.keyCode === 9) {
+								e.preventDefault();
+								const { target } = e;
+								const cursorIndex: number = (target as any).selectionStart;
+								this.setState({
+									jsonData: `${jsonData.substr(0, cursorIndex)}\t${jsonData.substr(cursorIndex)}`,
+								}, () => {
+									(target as any).selectionStart = cursorIndex + 1;
+									(target as any).selectionEnd = cursorIndex + 1;
+								});
+								return;
+							}
+							if (e.ctrlKey && e.keyCode === 13) {
+								this._submit();
+								return;
+							}
+						}}
+					/>
+				}
+				{
+					!renderJSONInput &&
 					entries.map(([name, field]) => (
 						<Field
 							key={name}
@@ -226,33 +278,43 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 		);
 	}
 
-	private _submit = async (e: React.FormEvent<HTMLFormElement>) => {
+	private _submit = async (e?: React.FormEvent<HTMLFormElement>) => {
 		const { name } = this.props;
-		const { params, args, headers: stateHeaders } = this.state;
-		e.preventDefault();
-		this.setState({ executing: true, response: null });
-		const [method, endpoint] = name.split(' ');
+		const { params, args, headers: stateHeaders, jsonData, jsonParams } = this.state;
+		e?.preventDefault();
 		const start = Date.now();
-		let url = `${Application.getBaseUrl()}${endpoint}?${qs.stringify({
-			api_key: Application.getData('apiKey'),
-			...(method === 'GET' ? params : {}),
-		})}`;
-		Object.entries(args).forEach(([key, value]) => {
-			url = url.replace(`:${key}`, value);
-		});
-		const headers = stateHeaders
-			.filter(({ key }) => !!key)
-			.reduce((acc: { [key: string]: string }, cur, i) => {
-				acc[cur.key] = cur.value;
-				return acc;
-			}, {
-				'Content-Type': 'application/json',
-				'x-client': 'Docs console',
-			});
+		this.setState({ executing: true, response: null });
 		try {
+			const [method, endpoint] = name.split(' ');
+			const query = method === 'GET'
+				? jsonParams
+					? JSON.parse(jsonData)
+					: params
+				: {};
+			const body = method !== 'GET'
+				? jsonParams
+					? jsonData
+					: JSON.stringify(params)
+				: undefined;
+			let url = `${Application.getBaseUrl()}${endpoint}?${qs.stringify({
+				api_key: Application.getData('apiKey'),
+				...query,
+			})}`;
+			Object.entries(args).forEach(([key, value]) => {
+				url = url.replace(`:${key}`, value);
+			});
+			const headers = stateHeaders
+				.filter(({ key }) => !!key)
+				.reduce((acc: { [key: string]: string }, cur, i) => {
+					acc[cur.key] = cur.value;
+					return acc;
+				}, {
+					'Content-Type': 'application/json',
+					'x-client': 'Docs console',
+				});
 			const r = await fetch(url, {
 				method,
-				body: method !== 'GET' ? JSON.stringify(params) : undefined,
+				body,
 				headers,
 			});
 			const took = Date.now() - start;
