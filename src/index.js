@@ -41,6 +41,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {Object.<string, function>} after
  * @property {AppOptions.Error} defaultError
  * @property {boolean} validateParams
+ * @property {boolean} wrapArrayResponse
  * @property {boolean} responseStrictValidation
  */
 /**
@@ -147,6 +148,7 @@ const DEFAULT_OPTIONS = {
 	},
 	validateParams: true,
 	responseStrictValidation: false,
+	wrapArrayResponse: false,
 };
 
 /**
@@ -905,7 +907,14 @@ class Application {
      * @param {any} data 
      */
 	_handleData(req, res, data) {
+		const { wrapArrayResponse } = this._options;
 		const endpoint = req.getEndpoint();
+		if (wrapArrayResponse && data instanceof Array) {
+			data = {
+				count: data.length,
+				items: data,
+			};
+		}
 		let responseData;
 		if (endpoint.response) {
 			if (!data) {
@@ -962,7 +971,9 @@ class Application {
      * Creates the express application instance and registers middlewares.
      */
 	_createApp() {
-		const { after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset } = this._options;
+		const {
+			after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset
+		} = this._options;
 		this._app = express();
 
 		this._app.use((req, res, next) => {

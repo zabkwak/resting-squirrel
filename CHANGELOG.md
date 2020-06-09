@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2.20.0
+### Features
+- Option to wrap array responses to object with `count` and `items` fields.
 ### Docs
 - JSON input of data.
 

@@ -181,7 +181,7 @@ declare module 'resting-squirrel' {
             [route: string]: <R extends IRequest<any, any, any>>(req: R, res: IResponse, next: MiddlewareNext) => void,
         },
         /**
-         * Methods to call after the endpopint callback execution.
+         * Methods to call after the endpoint callback execution.
          * @deprecated
          */
         after?: (<R extends IRequest<any, any, any>>(isError: boolean, data: any, req: R, res: IResponse, next: MiddlewareNext) => void) | {
@@ -196,7 +196,9 @@ declare module 'resting-squirrel' {
         /** If true the parameters are validated and warnings are returned if something is wrong. */
         validateParams?: boolean,
         /** If true the response data are strictly validated to types. It can throw an invalid type error. */
-        responseStrictValidation?: boolean,
+		responseStrictValidation?: boolean,
+		/** Indicates if the array response should be wrapped to object `{ items: [], count: 0 }`. */
+		wrapArrayResponse?: boolean,
     }
 
     enum RouteAuth {

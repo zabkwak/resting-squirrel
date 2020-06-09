@@ -349,9 +349,7 @@ Module to use class controllers to define endpoints.
 - finish all requests before stop
 - shapes with generic keys -> [key: string]: string
 - proxy requests
-- JSON input in docs
 - global errors
-- array responses wrapped with items and count
 - remove deprecations warnings in default settings
 ### v3
 - TypeScript source code
@@ -362,6 +360,7 @@ Module to use class controllers to define endpoints.
 - remove after and before options
 - send access token to the auth.validator instead of key
 - change auth default key to authorization
+- change wrapArrayResponse to true by default
 
 ## Thanks
 - [richardszemerei](https://github.com/richardszemerei) for CSS consultations.
