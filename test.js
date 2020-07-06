@@ -200,6 +200,7 @@ app.post(0, '/buggy', {
 		new Param.ShapeArray('attachments', false,
 			new Param('content', true, Type.string),
 			new Param('filename', true, Type.string),
+			new Param('type', false, Type.enum('application/json', 'text/html')),
 		),
 	],
 	response: null,
