@@ -351,6 +351,9 @@ Module to use class controllers to define endpoints.
 - proxy requests
 - global errors
 - remove deprecations warnings in default settings
+- request in logger
+- error handler
+- HTML in docs
 ### v3
 - TypeScript source code
 - remove auth option in the docs
