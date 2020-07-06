@@ -207,7 +207,7 @@ export default class Item extends React.Component<IProps, IState> {
 						<Button
 							variant="outlined"
 							color="primary"
-							onClick={(e) => {
+							onClick={(e: any) => {
 								e.stopPropagation();
 								const interfaceName = camelCase(
 									[
