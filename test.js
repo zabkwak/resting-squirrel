@@ -1,5 +1,5 @@
 const RS = require('./');
-const { HttpError, Response, RouteAuth } = RS;
+const { ErrorField, Response, RouteAuth } = RS;
 const request = require('request');
 
 const app = RS.default({
@@ -50,12 +50,15 @@ app.get(0, '/endpoint', {
 app.get(1, '/endpoint', {
     auth: RouteAuth.OPTIONAL,
     params: [
-        new Param('integer', true, Type.integer, 'Integer param'),
+        new Param('integer', true, Type.integer, '<code>Integer</code> param'),
     ],
     response: [
-        new Field('integer', Type.integer, 'Integer field'),
+        new Field('integer', Type.integer, '<code>Integer</code> field'),
     ],
-    description: 'Test endpoint',
+	description: 'Test endpoint with <strong>HTML</strong>',
+	errors: [
+		new ErrorField('ERR_TEST', 'Yeah. This <i>won\'t</i> happened.'),
+	]
 }, (req, res, next) => {
     next(null, req.query);
 });

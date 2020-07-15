@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.21.0
+### Docs
+- Html tags in descriptions.
+
 ## 2.20.2
 ### Updates
 - Updated dependencies.

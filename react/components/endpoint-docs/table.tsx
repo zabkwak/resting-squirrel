@@ -4,6 +4,8 @@ import { Chip, Paper, Card, ExpansionPanel, ExpansionPanelSummary, Typography, E
 import CheckedIcon from '@material-ui/icons/CheckCircle';
 import CrossIcon from '@material-ui/icons/Cancel';
 
+const { Parser }: any = require('html-to-react');
+
 import { IDocsItem, IField, IParam } from '../../typings';
 import Title from '../title';
 
@@ -16,6 +18,8 @@ interface IOptionalProps {
 interface IProps extends Partial<IOptionalProps> {
 	items: Array<IField | IParam>;
 }
+
+const parser = new Parser();
 
 export default class Table extends React.Component<IProps> {
 
@@ -44,7 +48,7 @@ export default class Table extends React.Component<IProps> {
 							>
 								<TableCell>{field.name}</TableCell>
 								<TableTypeCell field={field} params={params} />
-								<TableCell>{field.description}</TableCell>
+								<TableCell>{parser.parse(field.description)}</TableCell>
 								<TableCell>
 									{
 										params

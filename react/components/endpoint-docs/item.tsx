@@ -32,6 +32,7 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import camelCase from 'camelcase';
 import Type from 'runtime-type';
+const { Parser }: any = require('html-to-react');
 
 import { IDocsItem, IField, IParam } from '../../typings';
 import Title from '../title';
@@ -64,6 +65,8 @@ const Panel = ({ title, children, button }: { title: string, children: React.Rea
 		</ExpansionPanel>
 	);
 };
+
+const parser = new Parser();
 
 export default class Item extends React.Component<IProps, IState> {
 
@@ -142,7 +145,7 @@ export default class Item extends React.Component<IProps, IState> {
 					</ButtonGroup>
 				</Box>
 				<Card className="p10 bg-light">
-					{description || ''}
+					{parser.parse(description || '')}
 				</Card>
 				{this.renderFields('Arguments', args)}
 				{this.renderFields('Params', params, true)}
@@ -265,7 +268,7 @@ export default class Item extends React.Component<IProps, IState> {
 									hover
 								>
 									<TableCell>{code}</TableCell>
-									<TableCell>{description}</TableCell>
+									<TableCell>{parser.parse(description)}</TableCell>
 								</TableRow>
 							))
 						}
