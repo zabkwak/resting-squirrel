@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.22.0
+### Updates
+- Route /ping is not logging.
+
 ## 2.21.0
 ### Docs
 - Html tags in descriptions.

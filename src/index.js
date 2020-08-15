@@ -1065,7 +1065,7 @@ class Application {
 					res.status(204);
 				}
 				res.end();
-				if (log.enabled && typeof logger === 'function') {
+				if (log.enabled && typeof logger === 'function' && req.path !== '/ping') {
 					logger({
 						statusCode: res.statusCode,
 						method: req.method,
