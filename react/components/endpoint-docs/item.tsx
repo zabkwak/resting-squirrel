@@ -222,8 +222,8 @@ export default class Item extends React.Component<IProps, IState> {
 								);
 								const props = Object.entries(fields).map(([key, field]) => {
 									const t = Type.fromString(field.type);
-									return `\t${key}: ${t.getTSType()};`;
-								});
+									return `${key}: ${t.getTSType(true)};`;
+								}).join('\n').split('\n').map((row) => `\t${row}`);
 								this.setState({
 									tsDefinition: `export interface ${interfaceName} {\n${props.join('\n')}\n}`,
 								});

@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2.22.0
+### Docs
+- Formatting of the TS definitions.
 ### Updates
 - Route /ping is not logging.
 
