@@ -442,7 +442,7 @@ class Application {
 							throw new Err('Time out', '_timeout_internal');
 						}
 						b.mark('auth checking');
-						await this._checkArguments(endpoint.getRouteArguments(), req);
+						await this._checkArguments(endpoint.getArguments(), req);
 						if (timedOut) {
 							throw new Err('Time out', '_timeout_internal');
 						}
@@ -1200,7 +1200,7 @@ class Application {
 		return {
 			docs: endpoint.docs,
 			description: endpoint.description,
-			args: endpoint.getRouteArguments(),
+			args: endpoint.getArguments(),
 			params: endpoint.getParams(this._options.docs.paramsAsArray),
 			required_params: endpoint.requiredParams,
 			required_auth: endpoint.requiredAuth,

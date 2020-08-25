@@ -104,6 +104,16 @@ app.get(0, '/args/:id', {
     ],
 }, (req, res, next) => next(null, req.params));
 
+app.get(1, '/args/:id', {
+    description: 'Validates the arguments and returns it.',
+    args: [
+        new Field('id', Type.string, 'String argument'),
+    ],
+    response: [
+        new Field('id', Type.string, 'String field'),
+    ],
+}, (req, res, next) => next(null, req.params));
+
 app.get(0, '/response-shape', {
     description: 'Defines response as a Shape',
     response: [

@@ -1390,7 +1390,7 @@ describe('Server stop', () => {
 
 	it('stops the server', (done) => {
 		app.stop(done);
-	});
+	}).timeout(10000);
 
 	it('checks if the server is not accessible via http request', (done) => {
 		request.get({ gzip: true, json: true, url: 'http://localhost:8080/' }, (err) => {
