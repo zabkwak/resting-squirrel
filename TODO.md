@@ -1,0 +1,23 @@
+# TODO
+- custom warning of the endpoint
+- handle Param and Field classes for typescript
+- 410 error code after the deprecation if needed
+- finish all requests before stop
+- shapes with generic keys -> [key: string]: string
+- proxy requests
+- global errors
+- remove deprecations warnings in default settings
+- request in logger
+- error handler
+- bulk requests
+- circular shapes
+## v3
+- TypeScript source code
+- remove auth option in the docs
+- remove POST api key support
+- remove headers api key support
+- remove function arguments support in http methods.
+- remove after and before options
+- send access token to the auth.validator instead of key
+- change auth default key to authorization
+- change wrapArrayResponse to true by default

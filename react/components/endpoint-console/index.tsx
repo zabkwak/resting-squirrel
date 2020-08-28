@@ -289,12 +289,12 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 			const query = method === 'GET'
 				? jsonParams
 					? JSON.parse(jsonData)
-					: params
+					: this._sanitazeParams(params)
 				: {};
 			const body = method !== 'GET'
 				? jsonParams
 					? jsonData
-					: JSON.stringify(params)
+					: JSON.stringify(this._sanitazeParams(params))
 				: undefined;
 			let url = `${Application.getBaseUrl()}${endpoint}?${qs.stringify({
 				api_key: Application.getData('apiKey'),
@@ -344,5 +344,18 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 
 	private _saveToStorage(key: string, value: string): void {
 		localStorage?.setItem(key, value);
+	}
+
+	private _sanitazeParams(params: { [key: string]: any }): { [key: string]: any } {
+		const r: { [key: string]: any } = {};
+		for (const key in params) {
+			if (typeof params[key] === 'object' && !(params[key] instanceof Array)) {
+				r[key] = this._sanitazeParams(params);
+			}
+			if (params[key]) {
+				r[key] = params[key];
+			}
+		}
+		return r;
 	}
 }

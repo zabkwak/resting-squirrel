@@ -140,6 +140,7 @@ export default class Application extends React.Component<IProps, IState> {
 	};
 
 	public componentDidMount(): void {
+		const { docs } = this.props;
 		const { anchor, endpoint, console: showConsole } = Application.getParams();
 		if (anchor) {
 			Application.scrollToRef(anchor);
@@ -147,7 +148,7 @@ export default class Application extends React.Component<IProps, IState> {
 		if (endpoint) {
 			this.setState({ endpoint });
 		}
-		if (showConsole !== undefined) {
+		if (showConsole !== undefined && docs[anchor]) {
 			this.setState({ showConsole: true });
 		}
 	}

@@ -3,6 +3,8 @@
 ## 2.23.0
 ### Fixes
 - Different types of arguments in the endpoint versions.
+- Sending empty string in the console request.
+- Error during opening console of non-existing endpoint.
 
 ## 2.22.0
 ### Docs
