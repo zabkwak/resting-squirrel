@@ -19,7 +19,6 @@ export default class ResponseResponse {
 	}
 
 	addHeader(header, value) {
-		console.log('ADD HEADER', header, value);
 		this._headers[header] = value;
 		return this;
 	}
