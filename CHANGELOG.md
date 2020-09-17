@@ -5,6 +5,7 @@
 - Different types of arguments in the endpoint versions.
 - Sending empty string in the console request.
 - Error during opening console of non-existing endpoint.
+- Response classes can add additional headers.
 
 ## 2.22.0
 ### Docs

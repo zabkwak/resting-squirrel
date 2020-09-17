@@ -1,14 +1,26 @@
 export default class ResponseResponse {
 
-    getContentType(charset) {
-        return `text/html; charset=${charset}`;
-    }
+	_headers = {};
 
-    getData(data, pretty = false) {
-        return data;
-    }
+	getContentType(charset) {
+		return `text/html; charset=${charset}`;
+	}
 
-    get(array = false) {
-        throw new Error('Not implemented');
-    }
+	getData(data, pretty = false) {
+		return data;
+	}
+
+	get(array = false) {
+		throw new Error('Not implemented');
+	}
+
+	getHeaders() {
+		return this._headers;
+	}
+
+	addHeader(header, value) {
+		console.log('ADD HEADER', header, value);
+		this._headers[header] = value;
+		return this;
+	}
 }

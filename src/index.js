@@ -1059,6 +1059,10 @@ class Application {
 						? data[errorKey] ? new JSONResponse() : endpoint.response
 						: new JSONResponse();
 					res.header('Content-Type', response.getContentType(charset));
+					const responseHeaders = response.getHeaders() || {};
+					Object.keys(responseHeaders).forEach((key) => {
+						res.header(key, responseHeaders[key]);
+					});
 					// const json = JSON.stringify(data, null, req.query.pretty === undefined ? 0 : 4);
 					res.write(response.getData(data, req.query.pretty));
 				} else {

@@ -3,6 +3,13 @@ import request from 'request';
 
 import rs, { Param, Type, Error, Field, HttpError, Response } from '../src';
 
+class DynamicImageResponse extends Response.Custom {
+
+	constructor() {
+		super('DYNAMIC');
+	}
+}
+
 const HTML_CONTENT = '<html><head></head><body><h1>TEST</h1></body></html>';
 
 const app = rs({ log: false, logStack: false, wrapArrayResponse: true });
@@ -129,6 +136,15 @@ app.get(0, '/html', {
 app.get(0, '/image', {
 	response: new Response.Custom('image/png'),
 }, (req, res, next) => {
+	request.get('https://avatars1.githubusercontent.com/u/9919', { encoding: null }, (err, response, body) => {
+		next(err, body);
+	});
+});
+
+app.get(1, '/image', {
+	response: new DynamicImageResponse(),
+}, (req, res, next) => {
+	req.getEndpoint().response.addHeader('Content-Type', 'image/png');
 	request.get('https://avatars1.githubusercontent.com/u/9919', { encoding: null }, (err, response, body) => {
 		next(err, body);
 	});
@@ -1204,6 +1220,15 @@ describe('Responses', () => {
 				done();
 			});
 		});
+
+		it('calls the endpoint which sends dynamic image response', (done) => {
+			request.get({ gzip: true, json: true, url: 'http://localhost:8080/1/image' }, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers['content-type']).to.be.equal('image/png');
+				expect(res.statusCode).to.equal(200);
+				done();
+			});
+		});
 	});
 });
 
@@ -1280,6 +1305,7 @@ describe('Docs', () => {
 				'GET /0/args/:id/defined',
 				'GET /0/html',
 				'GET /0/image',
+				'GET /1/image',
 			]);
 			validateDocs(data['GET /']);
 			validateDocs(data['GET /auth'], null, [], [], [
@@ -1376,7 +1402,8 @@ describe('Docs', () => {
 				{ code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
 			]);
 			validateDocs(data['GET /0/html']);
-			validateDocs(data['GET /0/image']);
+			validateDocs(data['GET /0/image'], null, [], [], [], [], false, [], true);
+			validateDocs(data['GET /1/image']);
 			expect(data['GET /docs']).to.be.undefined;
 			expect(data['GET /docs.html']).to.be.undefined;
 			expect(data['GET /docs.js']).to.be.undefined;
