@@ -12,7 +12,7 @@ declare module 'resting-squirrel' {
 			public abstract get(array: boolean): Array<any> | any;
 			public getData(data: { data: any, _meta?: any }, pretty: boolean): any;
 			public getHeaders(): { [key: string]: string };
-			public addHeader(header: string, value: any);
+			public addHeader(header: string, value: any): this;
 		}
 
 		class JSON extends Base {
