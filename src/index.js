@@ -869,6 +869,7 @@ class Application {
 			const endpoint = req.__endpoint;
 			let dataSent = false;
 			const p = endpoint.callback(req, res, (err, data) => {
+				this._warn('Using callbacks in the endpoint execution is deprecated. Use Promises.')
 				if (dataSent) {
 					this._warn('Data already sent using a Promise.');
 					return;

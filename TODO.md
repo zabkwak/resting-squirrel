@@ -21,3 +21,5 @@
 - send access token to the auth.validator instead of key
 - change auth default key to authorization
 - change wrapArrayResponse to true by default
+- Promise-only executions
+- Promise<void> executions
