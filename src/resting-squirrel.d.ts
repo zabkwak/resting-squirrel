@@ -157,7 +157,10 @@ declare module 'resting-squirrel' {
 			/** Validator function executed while validating authorization token in the endpoint lifecycle. */
 			validator?: (<R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse) => Promise<boolean>) | (<R extends IRequest<any, any, any>>(key: string, req: R, res: IResponse, next: MiddlewareNext) => void),
 		},
-		/** Api key settings. */
+		/** 
+		 * Api key settings.
+		 * @deprecated
+		 */
 		apiKey?: {
 			/**
 			 * If true all requests require api key parameter. It can be overriden in the endpoint config.
@@ -276,6 +279,13 @@ declare module 'resting-squirrel' {
 		 * @param callback Callback to execute as middleware.
 		 */
 		use<R extends IRequest>(route: string, callback: (req: R, res: IResponse, next: MiddlewareNext) => void): void;
+
+		/**
+		 * Registers the API key handler to validate api key.
+		 * 
+		 * @param handler The validator function.
+		 */
+		public registerApiKeyHandler<R extends IRequest>(handler: (apiKey: string, req: R) => Promise<boolean>): this;
 
 		/**
 		 * Registers a function to execute before the endpoint execution.

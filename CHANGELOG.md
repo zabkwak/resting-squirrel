@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.24.0
+### Features
+- Registering api key handler instead of api key option.
+### Deprecations
+- Callbacks in endpoint execution.
+- API key options.
+
 ## 2.23.1
 ### Updates
 - Updated TS definition.

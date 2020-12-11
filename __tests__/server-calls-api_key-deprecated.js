@@ -3,15 +3,15 @@ import request from 'request';
 
 import rs, { HttpError } from '../src';
 
-describe('Api Key', () => {
+describe('Api Key DEPRECATED', () => {
 
 	describe('Disabled api key', () => {
 
-		const app = rs({ port: 8093, log: false, logStack: false });
+		const app = rs({ port: 8083, log: false, logStack: false, apiKey: { enabled: false } });
 
 		app.get(0, '/api-key', (req, res, next) => next(null, req.query));
 
-		app.start();
+		it('starts the server', (done) => app.start(done));
 
 		it('calls the endpoint without an api key', (done) => {
 			request.get({
@@ -47,15 +47,186 @@ describe('Api Key', () => {
 		});
 	});
 
+	describe('Enabled api key with default validator', () => {
+
+		const app = rs({ port: 8084, log: false, logStack: false, apiKey: { enabled: true } });
+
+		app.get(0, '/api-key', (req, res, next) => next(null, req.query));
+
+		app.start();
+
+		it('calls the endpoint without an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8084/0/api-key',
+				gzip: true,
+				json: true,
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(403);
+				expect(body).to.have.all.keys(['error', '_meta']);
+				const { error } = body;
+				const { message, code } = error;
+				expect(message).to.be.equal('Api key is missing.');
+				expect(code).to.be.equal('ERR_MISSING_API_KEY');
+				done();
+			});
+		});
+
+		it('calls the endpoint with an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8084/0/api-key',
+				gzip: true,
+				json: true,
+				qs: { api_key: 'API_KEY' },
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(200);
+				expect(body).to.have.all.keys(['data', '_meta']);
+				const { data } = body;
+				expect(data).to.deep.equal({ api_key: 'API_KEY' });
+				done();
+			});
+		});
+
+		it('calls non existing endpoint with an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8084/404',
+				gzip: true,
+				json: true,
+				qs: { api_key: 'API_KEY' },
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(404);
+				expect(body).to.have.all.keys(['error', '_meta']);
+				const { error } = body;
+				expect(error).to.have.all.keys(['message', 'code']);
+				expect(error.message).to.be.equal('Page not found');
+				expect(error.code).to.be.equal('ERR_PAGE_NOT_FOUND');
+				done();
+			});
+		});
+
+		it('calls non existing endpoint without an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8084/404',
+				gzip: true,
+				json: true,
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(403);
+				expect(body).to.have.all.keys(['error', '_meta']);
+				const { error } = body;
+				expect(error).to.have.all.keys(['message', 'code']);
+				expect(error.message).to.be.equal('Api key is missing.');
+				expect(error.code).to.be.equal('ERR_MISSING_API_KEY');
+				done();
+			});
+		});
+	});
+
+	describe('Enabled api key in body with default validator', () => {
+
+		const app = rs({ port: 8085, log: false, logStack: false, apiKey: { enabled: true, type: 'body' } });
+
+		app.get(0, '/api-key', (req, res, next) => next(null, req.body));
+
+		app.start();
+
+		it('calls the endpoint without an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8085/0/api-key',
+				gzip: true,
+				json: true,
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(403);
+				expect(body).to.have.all.keys(['error', '_meta']);
+				const { error } = body;
+				const { message, code } = error;
+				expect(message).to.be.equal('Api key is missing.');
+				expect(code).to.be.equal('ERR_MISSING_API_KEY');
+				done();
+			});
+		});
+
+		it('calls the endpoint with an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8085/0/api-key',
+				gzip: true,
+				json: true,
+				body: { api_key: 'API_KEY' },
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(200);
+				expect(body).to.have.all.keys(['data', '_meta']);
+				const { data } = body;
+				expect(data).to.deep.equal({ api_key: 'API_KEY' });
+				done();
+			});
+		});
+	});
+
+	describe('Enabled api key in headers with default validator', () => {
+
+		const app = rs({ port: 8086, log: false, logStack: false, apiKey: { enabled: true, type: 'header' } });
+
+		app.get(0, '/api-key', (req, res, next) => next(null, { api_key: req.headers.api_key }));
+
+		app.start();
+
+		it('calls the endpoint without an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8086/0/api-key',
+				gzip: true,
+				json: true,
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(403);
+				expect(body).to.have.all.keys(['error', '_meta']);
+				const { error } = body;
+				const { message, code } = error;
+				expect(message).to.be.equal('Api key is missing.');
+				expect(code).to.be.equal('ERR_MISSING_API_KEY');
+				done();
+			});
+		});
+
+		it('calls the endpoint with an api key', (done) => {
+			request.get({
+				url: 'http://localhost:8086/0/api-key',
+				gzip: true,
+				json: true,
+				headers: { api_key: 'API_KEY' },
+			}, (err, res, body) => {
+				expect(err).to.be.null;
+				expect(res.headers["content-type"]).to.be.equal('application/json; charset=utf-8');
+				expect(res.statusCode).to.equal(200);
+				expect(body).to.have.all.keys(['data', '_meta']);
+				const { data } = body;
+				expect(data).to.deep.equal({ api_key: 'API_KEY' });
+				done();
+			});
+		});
+	});
+
 	describe('Enabled api key with custom validator', () => {
 
 		const app = rs({
-			port: 8097,
+			port: 8087,
 			log: false,
 			logStack: false,
+			apiKey: {
+				enabled: true,
+				validator: (apiKey) => new Promise(resolve => resolve(apiKey === 'API_KEY')),
+			},
 		});
-
-		app.registerApiKeyHandler(async (apiKey) => apiKey === 'API_KEY');
 
 		app.get(0, '/api-key', (req, res, next) => next(null, req.query));
 
@@ -133,12 +304,13 @@ describe('Api Key', () => {
 	describe('Enabled api key with endpoint which have the api key excluded', () => {
 
 		const app = rs({
-			port: 8098,
+			port: 8088,
 			log: false,
 			logStack: false,
+			apiKey: {
+				enabled: true,
+			},
 		});
-
-		app.registerApiKeyHandler(async (apiKey) => true);
 
 		app.get(0, '/api-key/excluded/array', { excludedApiKeys: ['excluded'] }, (req, res, next) => next(null, req.query));
 		app.get(0, '/api-key/excluded/promise', { excludedApiKeys: () => new Promise(resolve => resolve(['excluded'])) }, (req, res, next) => next(null, req.query));

@@ -32,7 +32,7 @@ app.post(0, '/user/:id', {
     auth: RouteAuth.REQUIRED,
     // Route argument "id" must be an integer
     args: [
-        new Field('id', Type.integer, 'Identificator of the user to update'),
+        new Field('id', Type.integer, 'Identifier of the user to update'),
     ],
     // Endpoint accepts parameter name which has to be a string
     params: [
@@ -40,11 +40,11 @@ app.post(0, '/user/:id', {
     ],
     // Endpoints returns object with parameters id (casted to integer before rendering data) and name
     response: [
-        new Field('id', Type.integer, 'Identificator of the user'),
+        new Field('id', Type.integer, 'Identifier of the user'),
         new Field('name', Type.string, 'Name of the user'),
     ],
     // Description for the documentation
-    description: 'Updates the user informations',
+    description: 'Updates the user information',
     errors: [
         new ErrorField('ERR_INVALID_USER', 'Returned if request id of the user does not exist.'),
     ],
@@ -61,7 +61,7 @@ This usage will create the app with default options.
 **errorKey** Key in the output where the error is sent. Default: error  
 **requestLimit** Limit for input data. Default: 1mb  
 **charset** Charset of the response. Default: utf-8  
-**meta** Object for setting up the behaviour of meta data. 
+**meta** Object for setting up the behavior of meta data. 
 - **enabled** If true meta data are showed in every request. Default: true  
 - **data** Custom meta data for the application. This data are set for all endpoints. Default: {}
 
@@ -75,7 +75,7 @@ This usage will create the app with default options.
 **docs** Object for setting up the documentation for the API.
 - **enabled** If true docs are enabled on the *options.docs.endpoint* endpoint. Default: true  
 - **endpoint** On this endpoint is shown documentation. Default: /docs  
-- **auth** If true documentation request must be authorized with *options.auth* function. Default: false DEPRECATED Using api key is preffered option.  
+- **auth** If true documentation request must be authorized with *options.auth* function. Default: false DEPRECATED Using api key is preferred option.  
 - **paramsAsArray** If true params are returned as array in the docs. Default: false  
 
 **auth** Object for setting up the authorization.  
@@ -113,19 +113,20 @@ console.log(HttpError.create(400)); // Http error with 400 status code, message 
 **get(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the GET method. requiredAuth, params and docs can be callback. Callback is taken from express.  
 **post(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the POST method. requiredAuth, params and docs can be callback. Callback is taken from express.  
 **put(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the PUT method. requiredAuth, params and docs can be callback. Callback is taken from express.  
-**delete(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the DELETE method. requiredAuth, params and docscan be callback. Callback is taken from express.  
+**delete(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the DELETE method. requiredAuth, params and docs can be callback. Callback is taken from express.  
 **head(version, route, requiredAuth = false, params = [], docs = null, callback)** Registers route on the HEAD method. requiredAuth, params and docs can be callback. Callback is taken from express.  
 **listen(cb)** Starts listening on the port from options. DEPRECATED   
 **start(cb)** Starts listening on the port from options.  
 
 ### Functions
 **use(route, callback)** Registers express middleware. Route can be callback.  
+**registerApiKeyHandler(handler)** Registers handler `(apiKey, req)` to validate api key. 
 **registerBeforeExecution(spec, callback)** Registers callback `(req, res)` to the route spec which is executed before the endpoint execution.  
-**registerAfterExecution(spec, callback)** Registers callback `(isError, data, req, res)` to the route spec wich is executed after the endpoint execution.   
+**registerAfterExecution(spec, callback)** Registers callback `(isError, data, req, res)` to the route spec which is executed after the endpoint execution.   
 **get(version, route, options = {}, callback)** Registers route on the GET method. options can be callback. Callback is taken from express.  
 **post(version, route, options = {}, callback)** Registers route on the POST method. options can be callback. Callback is taken from express.  
 **put(version, route, options = {}, callback)** Registers route on the PUT method. options can be callback. Callback is taken from express.  
-**delete(version, route, options = {}, callback)** Registers route on the DELETE method. optionscan be callback. Callback is taken from express.  
+**delete(version, route, options = {}, callback)** Registers route on the DELETE method. options can be callback. Callback is taken from express.  
 **head(version, route, options = {}, callback)** Registers route on the HEAD method. options can be callback. Callback is taken from express.  
 **listen(cb)** Starts listening on the port from options. DEPRECATED   
 **start(cb)** Starts listening on the port from options.  
@@ -289,7 +290,7 @@ In some cases is needed to use shape field (param). Shapes are JS objects. The f
 | field         | type          | description                        |
 | ------------- |:-------------:| ---------------------------------- |
 | name          | string        | Name of the param                  |
-| required      | boolean       | Indicates if the param is requried |
+| required      | boolean       | Indicates if the param is required |
 | description   | string        | Description of the param           |
 | ...params     | `Param`[]     | List of params in the shape        |
 ##### Param.ShapeArray
@@ -297,7 +298,7 @@ In some cases is needed to use shape field (param). Shapes are JS objects. The f
 | field         | type          | description                        |
 | ------------- |:-------------:| ---------------------------------- |
 | name          | string        | Name of the param                  |
-| required      | boolean       | Indicates if the param is requried |
+| required      | boolean       | Indicates if the param is required |
 | description   | string        | Description of the param           |
 | ...params     | `Param`[]     | List of params in the shape        |
 
@@ -311,12 +312,12 @@ In some cases is needed to use shape field (param). Shapes are JS objects. The f
 **sendError(code = options.defaultError.statusCode, message = options.defaultError.message, errorCode = options.defaultError.code)** Sets the code as http code and sends the Error instance.  
 
 #### Reserved GET parameters
-This parameters are updating behaviour of the current request.  
+This parameters are updating behavior of the current request.  
 **nometa** If meta is enabled in config this parameter will disable it.  
 **pretty** JSON response is printed for human reading.  
 
 ## Time out
-If timeout option (global or endpoint) is set the execution process is killed in the first possible moment (some lifecycle methods are still called). If the timeout occured during the endpoint callback execution the execution is still in process but the event `timeout` is called to the `express.Request.on` method. 
+If timeout option (global or endpoint) is set the execution process is killed in the first possible moment (some lifecycle methods are still called). If the timeout occurred during the endpoint callback execution the execution is still in process but the event `timeout` is called to the `express.Request.on` method. 
 ```javascript
 app.get(0, '/timeout', { timeout: 500 }, (req, res, next) => {
     const timeout = setTimeout(() => {

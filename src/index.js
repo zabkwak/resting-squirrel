@@ -129,11 +129,7 @@ const DEFAULT_OPTIONS = {
 		description: null,
 		validator: (key, req, res, next) => new Promise(resolve => resolve(true)),
 	},
-	apiKey: {
-		enabled: false,
-		type: 'qs',
-		validator: (apiKey, next) => new Promise(resolve => resolve(true)),
-	},
+	apiKey: null,
 	timeout: null,
 	before: {
 		'*': (req, res, next) => next(),
@@ -176,6 +172,8 @@ class Application {
 	_beforeExecution = [];
 	_afterExecution = [];
 
+	_apiKeyHandler = null;
+
 	_stats = {
 		error: 0,
 		warning: 0,
@@ -185,10 +183,10 @@ class Application {
 		return APP_PACKAGE.version;
 	}
 
-    /**
-     * 
-     * @param {AppOptions} options 
-     */
+	/**
+	 * 
+	 * @param {AppOptions} options 
+	 */
 	constructor(options = {}) {
 		this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
 		if (typeof options.log === 'boolean') {
@@ -223,7 +221,7 @@ class Application {
 			});
 		}
 		if (this._options.after) {
-			this._warn('Using \'after\' option is deprecated');
+			this._warn('Using \'after\' option is deprecated.');
 			Object.keys(this._options.after).forEach((route) => {
 				this.registerAfterExecution(route, (err, data, req, res) => {
 					return new Promise((resolve, reject) => {
@@ -237,6 +235,9 @@ class Application {
 					});
 				});
 			});
+		}
+		if (this._options.apiKey) {
+			this._warn('Using \'apiKey\' option is deprecated.');
 		}
 		// Object merge cannot merge not existing keys, so this adds custom meta data to the options.
 		if (options.meta && options.meta.data) {
@@ -265,6 +266,11 @@ class Application {
 		this._app.use(route, callback);
 	}
 
+	registerApiKeyHandler(handler) {
+		this._apiKeyHandler = handler;
+		return this;
+	}
+
 	registerBeforeExecution(spec, callback) {
 		const index = this._beforeExecution.map(({ spec }) => spec).indexOf(spec);
 		if (index >= 0) {
@@ -285,81 +291,81 @@ class Application {
 		return this;
 	}
 
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	get(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
 	}
 
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	post(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
 	}
 
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	put(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
 	}
 
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	delete(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
 	}
 
-    /**
-     * 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	head(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
 	}
 
-    /**
-     * 
-     * @param {string} method 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions|boolean|function} requireAuth 
-     * @param {Param[]|function} params 
-     * @param {string|function} description 
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {string} method 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {Param[]|function} params 
+	 * @param {string|function} description 
+	 * @param {function} callback 
+	 */
 	registerRoute(method, version, route, requireAuth, params, description, callback) {
 		if (isNaN(parseFloat(version))) {
 			callback = description;
@@ -399,19 +405,19 @@ class Application {
 		}, callback);
 	}
 
-    /**
-     * 
-     * @param {function} cb 
-     * @deprecated
-     */
+	/**
+	 * 
+	 * @param {function} cb 
+	 * @deprecated
+	 */
 	listen(cb = () => { }) {
 		this.start(cb);
 	}
 
-    /**
-     * Starts the application.
-     * @param {function} cb 
-     */
+	/**
+	 * Starts the application.
+	 * @param {function} cb 
+	 */
 	start(cb = () => { }) {
 		const { port, auth, before, log, errorKey } = this._options;
 		Object.keys(this._routes).forEach((key) => {
@@ -516,10 +522,10 @@ class Application {
 		});
 	}
 
-    /**
-     * Stops the application.
-     * @param {function} cb 
-     */
+	/**
+	 * Stops the application.
+	 * @param {function} cb 
+	 */
 	stop(cb = () => { }) {
 		if (!this._server) {
 			this._warn('Server cannot be stopped beceause it was not started.');
@@ -576,14 +582,14 @@ class Application {
 		return docs;
 	}
 
-    /**
-     * 
-     * @param {string} method 
-     * @param {number} version 
-     * @param {string} route 
-     * @param {RouteOptions} options
-     * @param {function} callback 
-     */
+	/**
+	 * 
+	 * @param {string} method 
+	 * @param {number} version 
+	 * @param {string} route 
+	 * @param {RouteOptions} options
+	 * @param {function} callback 
+	 */
 	_registerRoute(method, version, route, options, callback) {
 		if (typeof options === 'function') {
 			callback = options;
@@ -608,37 +614,48 @@ class Application {
 			...options,
 			callback,
 			validateParams: this._options.validateParams,
-			apiKeyEnabled: options.requireApiKey === false ? false : this._options.apiKey.enabled,
+			apiKeyEnabled: options.requireApiKey === false ? false : this._isApiKeyEnabled(),
 		});
 		return endpoint;
 	}
 
-    /**
-     * 
-     * @param {express.Request} req
-     * @returns {Promise<void>}
-     */
-	_checkApiKey(req) {
+	/**
+	 * 
+	 * @param {express.Request} req
+	 * @returns {Promise<void>}
+	 */
+	async _checkApiKey(req) {
+		if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
+			return;
+		}
+		if (typeof this._apiKeyHandler === 'function') {
+			if (!req.query.api_key) {
+				throw HttpError.create(403, 'Api key is missing.', 'missing_api_key');
+			}
+			if (!await this._apiKeyHandler(req.query.api_key, req)) {
+				throw HttpError.create(403, 'Api key is invalid.', 'invalid_api_key');
+			}
+			req.apiKey = req.query.api_key;
+			if (req.__endpoint && await req.__endpoint.isApiKeyExcluded(key)) {
+				throw HttpError.create(404);
+			}
+			return;
+		}
+		const { apiKey } = this._options;
+		if (!apiKey || !apiKey.enabled) {
+			return;
+		}
 		return new Promise(async (resolve, reject) => {
-			const { apiKey } = this._options;
-			if (!apiKey.enabled) {
-				resolve();
-				return;
-			}
-			if (req.__endpoint && !req.__endpoint.apiKeyEnabled) {
-				resolve();
-				return;
-			}
 			let key = null;
 			switch (apiKey.type) {
-				case 'qs':
-					key = req.query.api_key;
-					break;
 				case 'body':
 					key = req.body.api_key;
 					break;
 				case 'header':
 					key = req.headers.api_key;
+					break;
+				default:
+					key = req.query.api_key;
 					break;
 			}
 			if (!key) {
@@ -658,6 +675,9 @@ class Application {
 				}
 			}
 			let executed = false;
+			if (!apiKey.validator) {
+				apiKey.validator = async () => true;
+			}
 			const p = apiKey.validator(key, (err) => {
 				this._warn('Using a callback in api key validator is deprecated.');
 				if (executed) {
@@ -696,14 +716,14 @@ class Application {
 
 	}
 
-    /**
-     * 
-     * @param {express.Request} req 
-     * @param {express.Response} res 
-     * @param {RouteAuth} routeAuth 
-     * @param {AppOptions.Auth} auth
-     * @returns {Promise<void>}
-     */
+	/**
+	 * 
+	 * @param {express.Request} req 
+	 * @param {express.Response} res 
+	 * @param {RouteAuth} routeAuth 
+	 * @param {AppOptions.Auth} auth
+	 * @returns {Promise<void>}
+	 */
 	_checkAuth(req, res, routeAuth, auth) {
 		return new Promise((resolve, reject) => {
 			if (!routeAuth) {
@@ -758,12 +778,12 @@ class Application {
 		});
 	}
 
-    /**
-     * 
-     * @param {Object.<string, Field>} args 
-     * @param {express.Request} req 
-     * @returns {Promise<void>}
-     */
+	/**
+	 * 
+	 * @param {Object.<string, Field>} args 
+	 * @param {express.Request} req 
+	 * @returns {Promise<void>}
+	 */
 	_checkArguments(args, req) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -781,12 +801,12 @@ class Application {
 		});
 	}
 
-    /**
-     * 
-     * @param {Param[]} params 
-     * @param {express.Request} req
-     * @returns {Promise<void>}
-     */
+	/**
+	 * 
+	 * @param {Param[]} params 
+	 * @param {express.Request} req
+	 * @returns {Promise<void>}
+	 */
 	_checkParams(params, req) {
 		return new Promise((resolve, reject) => {
 			if (!params.length) {
@@ -834,12 +854,12 @@ class Application {
 		});
 	}
 
-    /**
-     * 
-     * @param {express.Request} req 
-     * @param {express.Response} res
-     * @returns {Promise<void>}
-     */
+	/**
+	 * 
+	 * @param {express.Request} req 
+	 * @param {express.Response} res
+	 * @returns {Promise<void>}
+	 */
 	async _beforeCallback(req, res) {
 		if (this._beforeExecution.length) {
 			for (let i = 0; i < this._beforeExecution.length; i++) {
@@ -858,12 +878,12 @@ class Application {
 		}
 	}
 
-    /**
-     * 
-     * @param {express.Request} req 
-     * @param {express.Response} res 
-     * @returns {Promise<any>}
-     */
+	/**
+	 * 
+	 * @param {express.Request} req 
+	 * @param {express.Response} res 
+	 * @returns {Promise<any>}
+	 */
 	_execute(req, res) {
 		return new Promise((resolve, reject) => {
 			const endpoint = req.__endpoint;
@@ -901,12 +921,12 @@ class Application {
 		});
 	}
 
-    /**
-     * Validates the data with defined response of the endpoint. After the validation the data are sent to output.
-     * @param {express.Request} req 
-     * @param {express.Response} res 
-     * @param {any} data 
-     */
+	/**
+	 * Validates the data with defined response of the endpoint. After the validation the data are sent to output.
+	 * @param {express.Request} req 
+	 * @param {express.Response} res 
+	 * @param {any} data 
+	 */
 	_handleData(req, res, data) {
 		const { wrapArrayResponse } = this._options;
 		const endpoint = req.getEndpoint();
@@ -968,9 +988,9 @@ class Application {
 		}
 	}
 
-    /**
-     * Creates the express application instance and registers middlewares.
-     */
+	/**
+	 * Creates the express application instance and registers middlewares.
+	 */
 	_createApp() {
 		const {
 			after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset
@@ -1091,9 +1111,9 @@ class Application {
 		this._app.use(bodyParser.json({ limit: requestLimit }));
 	}
 
-    /**
-     * Registers the /favicion.ico, /ping and /docs* routes.
-     */
+	/**
+	 * Registers the /favicion.ico, /ping and /docs* routes.
+	 */
 	_registerSupportRoutes() {
 		const { docs, name, charset } = this._options;
 		this.use('/favicon.ico', (req, res) => {
@@ -1125,7 +1145,7 @@ class Application {
 					let html = buffer.toString();
 					const vars = {
 						name,
-						apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
+						apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
 						rsVersion: pkg.version,
 						version: APP_PACKAGE.version,
 						dataKey: this._options.dataKey,
@@ -1155,10 +1175,10 @@ class Application {
 					let html = buffer.toString();
 					const vars = {
 						name,
-						apiKey: this._options.apiKey.enabled ? req.query.api_key : '',
+						apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
 						data: JSON.stringify({
 							name,
-							apiKey: this._options.apiKey.enabled ? req.query.api_key : null,
+							apiKey: this._isApiKeyEnabled() ? req.query.api_key : null,
 							rsVersion: pkg.version,
 							version: APP_PACKAGE.version,
 							dataKey: this._options.dataKey,
@@ -1197,10 +1217,10 @@ class Application {
 		}
 	}
 
-    /**
-     * 
-     * @param {Endpoint} endpoint 
-     */
+	/**
+	 * 
+	 * @param {Endpoint} endpoint 
+	 */
 	_getDocsObject(endpoint) {
 		return {
 			docs: endpoint.docs,
@@ -1239,6 +1259,14 @@ class Application {
 			o[k] = this._mergeObjects(o1[k], v, ['before', 'after'].indexOf(k) < 0);
 		});
 		return o;
+	}
+
+	_isApiKeyEnabled() {
+		const { apiKey } = this._options;
+		if (typeof this._apiKeyHandler === 'function') {
+			return true;
+		}
+		return apiKey && apiKey.enabled;
 	}
 
 	_log(message) {

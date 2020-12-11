@@ -33,7 +33,7 @@ describe('Base app creation', () => {
 		expect(auth.description).to.be.null;
 		expect(auth.key).to.be.equal('x-token');
 		expect(auth.validator).to.be.a('function');
-		expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
+		expect(apiKey).to.be.null;
 		expect(timeout).to.be.null;
 		expect(before).to.be.an('object');
 		expect(before['*']).to.be.a('function');
@@ -115,7 +115,7 @@ describe('Base app creation', () => {
 		expect(auth.description).to.be.equal('Auth description');
 		expect(auth.key).to.be.equal('access_token');
 		expect(auth.validator).to.be.a('function');
-		expect(apiKey).to.have.all.keys(['enabled', 'type', 'validator']);
+		expect(apiKey).to.be.null;
 		expect(timeout).to.be.equal(30000);
 		expect(before).to.be.an('object');
 		expect(before).to.have.all.keys(['*', '/test']);
