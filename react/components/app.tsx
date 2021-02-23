@@ -1,5 +1,6 @@
-import { AppBar, Grid, Toolbar, Typography, IconButton, Box, Snackbar } from '@material-ui/core';
+import { AppBar, Grid, Toolbar, Typography, IconButton, Box, Snackbar, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
 import { Menu as MenuIcon } from '@material-ui/icons';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import * as url from 'url';
@@ -10,6 +11,7 @@ import EndpointList from './endpoint-list';
 import Title from './title';
 import EndpointDocs from './endpoint-docs';
 import EndpointConsole from './endpoint-console';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 export interface IData {
 	name: string;
@@ -33,9 +35,12 @@ interface IState {
 	endpoint: string;
 	showConsole: boolean;
 	snackbar: string;
+	errorsDialogOpen: boolean;
 }
 
 export default class Application extends React.Component<IProps, IState> {
+
+	// #region Static
 
 	private static _data: IData;
 
@@ -132,12 +137,17 @@ export default class Application extends React.Component<IProps, IState> {
 		});
 	}
 
+	// #endregion
+
 	public state: IState = {
 		list: true,
 		endpoint: null,
 		showConsole: false,
 		snackbar: null,
+		errorsDialogOpen: false,
 	};
+
+	private _errors: { [key: string]: string } = {};
 
 	public componentDidMount(): void {
 		const { docs } = this.props;
@@ -151,11 +161,20 @@ export default class Application extends React.Component<IProps, IState> {
 		if (showConsole !== undefined && docs[anchor]) {
 			this.setState({ showConsole: true });
 		}
+		Object.keys(docs).forEach((endpoint) => {
+			const { errors } = docs[endpoint];
+			Object.keys(errors).forEach((code) => {
+				if (this._errors[code]) {
+					return;
+				}
+				this._errors[code] = errors[code];
+			});
+		});
 	}
 
 	public render(): JSX.Element {
 		const { docs } = this.props;
-		const { list, endpoint, showConsole, snackbar } = this.state;
+		const { list, endpoint, showConsole, snackbar, errorsDialogOpen } = this.state;
 		return (
 			<>
 				<AppBar position="static">
@@ -173,6 +192,19 @@ export default class Application extends React.Component<IProps, IState> {
 						<Typography variant="h4" component="h1">
 							{Application.getData('name')} documentation
 						</Typography>
+						<Box flex="1" />
+						<Tooltip
+							title="Export errors"
+						>
+							<IconButton
+								color="inherit"
+								onClick={() => {
+									this.setState({ errorsDialogOpen: true });
+								}}
+							>
+								<ErrorOutlineIcon />
+							</IconButton>
+						</Tooltip>
 					</Toolbar>
 				</AppBar>
 				<main>
@@ -285,6 +317,34 @@ export default class Application extends React.Component<IProps, IState> {
 					onClose={() => this.setState({ snackbar: null })}
 					message={snackbar}
 				/>
+				<Dialog
+					open={errorsDialogOpen}
+					onClose={() => this.setState({ errorsDialogOpen: false })}
+					fullWidth
+				>
+					<DialogTitle>Errors</DialogTitle>
+					<DialogContent>
+						<CopyToClipboard
+							text={JSON.stringify(this._errors, null, 4)}
+							onCopy={() => Application.showSnackbar('Copied')}
+						>
+							<TextField
+								InputProps={{
+									readOnly: true,
+								}}
+								multiline
+								value={JSON.stringify(this._errors, null, 4)}
+								fullWidth
+								label="Errors (copy by clicking in the text field)"
+							/>
+						</CopyToClipboard>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={() => this.setState({ errorsDialogOpen: false })} color="primary">
+							Close
+          				</Button>
+					</DialogActions>
+				</Dialog>
 			</>
 		);
 	}

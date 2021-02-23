@@ -1,13 +1,11 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
-import { Chip, Paper, Card, ExpansionPanel, ExpansionPanelSummary, Typography, ExpansionPanelDetails, Table as MuiTable, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
+import { Table as MuiTable, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import CheckedIcon from '@material-ui/icons/CheckCircle';
 import CrossIcon from '@material-ui/icons/Cancel';
 
 const { Parser }: any = require('html-to-react');
 
-import { IDocsItem, IField, IParam } from '../../typings';
-import Title from '../title';
+import { IField, IParam } from '../../typings';
 
 import TableTypeCell from './table.type-cell';
 

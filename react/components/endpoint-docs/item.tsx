@@ -4,10 +4,10 @@ import {
 	Chip,
 	Paper,
 	Card,
-	ExpansionPanel,
-	ExpansionPanelSummary,
+	Accordion,
+	AccordionSummary,
 	Typography,
-	ExpansionPanelDetails,
+	AccordionDetails,
 	Table as MuiTable,
 	TableHead,
 	TableBody,
@@ -21,7 +21,6 @@ import {
 	Dialog,
 	DialogTitle,
 	DialogContent,
-	DialogContentText,
 	DialogActions,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -53,16 +52,16 @@ interface IState {
 
 const Panel = ({ title, children, button }: { title: string, children: React.ReactNode, button?: React.ReactNode }) => {
 	return (
-		<ExpansionPanel>
-			<ExpansionPanelSummary
+		<Accordion>
+			<AccordionSummary
 				expandIcon={<ExpandMoreIcon />}
 			>
 				<Title component="h6" variant="h6">{title}{button}</Title>
-			</ExpansionPanelSummary>
-			<ExpansionPanelDetails>
+			</AccordionSummary>
+			<AccordionDetails>
 				{children}
-			</ExpansionPanelDetails>
-		</ExpansionPanel>
+			</AccordionDetails>
+		</Accordion>
 	);
 };
 

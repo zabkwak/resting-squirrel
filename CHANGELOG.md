@@ -3,6 +3,8 @@
 ## 2.24.0
 ### Features
 - Registering api key handler instead of api key option.
+### Docs
+- Exporting error codes.
 ### Deprecations
 - Callbacks in endpoint execution.
 - API key options.
