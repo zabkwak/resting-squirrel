@@ -106,7 +106,7 @@ export default class Field<T> extends React.Component<IProps<T>, IState<T>> {
 			return (
 				<FormControl fullWidth required={required} disabled={disabled}>
 					<InputLabel>{name}</InputLabel>
-					<Select native value={value} onChange={(e) => this._setValue(e.target.value as any)}>
+					<Select native value={value} onChange={(e) => this._setValue(e.target.value as any)} name={name}>
 						<option aria-label="None" value="" />
 						<option value="true">True</option>
 						<option value="false">False</option>
@@ -118,7 +118,7 @@ export default class Field<T> extends React.Component<IProps<T>, IState<T>> {
 			return (
 				<FormControl fullWidth required={required} disabled={disabled}>
 					<InputLabel>{name}</InputLabel>
-					<Select native value={value} onChange={(e) => this._setValue(e.target.value as any)}>
+					<Select native value={value} onChange={(e) => this._setValue(e.target.value as any)} name={name}>
 						<option aria-label="None" value="" />
 						{
 							// @ts-ignore Hack for reading enum values from runtime-type
@@ -136,6 +136,7 @@ export default class Field<T> extends React.Component<IProps<T>, IState<T>> {
 			<TextField
 				fullWidth
 				label={`${name} (${type})`}
+				name={name}
 				required={required}
 				InputProps={{ required: false }}
 				disabled={disabled}

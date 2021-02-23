@@ -5,6 +5,7 @@
 - Registering api key handler instead of api key option.
 ### Docs
 - Exporting error codes.
+- Names in form fields.
 ### Deprecations
 - Callbacks in endpoint execution.
 - API key options.
