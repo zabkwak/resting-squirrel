@@ -196,7 +196,7 @@ class Endpoint {
 		const names = [];
 		this.params.forEach((param) => {
 			if (names.indexOf(param.name) >= 0) {
-				console.warn(`Param with name '${name}' already exists. It can cause unpredictable effects.`);
+				console.warn(`Param with name '${param.name}' already exists. It can cause unpredictable effects.`);
 			}
 			if (param.type.toString() === 'any') {
 				console.warn(`Param with name '${param.name}' is type of 'any'. It can cause unpredictable effects.`);
