@@ -801,6 +801,7 @@ declare module 'resting-squirrel' {
 		Field,
 		Endpoint,
 		IRequest,
+		IResponse,
 		IAppOptions,
 		RouteOptions as IRouteOptions,
 		Application,
