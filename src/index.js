@@ -636,7 +636,7 @@ class Application {
 				throw HttpError.create(403, 'Api key is invalid.', 'invalid_api_key');
 			}
 			req.apiKey = req.query.api_key;
-			if (req.__endpoint && await req.__endpoint.isApiKeyExcluded(key)) {
+			if (req.__endpoint && await req.__endpoint.isApiKeyExcluded(req.query.api_key)) {
 				throw HttpError.create(404);
 			}
 			return;
