@@ -42,6 +42,7 @@ const APP_PACKAGE = require(path.resolve('./package.json'));
  * @property {AppOptions.Error} defaultError
  * @property {boolean} validateParams
  * @property {boolean} wrapArrayResponse
+ * @property {boolean} errorStack
  * @property {boolean} responseStrictValidation
  */
 /**
@@ -145,6 +146,7 @@ const DEFAULT_OPTIONS = {
 	validateParams: true,
 	responseStrictValidation: false,
 	wrapArrayResponse: false,
+	errorStack: false,
 };
 
 /**
@@ -419,7 +421,7 @@ class Application {
 	 * @param {function} cb 
 	 */
 	start(cb = () => { }) {
-		const { port, auth, before, log, errorKey } = this._options;
+		const { port, auth, before, log, errorKey, errorStack } = this._options;
 		Object.keys(this._routes).forEach((key) => {
 			const route = this._routes[key];
 			Object.keys(route.routes).forEach((v) => {
@@ -512,7 +514,11 @@ class Application {
 			}
 			res.status(err.statusCode);
 			delete err.statusCode;
-			res._sendData(err.toJSON(), errorKey);
+			const errorData = err.toJSON(errorStack);
+			if (errorData.stack) {
+				errorData.stack = errorData.stack.split('\n');
+			}
+			res._sendData(errorData, errorKey);
 		});
 		this._server = this._app.listen(port, () => {
 			this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
@@ -528,7 +534,7 @@ class Application {
 	 */
 	stop(cb = () => { }) {
 		if (!this._server) {
-			this._warn('Server cannot be stopped beceause it was not started.');
+			this._warn('Server cannot be stopped because it was not started.');
 			return;
 		}
 		this._server.close(() => {

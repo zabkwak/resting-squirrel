@@ -30,6 +30,7 @@ const app = RS.default({
             },
         },
     },
+	errorStack: true,
 });
 
 const { Field, Param, Type } = RS;

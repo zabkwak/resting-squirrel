@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.25.0
+### Features
+- Option to enable error stack in error response.
+
 ## 2.24.0
 ### Features
 - Registering api key handler instead of api key option.

@@ -2,13 +2,14 @@ import { expect } from 'chai';
 
 import rs from '../src';
 
+const SERVER_KEYS = ['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation', 'wrapArrayResponse', 'errorStack'];
 
 describe('Base app creation', () => {
 
 	it('checks if the app has default values', () => {
 		const app = rs();
-		expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation', 'wrapArrayResponse']);
-		const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation, wrapArrayResponse } = app._options;
+		expect(app._options).to.have.all.keys(SERVER_KEYS);
+		const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation, wrapArrayResponse, errorStack } = app._options;
 		expect(port).to.be.equal(8080);
 		expect(name).to.be.equal('Resting Squirrel App');
 		expect(dataKey).to.be.equal('data');
@@ -47,6 +48,7 @@ describe('Base app creation', () => {
 		expect(defaultError.statusCode).to.be.equal(500);
 		expect(validateParams).to.be.true;
 		expect(wrapArrayResponse).to.be.false;
+		expect(errorStack).to.be.false;
 	});
 
 	it('checks if the custom options are properly set', () => {
@@ -89,9 +91,10 @@ describe('Base app creation', () => {
 			},
 			validateParams: false,
 			wrapArrayResponse: true,
+			errorStack: true,
 		});
-		expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation', 'wrapArrayResponse']);
-		const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation, wrapArrayResponse } = app._options;
+		expect(app._options).to.have.all.keys(SERVER_KEYS);
+		const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation, wrapArrayResponse, errorStack } = app._options;
 		expect(port).to.be.equal(9000);
 		expect(name).to.be.equal('Test Api');
 		expect(dataKey).to.be.equal('_data');
@@ -131,6 +134,7 @@ describe('Base app creation', () => {
 		expect(defaultError.statusCode).to.be.equal(400);
 		expect(validateParams).to.be.false;
 		expect(wrapArrayResponse).to.be.true;
+		expect(errorStack).to.be.true;
 	});
 
 	it('checks the deprecated log options', () => {
@@ -138,7 +142,7 @@ describe('Base app creation', () => {
 			log: false,
 			logStack: false,
 		});
-		expect(app._options).to.have.all.keys(['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation', 'wrapArrayResponse']);
+		expect(app._options).to.have.all.keys(SERVER_KEYS);
 		const { log, logStack } = app._options;
 		expect(log).to.be.deep.equal({
 			enabled: false,

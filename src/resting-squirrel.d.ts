@@ -92,11 +92,11 @@ declare module 'resting-squirrel' {
 			enabled?: boolean,
 			/** Level of logging data. */
 			level?: 'error' | 'warning' | 'verbose',
-			/** If true the app is logging the stack trace if error occures. */
+			/** If true the app is logging the stack trace if error occurs. */
 			stack?: boolean,
 		},
 		/** 
-		 * If true the app is logging the stack trace if error occures. 
+		 * If true the app is logging the stack trace if error occurs. 
 		 * @deprecated
 		 */
 		logStack?: boolean,
@@ -204,6 +204,8 @@ declare module 'resting-squirrel' {
 		responseStrictValidation?: boolean,
 		/** Indicates if the array response should be wrapped to object `{ items: [], count: 0 }`. */
 		wrapArrayResponse?: boolean,
+		/** Indicates if the error response should contain error stack trace. */
+		errorStack?: boolean,
 	}
 
 	enum RouteAuth {
