@@ -7,6 +7,11 @@ import ErrorField from './endpoint/error-field';
 export default class RSError extends HttpSmartError {
 
 	/**
+	 * Converts the error to ErrorField for documentation.
+	 */
+	public static toErrorField(): ErrorField;
+
+	/**
 	 * Creates new instance with default values.
 	 */
 	constructor();
@@ -26,11 +31,6 @@ export default class RSError extends HttpSmartError {
 	 * Gets the description of the error.
 	 */
 	public getDescription(): string;
-
-	/**
-	 * Converts the error to ErrorField for documentation.
-	 */
-	public toErrorField(): ErrorField;
 
 	/**
 	 * Gets the status code of the error.

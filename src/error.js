@@ -3,6 +3,11 @@ import ErrorField from './endpoint/error-field';
 
 export default class RSError extends HttpSmartError {
 
+	static toErrorField() {
+		const e = new this();
+		return new ErrorField(e.code, e.getDescription());
+	}
+
 	constructor(message = null, payload = null) {
 		super();
 		const e = HttpSmartError.create(this._getStatusCode(), message || this._getMessage(), this._getCode());
@@ -16,10 +21,6 @@ export default class RSError extends HttpSmartError {
 
 	getDescription() {
 		return null;
-	}
-
-	toErrorField() {
-		return new ErrorField(this.code, this.getDescription());
 	}
 
 	_getStatusCode() {

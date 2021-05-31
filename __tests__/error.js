@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import HttpSmartError from 'http-smart-error';
-import { RSError } from '../src';
+import { RSError, ErrorField } from '../src';
 
 describe('RSError', () => {
 
@@ -12,6 +12,10 @@ describe('RSError', () => {
 		expect(e.message).to.be.equal('Internal Server Error');
 		expect(e.code).to.be.equal('ERR_INTERNAL_SERVER_ERROR');
 		expect(e.getDescription()).to.be.equal(null);
+		const f = RSError.toErrorField();
+		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f.code).to.be.equal(e.code);
+		expect(f.description).to.be.equal(e.getDescription());
 	});
 
 	it('checks the default error with message and payload', () => {
@@ -23,9 +27,13 @@ describe('RSError', () => {
 		expect(e.code).to.be.equal('ERR_INTERNAL_SERVER_ERROR');
 		expect(e.getDescription()).to.be.equal(null);
 		expect(e.test).to.be.equal('test');
+		const f = RSError.toErrorField();
+		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f.code).to.be.equal(e.code);
+		expect(f.description).to.be.equal(e.getDescription());
 	});
 
-	it('checks the subclass of the RSError with custom message and code', () => {
+	it('checks the subclass of the RSError', () => {
 		class BadRequestError extends RSError {
 			
 			_getStatusCode() {
@@ -40,10 +48,18 @@ describe('RSError', () => {
 		expect(e.message).to.be.equal('Bad Request');
 		expect(e.code).to.be.equal('ERR_BAD_REQUEST');
 		expect(e.getDescription()).to.be.equal(null);
+		const f = BadRequestError.toErrorField();
+		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f.code).to.be.equal(e.code);
+		expect(f.description).to.be.equal(e.getDescription());
 	});
 
 	it('checks the subclass of the RSError with custom message and code', () => {
 		class BadRequestError extends RSError {
+
+			getDescription() {
+				return 'Returned if something went wrong.';
+			}
 			
 			_getStatusCode() {
 				return HttpSmartError.BAD_REQUEST;
@@ -64,6 +80,10 @@ describe('RSError', () => {
 		expect(e.statusCode).to.be.equal(HttpSmartError.BAD_REQUEST);
 		expect(e.message).to.be.equal('Custom message error');
 		expect(e.code).to.be.equal('ERR_WRONG_REQUEST');
-		expect(e.getDescription()).to.be.equal(null);
+		expect(e.getDescription()).to.be.equal('Returned if something went wrong.');
+		const f = BadRequestError.toErrorField();
+		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f.code).to.be.equal(e.code);
+		expect(f.description).to.be.equal(e.getDescription());
 	});
 });
