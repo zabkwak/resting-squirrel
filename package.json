@@ -1,9 +1,9 @@
 {
   "name": "resting-squirrel",
-  "version": "2.25.0",
+  "version": "2.26.0",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
-  "types": "./dist/resting-squirrel.d.ts",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "test": "./node_modules/.bin/mocha ./__tests__ --recursive --require @babel/register --timeout 5000 --exit",
     "create_index": "run-script-os",

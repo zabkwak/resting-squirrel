@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.26.0
+### Features
+- `RSError` class for better throwing and defining errors.
+### Deprecations
+- `ErrorField`
+
 ## 2.25.0
 ### Features
 - Option to enable error stack in error response.

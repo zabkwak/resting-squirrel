@@ -12,10 +12,11 @@ import path from 'path';
 import fs from 'fs';
 import _ from 'lodash';
 
-import Endpoint, { Param, Field, Error as ErrorField } from './endpoint';
+import Endpoint, { Param, Field, ErrorField } from './endpoint';
 import Route from './route';
 import Benchmark from './benchmark';
 import { BaseResponse, JSONResponse, CustomResponse } from './response';
+import RSError from './error';
 
 import pkg from '../package.json';
 
@@ -1324,4 +1325,5 @@ export {
 	ErrorField,
 	Response,
 	RouteAuth,
+	RSError,
 };

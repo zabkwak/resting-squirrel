@@ -1,6 +1,6 @@
 import Param, { ParamParser } from './param';
 import Field from './field';
-import Error from './error';
+import ErrorField from './error-field';
 import { BaseResponse, JSONResponse } from '../response';
 
 class Endpoint {
@@ -12,7 +12,7 @@ class Endpoint {
      * @property {boolean} requireAuth
      * @property {Param[]|string[]} params
      * @property {BaseResponse} response
-     * @property {string[]|Error[]} errors
+     * @property {string[]|ErrorField[]} errors
      * @property {string} description
      * @property {boolean} hideDocs
      * @property {function} callback
@@ -30,7 +30,7 @@ class Endpoint {
 	params = null;
 	/** @type {BaseResponse} */
 	response = null;
-	/** @type {Error[]} */
+	/** @type {ErrorField[]} */
 	errors = null;
 	description = null;
 	hideDocs = false;
@@ -79,10 +79,10 @@ class Endpoint {
 		this.params = ParamParser.parse(options.params || []);
 		this.response = options.response === undefined ? new JSONResponse([]) : options.response;
 		this.errors = (options.errors || []).map((e) => {
-			if (e instanceof Error) {
+			if (e instanceof ErrorField) {
 				return e;
 			}
-			return new Error(e);
+			return new ErrorField(e);
 		});
 		this.description = options.description || null;
 		this.hideDocs = options.hideDocs || false;
@@ -208,22 +208,22 @@ class Endpoint {
 		const params = Boolean(this.params.length);
 		const args = this.route && Object.keys(this.route.args).length;
 		if (args && params) {
-			this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters or arguments has invalid type.'));
+			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the parameters or arguments has invalid type.'));
 		} else if (params) {
-			this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
+			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
 		} else if (args) {
-			this.errors.unshift(new Error('ERR_INVALID_TYPE', 'Returned if one of the arguments has invalid type.'));
+			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the arguments has invalid type.'));
 		}
 		if (this.requiredParams.length) {
-			this.errors.unshift(new Error('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
+			this.errors.unshift(new ErrorField('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
 		}
 		if (this.requiredAuth) {
-			this.errors.unshift(new Error('ERR_INVALID_ACCESS_TOKEN', 'Returned if header with access token is not valid.'));
-			this.errors.unshift(new Error('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
+			this.errors.unshift(new ErrorField('ERR_INVALID_ACCESS_TOKEN', 'Returned if header with access token is not valid.'));
+			this.errors.unshift(new ErrorField('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
 		}
 		if (this.apiKeyEnabled) {
-			this.errors.unshift(new Error('ERR_INVALID_API_KEY', 'Returned if the api key is not valid.'));
-			this.errors.unshift(new Error('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
+			this.errors.unshift(new ErrorField('ERR_INVALID_API_KEY', 'Returned if the api key is not valid.'));
+			this.errors.unshift(new ErrorField('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
 		}
 	}
 
@@ -241,5 +241,5 @@ export {
 	Endpoint as default,
 	Param,
 	Field,
-	Error,
+	ErrorField,
 };
