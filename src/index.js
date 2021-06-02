@@ -3,10 +3,9 @@ import '@babel/polyfill';
 import express from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
-import Err, { SmartError } from 'smart-error';
+import Err from 'smart-error';
 import HttpError from 'http-smart-error';
 import RouteParser from 'route-parser';
-import async from 'async';
 import Type, { Model } from 'runtime-type';
 import path from 'path';
 import fs from 'fs';
@@ -15,8 +14,9 @@ import _ from 'lodash';
 import Endpoint, { Param, Field, ErrorField } from './endpoint';
 import Route from './route';
 import Benchmark from './benchmark';
-import { BaseResponse, JSONResponse, CustomResponse } from './response';
+import Response, { BaseResponse, JSONResponse, CustomResponse } from './response';
 import RSError from './error';
+import { RouteAuth } from './typings/enums';
 
 import pkg from '../package.json';
 
@@ -72,16 +72,6 @@ const DEFAULT_OPTIONS = {
 	responseStrictValidation: false,
 	wrapArrayResponse: false,
 	errorStack: false,
-};
-
-/**
- * @enum
- * @readonly
- */
-const RouteAuth = {
-	REQUIRED: 2,
-	DISABLED: 0,
-	OPTIONAL: 1,
 };
 
 class Application {
@@ -222,6 +212,8 @@ class Application {
 
 	// #endregion
 
+	// #region HTTP methods
+
 	/**
 	 * 
 	 * @param {number} version 
@@ -286,6 +278,8 @@ class Application {
 	head(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
 	}
+
+	// #endregion
 
 	/**
 	 * 
@@ -488,6 +482,7 @@ class Application {
 				docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
 			}
 		}
+		return docs;
 	}
 
 	getDocs() {
@@ -915,7 +910,7 @@ class Application {
 	 */
 	_createApp() {
 		const {
-			after, defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset
+			defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset
 		} = this._options;
 		this._app = express();
 
@@ -1220,12 +1215,6 @@ class Application {
  * @param {import('./').IAppOptions} options 
  */
 const m = (options = {}) => new Application(options);
-
-const Response = {
-	Base: BaseResponse,
-	JSON: JSONResponse,
-	Custom: CustomResponse,
-};
 
 export {
 	m as default,
