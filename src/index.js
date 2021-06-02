@@ -22,83 +22,7 @@ import pkg from '../package.json';
 
 const APP_PACKAGE = require(path.resolve('./package.json'));
 
-/**
- * @typedef AppOptions
- * @property {number} port
- * @property {string} name
- * @property {string} dataKey
- * @property {string} errorKey
- * @property {boolean|AppOptions.Log} log
- * @property {boolean} logStack
- * @property {function} logger
- * @property {AppOptions.Meta} meta
- * @property {string} requestLimit
- * @property {string} charset
- * @property {AppOptions.Docs} docs
- * @property {AppOptions.Auth} auth
- * @property {AppOptions.ApiKey} apiKey
- * @property {number} timeout
- * @property {Object.<string, function>} before
- * @property {Object.<string, function>} after
- * @property {AppOptions.Error} defaultError
- * @property {boolean} validateParams
- * @property {boolean} wrapArrayResponse
- * @property {boolean} errorStack
- * @property {boolean} responseStrictValidation
- */
-/**
- * @typedef AppOptions.Error
- * @property {number} statusCode
- * @property {string} message
- * @property {string} code
- */
-/**
- * @typedef AppOptions.Meta
- * @property {boolean} enabled
- * @property {Object.<string, any>} data
- */
-/**
- * @typedef AppOptions.Docs
- * @property {boolean} enabled
- * @property {string} route
- * @property {boolean} auth DEPRECATED
- * @property {boolean} paramsAsArray
- */
-/**
- * @typedef AppOptions.ApiKey
- * @property {boolean} enabled
- * @property {'qs'|'body'|'header'} type
- * @property {function} validator
- */
-/**
- * @typedef AppOptions.Auth
- * @property {string} key
- * @property {string} description
- * @property {function} validator
- */
-/**
- * @typedef AppOptions.Log
- * @property {boolean} enabled
- * @property {'error'|'warn'|'verbose'} level
- * @property {boolean} stack
- */
-/**
- * @typedef RouteOptions
- * @property {boolean} requireAuth
- * @property {RouteAuth} auth
- * @property {Param[]|string[]} params
- * @property {BaseResponse|Field[]} response
- * @property {string[]|ErrorField[]} errors
- * @property {string} description
- * @property {boolean} hideDocs
- * @property {Field[]} args
- * @property {boolean} requireApiKey
- * @property {string[]|function} excludedApiKeys
- * @property {number} timeout
- * @property {any} props
- */
-
-/** @type {AppOptions} */
+/** @type {import('./').IAppOptions} */
 const DEFAULT_OPTIONS = {
 	port: 8080,
 	name: 'Resting Squirrel App',
@@ -166,7 +90,7 @@ class Application {
 	_app = null;
 	/** @type {http.Server} */
 	_server = null;
-	/** @type {AppOptions} */
+	/** @type {import('./').IAppOptions} */
 	_options = {};
 
 	/** @type {Object.<string, Route>} */
@@ -188,7 +112,7 @@ class Application {
 
 	/**
 	 * 
-	 * @param {AppOptions} options 
+	 * @param {import('./').IAppOptions} options 
 	 */
 	constructor(options = {}) {
 		this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
@@ -269,6 +193,8 @@ class Application {
 		this._app.use(route, callback);
 	}
 
+	// #region Registers
+
 	registerApiKeyHandler(handler) {
 		this._apiKeyHandler = handler;
 		return this;
@@ -294,11 +220,13 @@ class Application {
 		return this;
 	}
 
+	// #endregion
+
 	/**
 	 * 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -311,7 +239,7 @@ class Application {
 	 * 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -324,7 +252,7 @@ class Application {
 	 * 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -337,7 +265,7 @@ class Application {
 	 * 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -350,7 +278,7 @@ class Application {
 	 * 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -364,7 +292,7 @@ class Application {
 	 * @param {string} method 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions|boolean|function} requireAuth 
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
 	 * @param {Param[]|function} params 
 	 * @param {string|function} description 
 	 * @param {function} callback 
@@ -594,7 +522,7 @@ class Application {
 	 * @param {string} method 
 	 * @param {number} version 
 	 * @param {string} route 
-	 * @param {RouteOptions} options
+	 * @param {import('./').IRouteOptions} options
 	 * @param {function} callback 
 	 */
 	_registerRoute(method, version, route, options, callback) {
@@ -1302,7 +1230,7 @@ class Application {
 
 /**
  * 
- * @param {AppOptions} options 
+ * @param {import('./').IAppOptions} options 
  */
 const m = (options = {}) => new Application(options);
 
