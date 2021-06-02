@@ -119,7 +119,7 @@ export interface IAppOptions {
 	 */
 	logStack?: boolean,
 	/** Function to log a data. The `log.enabled` option must be set to true to call it. It's ignoring the log level. */
-	logger?: (data: {
+	logger?: <R extends IRequest<any, any, any>>(data: {
 		/** HTTP status code. */
 		statusCode: number,
 		/** HTTP method. */
@@ -140,7 +140,7 @@ export interface IAppOptions {
 		took: number,
 		/** Response sent to the client. */
 		response: { data?: any, error?: HttpSmartError, _meta?: any },
-	}) => void,
+	}, req: R) => void,
 	/** Option to set meta data in the response. */
 	meta?: {
 		/** If true meta data are in the response in key `_meta`. */

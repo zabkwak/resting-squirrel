@@ -1019,7 +1019,7 @@ class Application {
 						headers: req.headers,
 						took,
 						response: data,
-					});
+					}, req);
 				}
 			};
 			next();
@@ -1213,6 +1213,7 @@ class Application {
 /**
  * 
  * @param {import('./').IAppOptions} options 
+ * @deprecated
  */
 const m = (options = {}) => new Application(options);
 

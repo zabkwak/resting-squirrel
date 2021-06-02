@@ -3,6 +3,7 @@
 ## 2.26.0
 ### Features
 - `RSError` class for better throwing and defining errors.
+- Request is passed to the logger function.
 ### Deprecations
 - `ErrorField`
 - default module function
