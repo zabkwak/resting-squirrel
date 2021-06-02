@@ -5,6 +5,7 @@
 - `RSError` class for better throwing and defining errors.
 ### Deprecations
 - `ErrorField`
+- default module function
 
 ## 2.25.0
 ### Features

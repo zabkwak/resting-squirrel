@@ -281,4 +281,8 @@ export {
 
 export type App = Application;
 
+/**
+ * Creates an instance of Application.
+ * @deprecated Use Application constructor.
+ */
 export default function (options?: IAppOptions): Application;
