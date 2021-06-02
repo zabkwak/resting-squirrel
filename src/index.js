@@ -344,10 +344,9 @@ class Application {
 	 * @param {function} cb 
 	 */
 	start(cb = () => { }) {
-		const { port, auth, before, log, errorKey, errorStack } = this._options;
-		Object.keys(this._routes).forEach((key) => {
-			const route = this._routes[key];
-			Object.keys(route.routes).forEach((v) => {
+		const { port, auth, log, errorKey, errorStack } = this._options;
+		for (const route of Object.values(this._routes)) {
+			for (const v of Object.keys(route.routes)) {
 				const endpoint = route.routes[v];
 				this._app[route.method](endpoint.getEndpoint(), async (req, res, next) => {
 					req.__endpoint = endpoint;
@@ -358,7 +357,7 @@ class Application {
 						timeout = setTimeout(() => {
 							timedOut = true;
 							req.emit('timeout');
-							next(HttpError.create(408));
+							next(HttpError.create(HttpError.REQUEST_TIMEOUT));
 						}, endpoint.timeout);
 					}
 					b.mark('bootstrap');
@@ -410,8 +409,8 @@ class Application {
 						return;
 					}
 				});
-			});
-		});
+			}
+		}
 		this._app.use('*', async (req, res, next) => {
 			try {
 				await this._checkApiKey(req);
@@ -421,12 +420,11 @@ class Application {
 			}
 			res.send404();
 		});
-		this._app.use((err, req, res, next) => {
+		this._app.use((err, req, res) => {
 			const b = req.__benchmark;
 			if (!(err instanceof HttpError)) {
 				err = HttpError.create(err.statusCode || 500, err);
 			}
-
 			this._error(`${err.message}${log.stack ? `\n${err.stack}` : ''}`);
 			b.mark('error logging');
 			if (req.__endpoint) {
@@ -707,6 +705,7 @@ class Application {
 				Object.keys(args).forEach((key) => {
 					const arg = args[key];
 					if (!arg.type.canCast(req.params[key])) {
+						// throw new RSError.InvalidType(key, arg.type);
 						throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
 					}
 					req.params[key] = arg.type.cast(req.params[key]);

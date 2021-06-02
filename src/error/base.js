@@ -1,7 +1,8 @@
 import HttpSmartError from 'http-smart-error';
-import ErrorField from './endpoint/error-field';
 
-export default class RSError extends HttpSmartError {
+import ErrorField from '../endpoint/error-field';
+
+export default class RSBaseError extends HttpSmartError {
 
 	static toErrorField() {
 		const e = new this();

@@ -1,10 +1,11 @@
 import HttpSmartError from 'http-smart-error';
-import ErrorField from './endpoint/error-field';
+
+import ErrorField from '../endpoint/error-field';
 
 /**
  * Subclass of http-smart-error.
  */
-export default class RSError extends HttpSmartError {
+export default abstract class RBaseError extends HttpSmartError {
 
 	/**
 	 * Converts the error to ErrorField for documentation.

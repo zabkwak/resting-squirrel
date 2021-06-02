@@ -1,11 +1,11 @@
 import * as express from 'express';
 import HttpSmartError from 'http-smart-error';
-import { Field, Param } from '..';
+
 import Benchmark from '../benchmark';
 import Endpoint from '../endpoint';
 import ErrorField from '../endpoint/error-field';
-import { FieldShape, FieldShapeArray } from '../endpoint/field';
-import { ParamShape, ParamShapeArray } from '../endpoint/param';
+import Field, { FieldShape, FieldShapeArray } from '../endpoint/field';
+import Param, { ParamShape, ParamShapeArray } from '../endpoint/param';
 import { RouteAuth } from './enums';
 import { MiddlewareNext } from './types';
 import Response from '../response';
