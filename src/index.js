@@ -474,46 +474,33 @@ class Application {
 		});
 	}
 
-	docs(apiKey = null) {
-		return new Promise((resolve, reject) => {
-			const docs = {};
-			async.eachSeries(Object.keys(this._routes), (key, callback) => {
-				const route = this._routes[key];
-				async.eachSeries(Object.keys(route.routes), async (v, callback) => {
-					const endpoint = route.routes[v];
-					if (endpoint.hideDocs) {
-						callback();
-						return;
-					}
-					if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
-						callback();
-						return;
-					}
-					docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
-					callback();
-				}, callback);
-			}, (err) => {
-				if (err) {
-					reject(err);
-					return;
+	async docs(apiKey = null) {
+		const docs = {};
+		for (const route of Object.values(this._routes)) {
+			for (const v of Object.keys(route.routes)) {
+				const endpoint = route.routes[v];
+				if (endpoint.hideDocs) {
+					continue;
 				}
-				resolve(docs);
-			});
-		});
+				if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
+					continue;
+				}
+				docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
+			}
+		}
 	}
 
 	getDocs() {
 		const docs = {};
-		Object.keys(this._routes).forEach((key) => {
-			const route = this._routes[key];
-			Object.keys(route.routes).forEach((v) => {
+		for (const route of Object.values(this._routes)) {
+			for (const v of Object.keys(route.routes)) {
 				const endpoint = route.routes[v];
 				if (endpoint.hideDocs) {
-					return;
+					continue;
 				}
 				docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
-			});
-		});
+			}
+		}
 		return docs;
 	}
 
@@ -1169,7 +1156,7 @@ class Application {
 			response_type: endpoint.getResponseType(this._options.charset),
 			errors: endpoint.getErrors(),
 			deprecated: endpoint.isDeprecated(),
-		}
+		};
 	}
 
 	_mergeObjects(o1, o2, strict = true) {
