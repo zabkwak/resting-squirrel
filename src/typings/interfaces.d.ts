@@ -31,16 +31,25 @@ export interface IRequest<A = any, Q = any, B = any, EP = Record<string, any>> e
 export interface IResponse extends express.Response {
 	/** @deprecated */
 	send204(): void;
+	/** @deprecated */
 	send401(): void;
+	/** @deprecated */
 	send401(message: string): void;
+	/** @deprecated */
 	send401(message: string, code: string): void;
+	/** @deprecated */
 	send404(): void;
+	/** @deprecated */
 	send404(message: string): void;
+	/** @deprecated */
 	send404(message: string, code: string): void;
+	/** @deprecated */
 	send501(): void;
+	/** @deprecated */
 	send501(message: string): void;
+	/** @deprecated */
 	send501(message: string, code: string): void;
-	addMeta(key: string, value: any): void;
+	/** @deprecated */
 	sendError(error: HttpSmartError): void;
 	/** @deprecated */
 	sendData(): void;
@@ -48,6 +57,8 @@ export interface IResponse extends express.Response {
 	sendData(data: any): void;
 	/** @deprecated */
 	sendData(data: any, dataKey: string): void;
+	
+	addMeta(key: string, value: any): void;
 }
 
 export interface IDocsItem {
@@ -224,4 +235,13 @@ export interface IAppOptions {
 	wrapArrayResponse?: boolean,
 	/** Indicates if the error response should contain error stack trace. */
 	errorStack?: boolean,
+}
+
+export interface IErrorField {
+
+	/** Error code. */
+	code: string;
+
+	/** Description of the situations where the error is returned. */
+	description: string;
 }

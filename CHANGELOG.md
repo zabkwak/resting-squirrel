@@ -4,6 +4,7 @@
 ### Features
 - `RSError` class for better throwing and defining errors.
 - Request is passed to the logger function.
+- Basic error instances.
 ### Deprecations
 - `ErrorField`
 - default module function

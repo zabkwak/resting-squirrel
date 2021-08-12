@@ -32,7 +32,7 @@
     "http-smart-error": "^4.0.1",
     "lodash": "^4.17.21",
     "route-parser": "0.0.5",
-    "runtime-type": "^3.8.3",
+    "runtime-type": "^4.0.0",
     "smart-error": "^3.0.0"
   },
   "repository": {

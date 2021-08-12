@@ -1,5 +1,7 @@
+import { IErrorField } from '../typings/interfaces';
+
 /** @deprecated */
-export default class ErrorField {
+export default class ErrorField implements IErrorField {
 
 	/** Error code. */
 	public code: string;

@@ -1,6 +1,6 @@
 import HttpSmartError from 'http-smart-error';
 
-import ErrorField from '../endpoint/error-field';
+import { IErrorField } from '../typings/interfaces';
 
 /**
  * Subclass of http-smart-error.
@@ -10,7 +10,7 @@ export default abstract class RBaseError extends HttpSmartError {
 	/**
 	 * Converts the error to ErrorField for documentation.
 	 */
-	public static toErrorField(): ErrorField;
+	public static toErrorField(): IErrorField;
 
 	/**
 	 * Creates new instance with default values.

@@ -1,8 +1,33 @@
 import { expect } from 'chai';
 import HttpSmartError from 'http-smart-error';
-import { RSError, ErrorField } from '../src';
+
+import { RSError } from '../src';
+import RSBaseError from '../src/error/base';
 
 describe('RSError', () => {
+
+	it('checks the error classes', () => {
+		const classes = [
+			'InvalidInputType',
+			'InvalidArgumentType',
+			'InvalidParameterType',
+			'MissingParameter',
+			'MissingApiKey',
+			'InvalidApiKey',
+			'MissingAccessToken',
+			'InvalidAccessToken',
+			'Timeout',
+			'NotFound',
+		];
+		expect(RSError).to.have.all.keys(classes);
+		for (const cls of classes) {
+			if (cls === 'InvalidInputType') {
+				continue;
+			}
+			expect(new RSError[cls]()).to.be.an.instanceOf(RSBaseError);
+			expect(new RSError[cls]()).to.be.an.instanceOf(HttpSmartError);
+		}
+	});
 
 	it('checks the default error', () => {
 		const e = new RSError();
@@ -13,7 +38,7 @@ describe('RSError', () => {
 		expect(e.code).to.be.equal('ERR_INTERNAL_SERVER_ERROR');
 		expect(e.getDescription()).to.be.equal(null);
 		const f = RSError.toErrorField();
-		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f).to.have.all.keys(['code', 'description']);
 		expect(f.code).to.be.equal(e.code);
 		expect(f.description).to.be.equal(e.getDescription());
 	});
@@ -28,7 +53,7 @@ describe('RSError', () => {
 		expect(e.getDescription()).to.be.equal(null);
 		expect(e.test).to.be.equal('test');
 		const f = RSError.toErrorField();
-		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f).to.have.all.keys(['code', 'description']);
 		expect(f.code).to.be.equal(e.code);
 		expect(f.description).to.be.equal(e.getDescription());
 	});
@@ -49,7 +74,7 @@ describe('RSError', () => {
 		expect(e.code).to.be.equal('ERR_BAD_REQUEST');
 		expect(e.getDescription()).to.be.equal(null);
 		const f = BadRequestError.toErrorField();
-		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f).to.have.all.keys(['code', 'description']);
 		expect(f.code).to.be.equal(e.code);
 		expect(f.description).to.be.equal(e.getDescription());
 	});
@@ -82,7 +107,7 @@ describe('RSError', () => {
 		expect(e.code).to.be.equal('ERR_WRONG_REQUEST');
 		expect(e.getDescription()).to.be.equal('Returned if something went wrong.');
 		const f = BadRequestError.toErrorField();
-		expect(f).to.be.an.instanceOf(ErrorField);
+		expect(f).to.have.all.keys(['code', 'description']);
 		expect(f.code).to.be.equal(e.code);
 		expect(f.description).to.be.equal(e.getDescription());
 	});

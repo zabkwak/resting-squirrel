@@ -19,6 +19,12 @@ import RSError from './error';
 import { RouteAuth } from './typings/enums';
 
 import pkg from '../package.json';
+import MissingApiKeyError from './error/errors/missing-api-key';
+import InvalidApiKeyError from './error/errors/invalid-api-key';
+import InvalidAccessTokenError from './error/errors/invalid-access-token';
+import MissingAccessTokenError from './error/errors/missing-access-token';
+import TimeoutError from './error/errors/timeout';
+import NotFoundError from './error/errors/not-found';
 
 const APP_PACKAGE = require(path.resolve('./package.json'));
 
@@ -357,7 +363,7 @@ class Application {
 						timeout = setTimeout(() => {
 							timedOut = true;
 							req.emit('timeout');
-							next(HttpError.create(HttpError.REQUEST_TIMEOUT));
+							next(new TimeoutError());
 						}, endpoint.timeout);
 					}
 					b.mark('bootstrap');
@@ -420,7 +426,8 @@ class Application {
 			}
 			res.send404();
 		});
-		this._app.use((err, req, res) => {
+		// TODO why the hell the next must be here if it's not needed?
+		this._app.use((err, req, res, next) => {
 			const b = req.__benchmark;
 			if (!(err instanceof HttpError)) {
 				err = HttpError.create(err.statusCode || 500, err);
@@ -545,14 +552,14 @@ class Application {
 		}
 		if (typeof this._apiKeyHandler === 'function') {
 			if (!req.query.api_key) {
-				throw HttpError.create(403, 'Api key is missing.', 'missing_api_key');
+				throw new MissingApiKeyError();
 			}
 			if (!await this._apiKeyHandler(req.query.api_key, req)) {
-				throw HttpError.create(403, 'Api key is invalid.', 'invalid_api_key');
+				throw new InvalidApiKeyError();
 			}
 			req.apiKey = req.query.api_key;
 			if (req.__endpoint && await req.__endpoint.isApiKeyExcluded(req.query.api_key)) {
-				throw HttpError.create(404);
+				throw new NotFoundError();
 			}
 			return;
 		}
@@ -574,14 +581,14 @@ class Application {
 					break;
 			}
 			if (!key) {
-				reject(HttpError.create(403, 'Api key is missing.', 'missing_api_key'));
+				reject(new MissingApiKeyError());
 				return;
 			}
 			req.apiKey = key;
 			if (req.__endpoint) {
 				try {
 					if (await req.__endpoint.isApiKeyExcluded(key)) {
-						reject(HttpError.create(404));
+						reject(new NotFoundError());
 						return;
 					}
 				} catch (e) {
@@ -618,7 +625,7 @@ class Application {
 					}
 					executed = true;
 					if (!valid) {
-						reject(HttpError.create(403, 'Api key is invalid.', 'invalid_api_key'));
+						reject(new InvalidApiKeyError());
 						return;
 					}
 					resolve();
@@ -651,7 +658,7 @@ class Application {
 					resolve();
 					return;
 				}
-				reject(HttpError.create(401, 'The access token is missing.', 'missing_access_token'));
+				reject(new MissingAccessTokenError());
 				return;
 			}
 			req.accessToken = req.headers[key];
@@ -681,7 +688,7 @@ class Application {
 					}
 					executed = true;
 					if (!valid) {
-						reject(HttpError.create(403, 'Access token is invalid.', 'invalid_access_token'));
+						reject(new InvalidAccessTokenError());
 						return;
 					}
 					resolve();
@@ -705,8 +712,7 @@ class Application {
 				Object.keys(args).forEach((key) => {
 					const arg = args[key];
 					if (!arg.type.canCast(req.params[key])) {
-						// throw new RSError.InvalidType(key, arg.type);
-						throw HttpError.create(400, `Argument '${key}' has invalid type. It should be '${arg.type}'.`, 'invalid_type');
+						throw new RSError.InvalidArgumentType(key, arg.type);
 					}
 					req.params[key] = arg.type.cast(req.params[key]);
 				});
@@ -738,10 +744,10 @@ class Application {
 					if (param.required) {
 						const requiredParam = req[paramsKey][p];
 						if (requiredParam === null || requiredParam === undefined) {
-							throw HttpError.create(400, `Parameter '${p}' is missing.`, 'missing_parameter');
+							throw new RSError.MissingParameter(p, { parameter: p });
 						}
 						if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
-							throw HttpError.create(400, `Parameter '${p}' cannot be an empty array.`, 'missing_parameter');
+							throw new RSError.MissingParameter(p, true, { parameter: p });
 						}
 					} else if (mergedParams[p] === undefined) {
 						return;
@@ -752,11 +758,10 @@ class Application {
 						switch (e.code) {
 							case 'ERR_INVALID_CAST':
 							case 'ERR_UNSUPPORTED_OPERATION':
-								throw HttpError.create(
-									400,
-									`Parameter '${p}' has invalid type. It should be '${param.type}'.`,
-									'invalid_type',
-									{ type_error: { message: e.message, code: e.code } }
+								throw new RSError.InvalidParameterType(
+									p,
+									param.type,
+									{ type_error: { message: e.message, code: e.code } },
 								);
 							default: throw e;
 						}

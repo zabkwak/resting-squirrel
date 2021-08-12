@@ -1,28 +1,38 @@
 import Param, { ParamParser } from './param';
 import Field from './field';
+import RSError from '../error';
 import ErrorField from './error-field';
 import { BaseResponse, JSONResponse } from '../response';
+import InvalidArgumentTypeError from '../error/errors/invalid-argument-type';
+import InvalidParameterTypeError from '../error/errors/invalid-parameter-type';
+import InvalidInputTypeError from '../error/errors/invalid-input-type';
+import MissingParameterError from '../error/errors/missing-parameter';
+import MissingApiKeyError from '../error/errors/missing-api-key';
+import InvalidApiKeyError from '../error/errors/invalid-api-key';
+import MissingAccessTokenError from '../error/errors/missing-access-token';
+import InvalidAccessTokenError from '../error/errors/invalid-access-token';
+import TimeoutError from '../error/errors/timeout';
 
 class Endpoint {
 
-    /**
-     * @typedef Options
-     * @property {number?} version
-     * @property {number?} auth
-     * @property {boolean} requireAuth
-     * @property {Param[]|string[]} params
-     * @property {BaseResponse} response
-     * @property {string[]|ErrorField[]} errors
-     * @property {string} description
-     * @property {boolean} hideDocs
-     * @property {function} callback
-     * @property {boolean} validateParams
-     * @property {boolean} apiKeyEnabled
-     * @property {string[]|function} excludedApiKeys
-     * @property {number} timeout
-     * @property {any} props
+	/**
+	 * @typedef Options
+	 * @property {number?} version
+	 * @property {number?} auth
+	 * @property {boolean} requireAuth
+	 * @property {Param[]|string[]} params
+	 * @property {BaseResponse} response
+	 * @property {string[]|ErrorField[]} errors
+	 * @property {string} description
+	 * @property {boolean} hideDocs
+	 * @property {function} callback
+	 * @property {boolean} validateParams
+	 * @property {boolean} apiKeyEnabled
+	 * @property {string[]|function} excludedApiKeys
+	 * @property {number} timeout
+	 * @property {any} props
 	 * @property {Field[]} args
-     */
+	 */
 
 	version = null;
 	auth = 0;
@@ -43,18 +53,18 @@ class Endpoint {
 	props = {};
 	args = {};
 
-    /** 
-     * @type {string[]}
-     * @deprecated 
-     */
+	/** 
+	 * @type {string[]}
+	 * @deprecated 
+	 */
 	get requiredParams() {
 		return this.params.filter(param => param.required).map(param => param.name);
 	}
 
-    /**
-     * @type {string}
-     * @deprecated
-     */
+	/**
+	 * @type {string}
+	 * @deprecated
+	 */
 	get docs() {
 		return this.description;
 	}
@@ -68,11 +78,11 @@ class Endpoint {
 		}
 	}
 
-    /**
-     * 
-     * @param {*} route 
-     * @param {Options} options 
-     */
+	/**
+	 * 
+	 * @param {*} route 
+	 * @param {Options} options 
+	 */
 	constructor(route, options = {}) {
 		this.version = options.version === undefined ? null : options.version;
 		this.auth = options.auth || 0;
@@ -182,11 +192,11 @@ class Endpoint {
 		return this;
 	}
 
-    /**
-     * 
-     * @param {string} docs 
-     * @deprecated
-     */
+	/**
+	 * 
+	 * @param {string} docs 
+	 * @deprecated
+	 */
 	setDocs(docs) {
 		this.description = docs;
 		return this;
@@ -208,22 +218,25 @@ class Endpoint {
 		const params = Boolean(this.params.length);
 		const args = this.route && Object.keys(this.route.args).length;
 		if (args && params) {
-			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the parameters or arguments has invalid type.'));
+			this.errors.unshift(InvalidInputTypeError.toErrorField());
 		} else if (params) {
-			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the parameters has invalid type.'));
+			this.errors.unshift(InvalidParameterTypeError.toErrorField());
 		} else if (args) {
-			this.errors.unshift(new ErrorField('ERR_INVALID_TYPE', 'Returned if one of the arguments has invalid type.'));
+			this.errors.unshift(InvalidArgumentTypeError.toErrorField());
 		}
 		if (this.requiredParams.length) {
-			this.errors.unshift(new ErrorField('ERR_MISSING_PARAMETER', 'Returned if one of the required parameters is not defined.'));
+			this.errors.unshift(MissingParameterError.toErrorField());
 		}
 		if (this.requiredAuth) {
-			this.errors.unshift(new ErrorField('ERR_INVALID_ACCESS_TOKEN', 'Returned if header with access token is not valid.'));
-			this.errors.unshift(new ErrorField('ERR_MISSING_ACCESS_TOKEN', 'Returned if header with access token is missing.'));
+			this.errors.unshift(InvalidAccessTokenError.toErrorField());
+			this.errors.unshift(MissingAccessTokenError.toErrorField());
 		}
 		if (this.apiKeyEnabled) {
-			this.errors.unshift(new ErrorField('ERR_INVALID_API_KEY', 'Returned if the api key is not valid.'));
-			this.errors.unshift(new ErrorField('ERR_MISSING_API_KEY', 'Returned if the api key is missing in the request.'));
+			this.errors.unshift(InvalidApiKeyError.toErrorField());
+			this.errors.unshift(MissingApiKeyError.toErrorField());
+		}
+		if (this.timeout) {
+			this.errors.unshift(TimeoutError.toErrorField());
 		}
 	}
 

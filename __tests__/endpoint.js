@@ -363,7 +363,7 @@ describe('Endpoint', () => {
 		expect(response).to.be.an.instanceOf(Array);
 		expect(response.length).to.be.equal(0);
 		expect(errors).to.be.an.instanceOf(Array);
-		expect(errors.length).to.be.equal(4);
+		expect(errors.length).to.be.equal(5);
 
 		expect(description).to.be.equal('Creates new car record');
 		expect(hideDocs).to.be.true;
