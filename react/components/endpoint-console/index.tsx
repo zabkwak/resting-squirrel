@@ -126,7 +126,7 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 							disabled={executing}
 						>
 							Submit
-					</Button>
+						</Button>
 					</Box>
 				</form>
 				{
@@ -350,7 +350,7 @@ export default class EndpointConsole extends React.Component<IProps, IState> {
 		const r: { [key: string]: any } = {};
 		for (const key in params) {
 			if (typeof params[key] === 'object' && !(params[key] instanceof Array)) {
-				r[key] = this._sanitazeParams(params);
+				r[key] = this._sanitazeParams(params[key]);
 			}
 			if (params[key]) {
 				r[key] = params[key];
