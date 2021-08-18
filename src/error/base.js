@@ -4,10 +4,7 @@ export default class RSBaseError extends HttpSmartError {
 
 	static toErrorField() {
 		const e = new this();
-		return {
-			code: e.code,
-			description: e.getDescription(),
-		};
+		return e.toErrorField();
 	}
 
 	constructor(message = null, payload = null) {
@@ -19,6 +16,13 @@ export default class RSBaseError extends HttpSmartError {
 		if (payload) {
 			this._setPayload(payload);
 		}
+	}
+
+	toErrorField() {
+		return {
+			code: this.code,
+			description: this.getDescription(),
+		};
 	}
 
 	getDescription() {

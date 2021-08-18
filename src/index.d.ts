@@ -6,7 +6,7 @@ import RuntimeType, { Model } from 'runtime-type';
 import Endpoint, { Param, Field, ErrorField } from './endpoint';
 
 import RSError from './error';
-import { IResponse, IRequest, IDocsItem, IRouteOptions, IAppOptions } from './typings/interfaces';
+import { IResponse, IRequest, IDocsItem, IRouteOptions, IAppOptions, IErrorField } from './typings/interfaces';
 import { MiddlewareNext, RouteCallback } from './typings/types';
 import { RouteAuth } from './typings/enums';
 import Response from './response';
@@ -277,8 +277,10 @@ export {
 	IResponse,
 	IAppOptions,
 	IRouteOptions,
+	IErrorField,
 }
 
+/** @deprecated */
 export type App = Application;
 
 /**

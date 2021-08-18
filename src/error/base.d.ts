@@ -29,6 +29,11 @@ export default abstract class RBaseError extends HttpSmartError {
 	constructor(message: string, payload: Record<string, any>);
 
 	/**
+	 * Converts the error to ErrorField for documentation.
+	 */
+	public toErrorField(): IErrorField;
+
+	/**
 	 * Gets the description of the error.
 	 */
 	public getDescription(): string;

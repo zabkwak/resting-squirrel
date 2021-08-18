@@ -22,7 +22,7 @@ class Endpoint {
 	 * @property {boolean} requireAuth
 	 * @property {Param[]|string[]} params
 	 * @property {BaseResponse} response
-	 * @property {string[]|ErrorField[]} errors
+	 * @property {string[]|ErrorField[]|RSError[]} errors
 	 * @property {string} description
 	 * @property {boolean} hideDocs
 	 * @property {function} callback
@@ -91,6 +91,9 @@ class Endpoint {
 		this.errors = (options.errors || []).map((e) => {
 			if (e instanceof ErrorField) {
 				return e;
+			}
+			if (e instanceof RSError) {
+				return e.toErrorField();
 			}
 			return new ErrorField(e);
 		});

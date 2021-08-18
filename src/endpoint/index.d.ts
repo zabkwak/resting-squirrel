@@ -1,11 +1,12 @@
 import Route from '../route';
 import { RouteAuth } from '../typings/enums';
-import { IRequest } from '../typings/interfaces';
+import { IErrorField, IRequest } from '../typings/interfaces';
 import { RouteCallback } from '../typings/types';
 import ErrorField from './error-field';
 import Field from './field';
 import Param, { ParamShape, ParamShapeArray } from './param';
 import Response from '../response';
+import RSError from '../error';
 
 export default class Endpoint<R extends IRequest<any, any, any, any> = any, IProps = Record<string, any>> {
 
@@ -13,7 +14,7 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 	requiredAuth: boolean;
 	params: Param[];
 	response: Response.Base;
-	errors: ErrorField[];
+	errors: IErrorField[];
 	description: string;
 	hideDocs: boolean;
 	callback: RouteCallback<R>;
@@ -55,7 +56,7 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 		/** List of response fields. */
 		response?: Response.Base,
 		/** List of errors that the endpoint can return. */
-		errors?: ErrorField[] | string[],
+		errors?: ErrorField[] | string[] | RSError[],
 		/** Description of the endpoint. */
 		description?: string,
 		/** If true the endpoint is hidden from the documentation. */
@@ -116,12 +117,12 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 	/**
 	 * Gets the map of the errors.
 	 */
-	getErrors(): { [key: string]: ErrorField };
+	getErrors(): Record<string, IErrorField>;
 	/**
 	 * Gets the list or map of the errors.
 	 * @param array If true the returned value is array of errors. Otherwise it is the map of the errors.
 	 */
-	getErrors(array: boolean): ErrorField[] | { [key: string]: ErrorField };
+	getErrors(array: boolean): IErrorField[] | Record<string, IErrorField>;
 	/**
 	 * Checks if the endpoint is deprecated. If `deprecated` field is set as false, the versions are compared. All versions below maximal version are automatically deprecated.
 	 */

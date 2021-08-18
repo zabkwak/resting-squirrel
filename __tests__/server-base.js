@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 
-import rs from '../src';
+import { Application } from '../src';
 
 const SERVER_KEYS = ['port', 'name', 'dataKey', 'errorKey', 'log', 'logStack', 'logger', 'meta', 'requestLimit', 'charset', 'docs', 'auth', 'apiKey', 'timeout', 'before', 'after', 'defaultError', 'validateParams', 'responseStrictValidation', 'wrapArrayResponse', 'errorStack'];
 
 describe('Base app creation', () => {
 
 	it('checks if the app has default values', () => {
-		const app = rs();
+		const app = new Application();
 		expect(app._options).to.have.all.keys(SERVER_KEYS);
 		const { port, name, dataKey, errorKey, log, logStack, logger, meta, requestLimit, charset, docs, auth, apiKey, timeout, before, after, defaultError, validateParams, responseStrictValidation, wrapArrayResponse, errorStack } = app._options;
 		expect(port).to.be.equal(8080);
@@ -52,7 +52,7 @@ describe('Base app creation', () => {
 	});
 
 	it('checks if the custom options are properly set', () => {
-		const app = rs({
+		const app = new Application({
 			port: 9000,
 			name: 'Test Api',
 			dataKey: '_data',
@@ -138,7 +138,7 @@ describe('Base app creation', () => {
 	});
 
 	it('checks the deprecated log options', () => {
-		const app = rs({
+		const app = new Application({
 			log: false,
 			logStack: false,
 		});

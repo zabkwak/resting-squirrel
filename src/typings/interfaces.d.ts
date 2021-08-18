@@ -9,6 +9,7 @@ import Param, { ParamShape, ParamShapeArray } from '../endpoint/param';
 import { RouteAuth } from './enums';
 import { MiddlewareNext } from './types';
 import Response from '../response';
+import RSError from '../error';
 
 /**
  * @typeparam A Type of the args.
@@ -89,7 +90,7 @@ export interface IRouteOptions<IProps = Record<string, any>> {
 	/** List of response fields. */
 	response?: Response.Base | (Array<Field | FieldShape | FieldShapeArray>),
 	/** List of errors that the endpoint can return. */
-	errors?: ErrorField[] | string[],
+	errors?: ErrorField[] | string[] | RSError[],
 	/** Description of the endpoint. */
 	description?: string,
 	/** If true the endpoint is hidden from the documentation. */
