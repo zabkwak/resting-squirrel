@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.26.1
+### Fixes
+- type definitions
+
 ## 2.26.0
 ### Features
 - `RSError` class for better throwing and defining errors.

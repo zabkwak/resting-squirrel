@@ -1,6 +1,6 @@
 {
   "name": "resting-squirrel",
-  "version": "2.26.0",
+  "version": "2.26.1",
   "author": "Lukas Macuda <lukas.macuda@gmail.com>",
   "main": "index.js",
   "types": "./dist/index.d.ts",
@@ -32,7 +32,7 @@
     "http-smart-error": "^4.0.1",
     "lodash": "^4.17.21",
     "route-parser": "0.0.5",
-    "runtime-type": "^4.0.0",
+    "runtime-type": "^4.0.1",
     "smart-error": "^3.0.0"
   },
   "repository": {

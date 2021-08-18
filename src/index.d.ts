@@ -10,6 +10,8 @@ import { IResponse, IRequest, IDocsItem, IRouteOptions, IAppOptions, IErrorField
 import { MiddlewareNext, RouteCallback } from './typings/types';
 import { RouteAuth } from './typings/enums';
 import Response from './response';
+import { FieldShape, FieldShapeArray } from './endpoint/field';
+import { ParamShape, ParamShapeArray } from './endpoint/param';
 
 declare class Application {
 
@@ -272,6 +274,10 @@ export {
 	Response,
 	RouteAuth,
 	RSError,
+	FieldShape,
+	FieldShapeArray,
+	ParamShape,
+	ParamShapeArray,
 	// Interfaces
 	IRequest,
 	IResponse,
