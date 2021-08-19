@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.26.2
+### Fixes
+- Not implemented error in InvalidInputTypeError constructor
+
 ## 2.26.1
 ### Fixes
 - type definitions

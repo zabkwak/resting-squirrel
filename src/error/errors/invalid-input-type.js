@@ -20,6 +20,6 @@ export default class InvalidInputTypeError extends RSBaseError {
 	}
 
 	_getFieldType() {
-		throw new Error('Not implemented.');
+		return 'Input';
 	}
 }
