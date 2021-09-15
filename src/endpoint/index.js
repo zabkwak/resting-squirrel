@@ -32,6 +32,7 @@ class Endpoint {
 	 * @property {number} timeout
 	 * @property {any} props
 	 * @property {Field[]} args
+	 * @property {boolean} redirect
 	 */
 
 	version = null;
@@ -52,6 +53,7 @@ class Endpoint {
 	timeout = null;
 	props = {};
 	args = {};
+	redirect = false;
 
 	/** 
 	 * @type {string[]}
@@ -105,6 +107,10 @@ class Endpoint {
 		this.timeout = options.timeout || null;
 		this.props = options.props || {};
 		this.args = this._mergeArguments(route, options.args);
+		this.redirect = options.redirect || false;
+		if (this.redirect) {
+			this.response = null;
+		}
 		if (options.validateParams) {
 			this._validateParams();
 		}
@@ -183,6 +189,10 @@ class Endpoint {
 			return (await this.excludedApiKeys()).includes(key);
 		}
 		return this.excludedApiKeys.includes(key);
+	}
+
+	isRedirect() {
+		return this.redirect;
 	}
 
 	deprecate() {

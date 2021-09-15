@@ -1,6 +1,6 @@
 import '@babel/polyfill';
 
-import express from 'express';
+import express, { response } from 'express';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import Err from 'smart-error';
@@ -440,13 +440,7 @@ class Application {
 					this._warn(`Error code '${err.code}' is not defined in the endpoint's error list.`);
 				}
 			}
-			res.status(err.statusCode);
-			delete err.statusCode;
-			const errorData = err.toJSON(errorStack);
-			if (errorData.stack) {
-				errorData.stack = errorData.stack.split('\n');
-			}
-			res._sendData(errorData, errorKey);
+			res._sendData(this._handleError(res, err), errorKey);
 		});
 		this._server = this._app.listen(port, () => {
 			this._log(`The application is listening on ${port}. Stats: ${JSON.stringify(this._stats)}.`);
@@ -891,6 +885,17 @@ class Application {
 		res._sendData(responseData || data);
 	}
 
+	_handleError(res, err) {
+		const { errorStack } = this._options;
+		res.status(err.statusCode);
+		delete err.statusCode;
+		const errorData = err.toJSON(errorStack);
+		if (errorData.stack) {
+			errorData.stack = errorData.stack.split('\n');
+		}
+		return errorData;
+	}
+
 	async _afterCallback(err, data, req, res) {
 		if (this._afterExecution.length) {
 			for (let i = 0; i < this._afterExecution.length; i++) {
@@ -982,8 +987,22 @@ class Application {
 				const took = benchmark.total;
 				const endpoint = req.getEndpoint();
 				let deprecated = false;
+				if (endpoint?.isRedirect()) {
+					if (!data || typeof data[dataKey] !== 'string') {
+						data = {
+							[errorKey]: this._handleError(res, HttpError.create(
+								HttpError.INTERNAL_SERVER_ERROR,
+								'Redirect endpoint must return string data.',
+							)),
+						}
+					} else {
+						res.redirect(data.data);
+						res.log();
+						return;
+					}
+				}
 				if (data) {
-					if (endpoint && endpoint.isDeprecated()) {
+					if (endpoint?.isDeprecated()) {
 						deprecated = true;
 						data.warning = 'This endpoint is deprecated. It can be removed in the future.';
 					}
@@ -1160,6 +1179,7 @@ class Application {
 			response_type: endpoint.getResponseType(this._options.charset),
 			errors: endpoint.getErrors(),
 			deprecated: endpoint.isDeprecated(),
+			redirect: endpoint.isRedirect(),
 		};
 	}
 

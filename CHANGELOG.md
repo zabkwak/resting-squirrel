@@ -3,6 +3,7 @@
 ## 2.27.0
 ### Features
 - `res.log` function
+- endpoint option for redirect
 
 ## 2.26.2
 ### Fixes

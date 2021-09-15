@@ -31,6 +31,8 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 	 */
 	docs: string;
 
+	redirect: boolean;
+
 	/**
 	 * 
 	 * @param route Route of the endpoint
@@ -71,6 +73,8 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 		excludedApiKeys?: (() => Promise<string[]>) | string[];
 		/** Time in milliseconds. After the timeout the 408 error is returned. */
 		timeout?: number;
+		/** Indicates if the endpoint request should be redirected after the process. */
+		redirect?: boolean;
 	});
 
 	/**
@@ -136,6 +140,11 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 	 * Sets the endpoint as deprecated.
 	 */
 	deprecate(): Endpoint<R, IProps>;
+	
+	/**
+	 * Checks if the endpoint is redirecting after the execution.
+	 */
+	public isRedirect(): boolean;
 	/**
 	 * Sets the endpoint as requiring auth.
 	 * @deprecated

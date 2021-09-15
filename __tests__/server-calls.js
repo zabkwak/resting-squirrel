@@ -150,6 +150,12 @@ app.get(1, '/image', {
 	});
 });
 
+app.get(0, '/redirect', {
+	redirect: true,
+}, (req, res, next) => {
+	next(null, 'https://google.com');
+});
+
 describe('Server start', () => {
 
 	it('starts the server', (done) => {
@@ -1237,9 +1243,36 @@ describe('Responses', () => {
 	});
 });
 
+describe('Redirect', () => {
+
+	it('calls the redirect endpoint', (done) => {
+		request.get({
+			url: 'http://localhost:8080/0/redirect',
+			gzip: true,
+			json: true,
+		}, (err, res) => {
+			expect(err).to.be.null;
+			expect(res.statusCode).to.be.equal(200);
+			expect(res.req.host).to.be.equal('www.google.com');
+			done();
+		});
+	});
+});
+
 describe('Docs', () => {
 
-	const validateDocs = (doc, docs = null, args = [], params = [], errors = [], required_params = [], required_auth = false, response = [], deprecated = false) => {
+	const validateDocs = (
+		doc,
+		docs = null,
+		args = [],
+		params = [],
+		errors = [],
+		required_params = [],
+		required_auth = false,
+		response = [],
+		deprecated = false,
+		redirect = false,
+	) => {
 		expect(doc).to.have.all.keys([
 			'docs',
 			'description',
@@ -1252,12 +1285,14 @@ describe('Docs', () => {
 			'errors',
 			'deprecated',
 			'auth',
+			'redirect',
 		]);
 		expect(doc.docs).to.be.equal(docs);
 		expect(doc.docs).to.be.equal(doc.description);
 		expect(doc.required_params).to.deep.equal(required_params);
 		expect(doc.required_auth).to.be.equal(required_auth);
 		expect(doc.deprecated).to.be.equal(deprecated);
+		expect(doc.redirect).to.be.equal(redirect);
 		// Params validation
 		let o = {};
 		params.forEach(p => o[p.name] = p);
@@ -1311,6 +1346,7 @@ describe('Docs', () => {
 				'GET /0/html',
 				'GET /0/image',
 				'GET /1/image',
+				'GET /0/redirect',
 			]);
 			validateDocs(data['GET /']);
 			validateDocs(data['GET /auth'], null, [], [], [
@@ -1390,16 +1426,16 @@ describe('Docs', () => {
 			], [
 				{ code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
 			]);
-            /*
-            validateDocs(data['POST /0/shape'], null, [], [
-                { name: 'required_shape', description: null, required: true, type: 'shape({"integer":"integer","float":"float"})' },
-                { name: 'not_required_shape', description: null, required: false, type: 'shape({"integer":"integer","float":"float"})' },
-                { name: 'required_shape_without_required_param', description: null, required: true, type: 'shape({"integer":"integer","float?":"float"})' },
-                { name: 'not_required_shape_without_required_param', description: null, required: false, type: 'shape({"integer":"integer","float?":"float"})' },
-            ], [
-                { code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
-            ], ['required_shape', 'required_shape_without_required_param']);
-            */
+			/*
+			validateDocs(data['POST /0/shape'], null, [], [
+				{ name: 'required_shape', description: null, required: true, type: 'shape({"integer":"integer","float":"float"})' },
+				{ name: 'not_required_shape', description: null, required: false, type: 'shape({"integer":"integer","float":"float"})' },
+				{ name: 'required_shape_without_required_param', description: null, required: true, type: 'shape({"integer":"integer","float?":"float"})' },
+				{ name: 'not_required_shape_without_required_param', description: null, required: false, type: 'shape({"integer":"integer","float?":"float"})' },
+			], [
+				{ code: 'ERR_INVALID_TYPE', description: 'Returned if one of the parameters has invalid type.' },
+			], ['required_shape', 'required_shape_without_required_param']);
+			*/
 			validateDocs(data['GET /0/args/:id/not-defined'], null, [{ name: 'id', key: 'id', type: 'any', description: null }], [], [
 				{ code: 'ERR_INVALID_TYPE', description: 'Returned if one of the arguments has invalid type.' },
 			]);
@@ -1409,6 +1445,19 @@ describe('Docs', () => {
 			validateDocs(data['GET /0/html']);
 			validateDocs(data['GET /0/image'], null, [], [], [], [], false, [], true);
 			validateDocs(data['GET /1/image']);
+			validateDocs(
+				data['GET /0/redirect'],
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				null,
+				undefined,
+				true,
+			);
+
 			expect(data['GET /docs']).to.be.undefined;
 			expect(data['GET /docs.html']).to.be.undefined;
 			expect(data['GET /docs.js']).to.be.undefined;

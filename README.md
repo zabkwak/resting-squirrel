@@ -165,6 +165,7 @@ For 204 response code just return `null` in the promise.
 **hideDocs** If true the endpoint is hidden from the documentation.  
 **requireApiKey** If false the endpoint doesn't require an api key in the request. This option overrides the `options.apiKey.enabled` option if it's false. It's not recommended to use this option.  
 **props** Custom props for the endpoint.  
+**redirect** Indicates if the endpoint is redirecting after the execution. The callback must return string where the request is redirected. 
 
 #### Arguments
 The list of arguments fields in the http methods is array of `Field` instances. The values are validated with type checking. 

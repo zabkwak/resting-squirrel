@@ -62,7 +62,11 @@ export interface IResponse extends express.Response {
 	addMeta(key: string, value: any): void;
 
 	/**
-	 * Logs the data to the logger.
+	 * Logs the request to the logger.
+	 */
+	 log(): void;
+	/**
+	 * Logs the request to the logger.
 	 *
 	 * @param data 
 	 */
@@ -112,6 +116,8 @@ export interface IRouteOptions<IProps = Record<string, any>> {
 	timeout?: number;
 	/** Custom properties for the endpoint. */
 	props?: IProps;
+	/** Indicates if the endpoint request should be redirected after the process. */
+	redirect?: boolean;
 }
 
 export interface IAppOptions {

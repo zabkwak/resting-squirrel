@@ -6,6 +6,25 @@ import Endpoint, { Param, Field } from '../src/endpoint';
 
 import { ParamParser } from '../src/endpoint/param';
 
+const ENDPOINT_FIELDS = [
+	'version',
+	'auth',
+	'params',
+	'response',
+	'errors',
+	'description',
+	'hideDocs',
+	'callback',
+	'route',
+	'deprecated',
+	'apiKeyEnabled',
+	'excludedApiKeys',
+	'timeout',
+	'props',
+	'args',
+	'redirect',
+];
+
 describe('Endpoind.Field', () => {
 
 	describe('.Shape', () => {
@@ -317,8 +336,8 @@ describe('Endpoint', () => {
 
 	it('creates the endpoint with null response', () => {
 		const endpoint = new Endpoint(null, { version: 0, auth: 0, params: [], response: null, description: null });
-		expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout', 'props', 'args']);
-		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args } = endpoint;
+		expect(endpoint).to.have.all.keys(ENDPOINT_FIELDS);
+		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args, redirect } = endpoint;
 		expect(version).to.be.equal(0);
 		expect(requiredAuth).to.be.false;
 		expect(params).to.be.an.instanceOf(Array);
@@ -336,6 +355,8 @@ describe('Endpoint', () => {
 		expect(props).to.be.deep.equal({});
 		expect(args).to.be.deep.equal([]);
 		expect(endpoint.getAuth()).to.be.equal('DISABLED');
+		expect(redirect).to.be.false;
+		expect(endpoint.isRedirect()).to.be.false;
 	});
 
 	it('creates the endpoint with params defined on the old version of the module', () => {
@@ -353,15 +374,15 @@ describe('Endpoint', () => {
 				test: 'test',
 			},
 			args: [new Field('arg', Type.string)],
+			redirect: true,
 		});
-		expect(endpoint).to.have.all.keys(['version', 'auth', 'params', 'response', 'errors', 'description', 'hideDocs', 'callback', 'route', 'deprecated', 'apiKeyEnabled', 'excludedApiKeys', 'timeout', 'props', 'args']);
-		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args } = endpoint;
+		expect(endpoint).to.have.all.keys(ENDPOINT_FIELDS);
+		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args, redirect } = endpoint;
 		expect(version).to.be.equal(0);
 		expect(requiredAuth).to.be.false;
 		expect(params).to.be.an.instanceOf(Array);
 		expect(params.length).to.be.equal(3);
-		expect(response).to.be.an.instanceOf(Array);
-		expect(response.length).to.be.equal(0);
+		expect(response).to.be.null;
 		expect(errors).to.be.an.instanceOf(Array);
 		expect(errors.length).to.be.equal(5);
 
@@ -374,6 +395,8 @@ describe('Endpoint', () => {
 		expect(excludedApiKeys).to.be.deep.equal(['test']);
 		expect(timeout).to.be.equal(15000);
 		expect(props).to.be.deep.equal({ test: 'test' });
+		expect(redirect).to.be.true;
+		expect(endpoint.isRedirect()).to.be.true;
 
 		const [brand, type, dimensions] = params;
 		expect(brand).to.be.an.instanceOf(Param);
