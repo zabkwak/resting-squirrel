@@ -60,6 +60,13 @@ export interface IResponse extends express.Response {
 	sendData(data: any, dataKey: string): void;
 	
 	addMeta(key: string, value: any): void;
+
+	/**
+	 * Logs the data to the logger.
+	 *
+	 * @param data 
+	 */
+	log<T = any>(data: T): void;
 }
 
 export interface IDocsItem {

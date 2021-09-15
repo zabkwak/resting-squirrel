@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.27.0
+### Features
+- `res.log` function
+
 ## 2.26.2
 ### Fixes
 - Not implemented error in InvalidInputTypeError constructor

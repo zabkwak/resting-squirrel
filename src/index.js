@@ -948,6 +948,22 @@ class Application {
 				this._warn('res.sendData is deprecated. Use next callback in route or Promises.');
 				res._sendData(data, key);
 			};
+			res.log = (response) => {
+				if (log.enabled && typeof logger === 'function' && req.path !== '/ping') {
+					logger({
+						statusCode: res.statusCode,
+						method: req.method,
+						path: req.path,
+						spec: req.route ? req.route.path : req.path,
+						body: req.body,
+						params: req.params,
+						query: req.query,
+						headers: req.headers,
+						took: benchmark.total,
+						response,
+					}, req);
+				}
+			};
 			res._sendData = async (data, key = dataKey) => {
 				try {
 					await this._afterCallback(key === errorKey, data, req, res);
@@ -1011,25 +1027,14 @@ class Application {
 					res.status(204);
 				}
 				res.end();
-				if (log.enabled && typeof logger === 'function' && req.path !== '/ping') {
-					logger({
-						statusCode: res.statusCode,
-						method: req.method,
-						path: req.path,
-						spec: req.route ? req.route.path : req.path,
-						body: req.body,
-						params: req.params,
-						query: req.query,
-						headers: req.headers,
-						took,
-						response: data,
-					}, req);
-				}
+				res.log(data);
 			};
 			next();
 		});
-		this._app.use(compression());
-		this._app.use(bodyParser.json({ limit: requestLimit }));
+		this._app.use(
+			compression(),
+			bodyParser.json({ limit: requestLimit }),
+		);
 	}
 
 	/**
