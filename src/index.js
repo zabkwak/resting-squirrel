@@ -1024,7 +1024,7 @@ class Application {
 								name,
 								version: APP_PACKAGE.version,
 							},
-							// benchmark,
+							benchmark,
 						}, meta.data);
 						if (typeof res.__meta === 'object') {
 							Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);

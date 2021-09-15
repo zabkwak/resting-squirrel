@@ -4,6 +4,7 @@
 ### Features
 - `res.log` function
 - endpoint option for redirect
+- benchmark in meta data
 
 ## 2.26.2
 ### Fixes
