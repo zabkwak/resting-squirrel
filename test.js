@@ -33,7 +33,14 @@ const app = RS.default({
 	errorStack: true,
 });
 
-const { Field, Param, Type } = RS;
+const { Field, Param, Type, RSError } = RS;
+
+class CustomError extends RSError {
+
+	_getCode() {
+		return 'test';
+	}
+}
 
 app.get(0, '/endpoint', {
 	requireAuth: true,
@@ -44,6 +51,9 @@ app.get(0, '/endpoint', {
 		new Field('integer', Type.integer, 'Integer field'),
 	],
 	description: 'Test endpoint',
+	errors: [
+		CustomError,
+	],
 }, (req, res, next) => {
 	next(null, req.query);
 });

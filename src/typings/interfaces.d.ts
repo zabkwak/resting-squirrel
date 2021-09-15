@@ -101,7 +101,7 @@ export interface IRouteOptions<IProps = Record<string, any>> {
 	/** List of response fields. */
 	response?: Response.Base | (Array<Field | FieldShape | FieldShapeArray>),
 	/** List of errors that the endpoint can return. */
-	errors?: ErrorField[] | string[] | RSError[],
+	errors?: ErrorField[] | string[] | typeof RSError[] | Array<new (...args: any) => RSError>,
 	/** Description of the endpoint. */
 	description?: string,
 	/** If true the endpoint is hidden from the documentation. */

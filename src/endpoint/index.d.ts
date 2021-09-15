@@ -58,7 +58,7 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 		/** List of response fields. */
 		response?: Response.Base,
 		/** List of errors that the endpoint can return. */
-		errors?: ErrorField[] | string[] | RSError[],
+		errors?: ErrorField[] | string[] | typeof RSError[] | Array<new (...args: any) => RSError>,
 		/** Description of the endpoint. */
 		description?: string,
 		/** If true the endpoint is hidden from the documentation. */
@@ -140,7 +140,7 @@ export default class Endpoint<R extends IRequest<any, any, any, any> = any, IPro
 	 * Sets the endpoint as deprecated.
 	 */
 	deprecate(): Endpoint<R, IProps>;
-	
+
 	/**
 	 * Checks if the endpoint is redirecting after the execution.
 	 */

@@ -94,7 +94,7 @@ class Endpoint {
 			if (e instanceof ErrorField) {
 				return e;
 			}
-			if (e instanceof RSError) {
+			if (e.toErrorField) {
 				return e.toErrorField();
 			}
 			return new ErrorField(e);
