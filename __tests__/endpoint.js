@@ -1,8 +1,8 @@
+import '@babel/polyfill';
 import { expect } from 'chai';
 import Type from 'runtime-type';
-import '@babel/polyfill';
 
-import Endpoint, { Param, Field } from '../src/endpoint';
+import Endpoint, { Field, Param } from '../src/endpoint';
 
 import { ParamParser } from '../src/endpoint/param';
 
@@ -26,11 +26,13 @@ const ENDPOINT_FIELDS = [
 ];
 
 describe('Endpoind.Field', () => {
-
 	describe('.Shape', () => {
-
 		it('checks the Field.Shape without a description', () => {
-			const shape = new Field.Shape('shape', new Field('string', Type.string), new Field('integer', Type.integer));
+			const shape = new Field.Shape(
+				'shape',
+				new Field('string', Type.string),
+				new Field('integer', Type.integer),
+			);
 			expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description']);
 			const { name, fields, type, description } = shape;
 			expect(name).to.be.equal('shape');
@@ -63,7 +65,12 @@ describe('Endpoind.Field', () => {
 		});
 
 		it('checks the Field.Shape with a description', () => {
-			const shape = new Field.Shape('shape', 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+			const shape = new Field.Shape(
+				'shape',
+				'Description',
+				new Field('string', Type.string, 'String field in the shape.'),
+				new Field('integer', Type.integer),
+			);
 			expect(shape).to.have.all.keys(['name', 'fields', 'type', 'description']);
 			const { name, fields, type, description } = shape;
 			expect(name).to.be.equal('shape');
@@ -97,9 +104,12 @@ describe('Endpoind.Field', () => {
 	});
 
 	describe('.ShapeArray', () => {
-
 		it('checks the Field.ShapeArray without a description', () => {
-			const shapeArray = new Field.ShapeArray('shape-array', new Field('string', Type.string), new Field('integer', Type.integer));
+			const shapeArray = new Field.ShapeArray(
+				'shape-array',
+				new Field('string', Type.string),
+				new Field('integer', Type.integer),
+			);
 			expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape']);
 			const { name, description, type, shape } = shapeArray;
 			expect(name).to.be.equal('shape-array');
@@ -130,7 +140,12 @@ describe('Endpoind.Field', () => {
 		});
 
 		it('checks the Field.ShapeArray with a description', () => {
-			const shapeArray = new Field.ShapeArray('shape-array', 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+			const shapeArray = new Field.ShapeArray(
+				'shape-array',
+				'Description',
+				new Field('string', Type.string, 'String field in the shape.'),
+				new Field('integer', Type.integer),
+			);
 			expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape']);
 			const { name, description, type, shape } = shapeArray;
 			expect(name).to.be.equal('shape-array');
@@ -161,11 +176,9 @@ describe('Endpoind.Field', () => {
 			});
 		});
 	});
-
 });
 
 describe('Endpoint.Param', () => {
-
 	it('checks the default values', () => {
 		const param = new Param('test');
 		expect(param).to.have.all.keys(['key', 'name', 'required', 'type', 'description']);
@@ -215,11 +228,13 @@ describe('Endpoint.Param', () => {
 	});
 
 	it('tries to create the param with dot notation', () => {
-		expect(() => Param.create('test.test')).to.throw(Error).that.has.property('code', 'ERR_NO_SHAPE');
+		expect(() => Param.create('test.test'))
+			.to.throw(Error)
+			.that.has.property('code', 'ERR_NO_SHAPE');
 	});
 
 	it('creates the param from field instance', () => {
-		const field = new Field('id', Type.integer, "Identificator");
+		const field = new Field('id', Type.integer, 'Identificator');
 		const param = Param.createFromField(field, true);
 		expect(param).to.have.all.keys(['key', 'name', 'required', 'type', 'description']);
 		const { name, key, required, type, description } = param;
@@ -231,7 +246,6 @@ describe('Endpoint.Param', () => {
 	});
 
 	describe('.Shape', () => {
-
 		it('checks the Param.Shape with a description', () => {
 			const shape = new Param.Shape(
 				'shape',
@@ -248,7 +262,9 @@ describe('Endpoint.Param', () => {
 			expect(fields).to.be.an.instanceOf(Array);
 			expect(fields.length).to.be.equal(2);
 			expect(type).to.be.an.instanceOf(Type.Type);
-			expect(type.toString()).to.be.equal(`shape(${JSON.stringify({ string: 'string', 'integer?': 'integer' })})`);
+			expect(type.toString()).to.be.equal(
+				`shape(${JSON.stringify({ string: 'string', 'integer?': 'integer' })})`,
+			);
 			const json = shape.toJSON();
 			expect(json).to.have.all.keys(['name', 'description', 'shape', 'required', 'type']);
 			expect(json).to.deep.equal({
@@ -277,9 +293,14 @@ describe('Endpoint.Param', () => {
 	});
 
 	describe('.ShapeArray', () => {
-
 		it('checks the Param.ShapeArray with a description', () => {
-			const shapeArray = new Param.ShapeArray('shape-array', true, 'Description', new Field('string', Type.string, 'String field in the shape.'), new Field('integer', Type.integer));
+			const shapeArray = new Param.ShapeArray(
+				'shape-array',
+				true,
+				'Description',
+				new Field('string', Type.string, 'String field in the shape.'),
+				new Field('integer', Type.integer),
+			);
 			expect(shapeArray).to.have.all.keys(['name', 'description', 'type', 'shape', 'required']);
 			const { name, description, type, shape, required } = shapeArray;
 			expect(name).to.be.equal('shape-array');
@@ -317,7 +338,6 @@ describe('Endpoint.Param', () => {
 });
 
 describe('ParamParser', () => {
-
 	it('parses the shape from the dot notations', () => {
 		const params = ParamParser.parse(['test', 'test.test']);
 		expect(params).to.be.an.instanceOf(Array);
@@ -333,11 +353,27 @@ describe('ParamParser', () => {
 });
 
 describe('Endpoint', () => {
-
 	it('creates the endpoint with null response', () => {
 		const endpoint = new Endpoint(null, { version: 0, auth: 0, params: [], response: null, description: null });
 		expect(endpoint).to.have.all.keys(ENDPOINT_FIELDS);
-		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args, redirect } = endpoint;
+		const {
+			version,
+			requiredAuth,
+			params,
+			response,
+			errors,
+			description,
+			hideDocs,
+			callback,
+			route,
+			deprecated,
+			apiKeyEnabled,
+			excludedApiKeys,
+			timeout,
+			props,
+			args,
+			redirect,
+		} = endpoint;
 		expect(version).to.be.equal(0);
 		expect(requiredAuth).to.be.false;
 		expect(params).to.be.an.instanceOf(Array);
@@ -347,7 +383,7 @@ describe('Endpoint', () => {
 		expect(response).to.be.null;
 		expect(description).to.be.null;
 		expect(hideDocs).to.be.false;
-		expect(route).to.be.nul;
+		expect(route).to.be.null;
 		expect(deprecated).to.be.false;
 		expect(apiKeyEnabled).to.be.false;
 		expect(excludedApiKeys).to.be.deep.equal([]);
@@ -366,7 +402,7 @@ describe('Endpoint', () => {
 			response: [],
 			description: 'Creates new car record',
 			hideDocs: true,
-			callback: () => { },
+			callback: () => {},
 			apiKeyEnabled: true,
 			excludedApiKeys: ['test'],
 			timeout: 15000,
@@ -377,7 +413,24 @@ describe('Endpoint', () => {
 			redirect: true,
 		});
 		expect(endpoint).to.have.all.keys(ENDPOINT_FIELDS);
-		const { version, requiredAuth, params, response, errors, description, hideDocs, callback, route, deprecated, apiKeyEnabled, excludedApiKeys, timeout, props, args, redirect } = endpoint;
+		const {
+			version,
+			requiredAuth,
+			params,
+			response,
+			errors,
+			description,
+			hideDocs,
+			callback,
+			route,
+			deprecated,
+			apiKeyEnabled,
+			excludedApiKeys,
+			timeout,
+			props,
+			args,
+			redirect,
+		} = endpoint;
 		expect(version).to.be.equal(0);
 		expect(requiredAuth).to.be.false;
 		expect(params).to.be.an.instanceOf(Array);
@@ -400,20 +453,22 @@ describe('Endpoint', () => {
 
 		const [brand, type, dimensions] = params;
 		expect(brand).to.be.an.instanceOf(Param);
-		expect(brand.name).to.be.equal('brand')
+		expect(brand.name).to.be.equal('brand');
 		expect(brand.type).to.be.equal(Type.any);
 		expect(brand.required).to.be.true;
 		expect(brand.description).to.be.null;
 
 		expect(type).to.be.an.instanceOf(Param);
-		expect(type.name).to.be.equal('type')
+		expect(type.name).to.be.equal('type');
 		expect(type.type).to.be.equal(Type.any);
 		expect(type.required).to.be.true;
 		expect(type.description).to.be.null;
 
 		expect(dimensions).to.be.an.instanceOf(Param);
-		expect(dimensions.name).to.be.equal('dimensions')
-		expect(dimensions.type.toString()).to.be.equal(Type.shape({ width: Type.any, height: Type.any, weight: Type.any }).toString());
+		expect(dimensions.name).to.be.equal('dimensions');
+		expect(dimensions.type.toString()).to.be.equal(
+			Type.shape({ width: Type.any, height: Type.any, weight: Type.any }).toString(),
+		);
 		expect(dimensions.required).to.be.true;
 		expect(dimensions.description).to.be.null;
 

@@ -1,30 +1,30 @@
 import '@babel/polyfill';
 
-import express, { response } from 'express';
-import compression from 'compression';
 import bodyParser from 'body-parser';
-import Err from 'smart-error';
+import compression from 'compression';
+import express from 'express';
+import fs from 'fs';
 import HttpError from 'http-smart-error';
+import _ from 'lodash';
+import path from 'path';
 import RouteParser from 'route-parser';
 import Type, { Model } from 'runtime-type';
-import path from 'path';
-import fs from 'fs';
-import _ from 'lodash';
+import Err from 'smart-error';
 
-import Endpoint, { Param, Field, ErrorField } from './endpoint';
-import Route from './route';
 import Benchmark from './benchmark';
-import Response, { BaseResponse, JSONResponse, CustomResponse } from './response';
+import Endpoint, { ErrorField, Field, Param } from './endpoint';
 import RSError from './error';
+import Response, { BaseResponse, CustomResponse, JSONResponse } from './response';
+import Route from './route';
 import { RouteAuth } from './typings/enums';
 
 import pkg from '../package.json';
-import MissingApiKeyError from './error/errors/missing-api-key';
-import InvalidApiKeyError from './error/errors/invalid-api-key';
 import InvalidAccessTokenError from './error/errors/invalid-access-token';
+import InvalidApiKeyError from './error/errors/invalid-api-key';
 import MissingAccessTokenError from './error/errors/missing-access-token';
-import TimeoutError from './error/errors/timeout';
+import MissingApiKeyError from './error/errors/missing-api-key';
 import NotFoundError from './error/errors/not-found';
+import TimeoutError from './error/errors/timeout';
 
 const APP_PACKAGE = require(path.resolve('./package.json'));
 
@@ -41,7 +41,12 @@ const DEFAULT_OPTIONS = {
 	},
 	logStack: true,
 	logger: ({ statusCode, method, path, spec, body, params, query, headers, took, response }) => {
-		console.log(new Date(), `${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(query)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`);
+		console.log(
+			new Date(),
+			`${statusCode} ${method} ${path} BODY: ${JSON.stringify(body)} QUERY: ${JSON.stringify(
+				query,
+			)} HEADERS: ${JSON.stringify(headers)} TOOK: ${took} ms`,
+		);
 		console.log('');
 	},
 	meta: {
@@ -59,7 +64,7 @@ const DEFAULT_OPTIONS = {
 	auth: {
 		key: 'x-token',
 		description: null,
-		validator: (key, req, res, next) => new Promise(resolve => resolve(true)),
+		validator: (key, req, res, next) => new Promise((resolve) => resolve(true)),
 	},
 	apiKey: null,
 	timeout: null,
@@ -81,7 +86,6 @@ const DEFAULT_OPTIONS = {
 };
 
 class Application {
-
 	/** @type {express.Express} */
 	_app = null;
 	/** @type {http.Server} */
@@ -107,8 +111,8 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {import('./').IAppOptions} options 
+	 *
+	 * @param {import('./').IAppOptions} options
 	 */
 	constructor(options = {}) {
 		this._options = this._mergeObjects(options, DEFAULT_OPTIONS);
@@ -120,15 +124,15 @@ class Application {
 			this._warn('Using log option as boolean is deprecated.');
 		}
 		if (typeof this._options.before === 'function') {
-			this._warn('Using \'before\' as a functions is deprecated');
+			this._warn("Using 'before' as a functions is deprecated");
 			this._options.before = { '*': this._options.before };
 		}
 		if (typeof this._options.after === 'function') {
-			this._warn('Using \'after\' as a functions is deprecated');
+			this._warn("Using 'after' as a functions is deprecated");
 			this._options.after = { '*': this._options.after };
 		}
 		if (this._options.before) {
-			this._warn('Using \'before\' option is deprecated');
+			this._warn("Using 'before' option is deprecated");
 			Object.keys(this._options.before).forEach((route) => {
 				this.registerBeforeExecution(route, (req, res) => {
 					return new Promise((resolve, reject) => {
@@ -144,7 +148,7 @@ class Application {
 			});
 		}
 		if (this._options.after) {
-			this._warn('Using \'after\' option is deprecated.');
+			this._warn("Using 'after' option is deprecated.");
 			Object.keys(this._options.after).forEach((route) => {
 				this.registerAfterExecution(route, (err, data, req, res) => {
 					return new Promise((resolve, reject) => {
@@ -160,11 +164,11 @@ class Application {
 			});
 		}
 		if (this._options.apiKey) {
-			this._warn('Using \'apiKey\' option is deprecated.');
+			this._warn("Using 'apiKey' option is deprecated.");
 		}
 		// Object merge cannot merge not existing keys, so this adds custom meta data to the options.
 		if (options.meta && options.meta.data) {
-			Object.keys(options.meta.data).forEach(k => this._options.meta.data[k] = options.meta.data[k]);
+			Object.keys(options.meta.data).forEach((k) => (this._options.meta.data[k] = options.meta.data[k]));
 		}
 		if (typeof options.auth === 'function') {
 			this._warn('Using auth option as a function is deprecated.');
@@ -178,7 +182,6 @@ class Application {
 			this._options.log.stack = options.logStack;
 		}
 		this._createApp();
-		this._registerSupportRoutes();
 	}
 
 	use(route, callback) {
@@ -221,65 +224,65 @@ class Application {
 	// #region HTTP methods
 
 	/**
-	 * 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	get(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('get', version, route, requireAuth, params, docs, callback);
 	}
 
 	/**
-	 * 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	post(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('post', version, route, requireAuth, params, docs, callback);
 	}
 
 	/**
-	 * 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	put(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('put', version, route, requireAuth, params, docs, callback);
 	}
 
 	/**
-	 * 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	delete(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('delete', version, route, requireAuth, params, docs, callback);
 	}
 
 	/**
-	 * 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	head(version, route, requireAuth, params, docs, callback) {
 		return this.registerRoute('head', version, route, requireAuth, params, docs, callback);
@@ -288,14 +291,14 @@ class Application {
 	// #endregion
 
 	/**
-	 * 
-	 * @param {string} method 
-	 * @param {number} version 
-	 * @param {string} route 
-	 * @param {import('./').IRouteOptions|boolean|function} requireAuth 
-	 * @param {Param[]|function} params 
-	 * @param {string|function} description 
-	 * @param {function} callback 
+	 *
+	 * @param {string} method
+	 * @param {number} version
+	 * @param {string} route
+	 * @param {import('./').IRouteOptions|boolean|function} requireAuth
+	 * @param {Param[]|function} params
+	 * @param {string|function} description
+	 * @param {function} callback
 	 */
 	registerRoute(method, version, route, requireAuth, params, description, callback) {
 		if (isNaN(parseFloat(version))) {
@@ -313,12 +316,20 @@ class Application {
 		}
 		if (typeof requireAuth === 'object') {
 			// Mismatch for back compatibility. If the requireAuth parameter is an object it means that the callback is next argument (params).
-			return this._registerRoute(method, version, route, {
-				...requireAuth,
-				timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
-			}, params);
+			return this._registerRoute(
+				method,
+				version,
+				route,
+				{
+					...requireAuth,
+					timeout: requireAuth.timeout === undefined ? this._options.timeout : requireAuth.timeout,
+				},
+				params,
+			);
 		}
-		this._warn('Using endpoint options as method arguments is deprecated. It will be removed in next major release.');
+		this._warn(
+			'Using endpoint options as method arguments is deprecated. It will be removed in next major release.',
+		);
 		if (typeof params === 'function') {
 			callback = params;
 			params = [];
@@ -328,29 +339,36 @@ class Application {
 			callback = description;
 			description = null;
 		}
-		return this._registerRoute(method, version, route, {
-			requireAuth,
-			params,
-			description,
-			timeout: this._options.timeout,
-		}, callback);
+		return this._registerRoute(
+			method,
+			version,
+			route,
+			{
+				requireAuth,
+				params,
+				description,
+				timeout: this._options.timeout,
+			},
+			callback,
+		);
 	}
 
 	/**
-	 * 
-	 * @param {function} cb 
+	 *
+	 * @param {function} cb
 	 * @deprecated
 	 */
-	listen(cb = () => { }) {
+	listen(cb = () => {}) {
 		this.start(cb);
 	}
 
 	/**
 	 * Starts the application.
-	 * @param {function} cb 
+	 * @param {function} cb
 	 */
-	start(cb = () => { }) {
+	start(cb = () => {}) {
 		const { port, auth, log, errorKey, errorStack } = this._options;
+		this._registerSupportRoutes();
 		for (const route of Object.values(this._routes)) {
 			for (const v of Object.keys(route.routes)) {
 				const endpoint = route.routes[v];
@@ -452,9 +470,9 @@ class Application {
 
 	/**
 	 * Stops the application.
-	 * @param {function} cb 
+	 * @param {function} cb
 	 */
-	stop(cb = () => { }) {
+	stop(cb = () => {}) {
 		if (!this._server) {
 			this._warn('Server cannot be stopped because it was not started.');
 			return;
@@ -475,7 +493,7 @@ class Application {
 				if (endpoint.hideDocs) {
 					continue;
 				}
-				if (apiKey && await endpoint.isApiKeyExcluded(apiKey)) {
+				if (apiKey && (await endpoint.isApiKeyExcluded(apiKey))) {
 					continue;
 				}
 				docs[`${route.method.toUpperCase()} ${endpoint.getEndpoint()}`] = this._getDocsObject(endpoint);
@@ -499,12 +517,12 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {string} method 
-	 * @param {number} version 
-	 * @param {string} route 
+	 *
+	 * @param {string} method
+	 * @param {number} version
+	 * @param {string} route
 	 * @param {import('./').IRouteOptions} options
-	 * @param {function} callback 
+	 * @param {function} callback
 	 */
 	_registerRoute(method, version, route, options, callback) {
 		if (typeof options === 'function') {
@@ -519,7 +537,7 @@ class Application {
 			options.response = new JSONResponse(options.response);
 		}
 		if (options.requireAuth !== undefined) {
-			this._warn('Route option \'requireAuth\' is deprecated.');
+			this._warn("Route option 'requireAuth' is deprecated.");
 		}
 		if (options.auth === undefined) {
 			options.auth = options.requireAuth ? RouteAuth.REQUIRED : RouteAuth.DISABLED;
@@ -536,7 +554,7 @@ class Application {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param {express.Request} req
 	 * @returns {Promise<void>}
 	 */
@@ -548,11 +566,11 @@ class Application {
 			if (!req.query.api_key) {
 				throw new MissingApiKeyError();
 			}
-			if (!await this._apiKeyHandler(req.query.api_key, req)) {
+			if (!(await this._apiKeyHandler(req.query.api_key, req))) {
 				throw new InvalidApiKeyError();
 			}
 			req.apiKey = req.query.api_key;
-			if (req.__endpoint && await req.__endpoint.isApiKeyExcluded(req.query.api_key)) {
+			if (req.__endpoint && (await req.__endpoint.isApiKeyExcluded(req.query.api_key))) {
 				throw new NotFoundError();
 			}
 			return;
@@ -629,14 +647,13 @@ class Application {
 				});
 			}
 		});
-
 	}
 
 	/**
-	 * 
-	 * @param {express.Request} req 
-	 * @param {express.Response} res 
-	 * @param {RouteAuth} routeAuth 
+	 *
+	 * @param {express.Request} req
+	 * @param {express.Response} res
+	 * @param {RouteAuth} routeAuth
 	 * @param {AppOptions.Auth} auth
 	 * @returns {Promise<void>}
 	 */
@@ -695,9 +712,9 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {Object.<string, Field>} args 
-	 * @param {express.Request} req 
+	 *
+	 * @param {Object.<string, Field>} args
+	 * @param {express.Request} req
 	 * @returns {Promise<void>}
 	 */
 	_checkArguments(args, req) {
@@ -718,8 +735,8 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {Param[]} params 
+	 *
+	 * @param {Param[]} params
 	 * @param {express.Request} req
 	 * @returns {Promise<void>}
 	 */
@@ -740,7 +757,11 @@ class Application {
 						if (requiredParam === null || requiredParam === undefined) {
 							throw new RSError.MissingParameter(p, { parameter: p });
 						}
-						if (param.type.getName() === 'ArrayOf' && requiredParam instanceof Array && !requiredParam.length) {
+						if (
+							param.type.getName() === 'ArrayOf' &&
+							requiredParam instanceof Array &&
+							!requiredParam.length
+						) {
 							throw new RSError.MissingParameter(p, true, { parameter: p });
 						}
 					} else if (mergedParams[p] === undefined) {
@@ -752,12 +773,11 @@ class Application {
 						switch (e.code) {
 							case 'ERR_INVALID_CAST':
 							case 'ERR_UNSUPPORTED_OPERATION':
-								throw new RSError.InvalidParameterType(
-									p,
-									param.type,
-									{ type_error: { message: e.message, code: e.code } },
-								);
-							default: throw e;
+								throw new RSError.InvalidParameterType(p, param.type, {
+									type_error: { message: e.message, code: e.code },
+								});
+							default:
+								throw e;
 						}
 					}
 				});
@@ -770,8 +790,8 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {express.Request} req 
+	 *
+	 * @param {express.Request} req
 	 * @param {express.Response} res
 	 * @returns {Promise<void>}
 	 */
@@ -794,9 +814,9 @@ class Application {
 	}
 
 	/**
-	 * 
-	 * @param {express.Request} req 
-	 * @param {express.Response} res 
+	 *
+	 * @param {express.Request} req
+	 * @param {express.Response} res
 	 * @returns {Promise<any>}
 	 */
 	_execute(req, res) {
@@ -804,7 +824,7 @@ class Application {
 			const endpoint = req.__endpoint;
 			let dataSent = false;
 			const p = endpoint.callback(req, res, (err, data) => {
-				this._warn('Using callbacks in the endpoint execution is deprecated. Use Promises.')
+				this._warn('Using callbacks in the endpoint execution is deprecated. Use Promises.');
 				if (dataSent) {
 					this._warn('Data already sent using a Promise.');
 					return;
@@ -823,7 +843,7 @@ class Application {
 						return;
 					}
 					if (data === undefined) {
-						this._warn('Methods using Promises shouldn\'t return undefined.');
+						this._warn("Methods using Promises shouldn't return undefined.");
 						return;
 					}
 					dataSent = true;
@@ -838,9 +858,9 @@ class Application {
 
 	/**
 	 * Validates the data with defined response of the endpoint. After the validation the data are sent to output.
-	 * @param {express.Request} req 
-	 * @param {express.Response} res 
-	 * @param {any} data 
+	 * @param {express.Request} req
+	 * @param {express.Response} res
+	 * @param {any} data
 	 */
 	_handleData(req, res, data) {
 		const { wrapArrayResponse } = this._options;
@@ -918,9 +938,7 @@ class Application {
 	 * Creates the express application instance and registers middlewares.
 	 */
 	_createApp() {
-		const {
-			defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset
-		} = this._options;
+		const { defaultError, dataKey, errorKey, requestLimit, meta, log, logger, name, charset } = this._options;
 		this._app = express();
 
 		this._app.use((req, res, next) => {
@@ -932,7 +950,8 @@ class Application {
 				this._warn('res.send204 is deprecated. Use next callback in the route without data.');
 				res._sendData();
 			};
-			res.send404 = (message = 'Page not found', code = 'page_not_found') => res.sendError(HttpError.create(404, message, code));
+			res.send404 = (message = 'Page not found', code = 'page_not_found') =>
+				res.sendError(HttpError.create(404, message, code));
 			res.send401 = (message, code) => res.sendError(HttpError.create(401, message, code));
 			res.send501 = (message, code) => res.sendError(HttpError.create(501, message, code));
 			res.addMeta = (key, value) => {
@@ -941,12 +960,18 @@ class Application {
 				}
 				res.__meta[key] = value;
 			};
-			res.sendError = (code = defaultError.statusCode, message = defaultError.message, errorCode = defaultError.code) => {
+			res.sendError = (
+				code = defaultError.statusCode,
+				message = defaultError.message,
+				errorCode = defaultError.code,
+			) => {
 				if (code instanceof HttpError) {
 					next(code);
 					return;
 				}
-				this._warn('res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.');
+				this._warn(
+					'res.sendError is deprecated with using status codes, message and errorCode. Use HttpError instance.',
+				);
 				next(new Err(message, errorCode));
 			};
 			res.sendData = (data, key = dataKey) => {
@@ -955,18 +980,21 @@ class Application {
 			};
 			res.log = (response) => {
 				if (log.enabled && typeof logger === 'function' && req.path !== '/ping') {
-					logger({
-						statusCode: res.statusCode,
-						method: req.method,
-						path: req.path,
-						spec: req.route ? req.route.path : req.path,
-						body: req.body,
-						params: req.params,
-						query: req.query,
-						headers: req.headers,
-						took: benchmark.total,
-						response,
-					}, req);
+					logger(
+						{
+							statusCode: res.statusCode,
+							method: req.method,
+							path: req.path,
+							spec: req.route ? req.route.path : req.path,
+							body: req.body,
+							params: req.params,
+							query: req.query,
+							headers: req.headers,
+							took: benchmark.total,
+							response,
+						},
+						req,
+					);
 				}
 			};
 			res._sendData = async (data, key = dataKey) => {
@@ -990,11 +1018,14 @@ class Application {
 				if (endpoint?.isRedirect()) {
 					if (!data || typeof data[dataKey] !== 'string') {
 						data = {
-							[errorKey]: this._handleError(res, HttpError.create(
-								HttpError.INTERNAL_SERVER_ERROR,
-								'Redirect endpoint must return string data.',
-							)),
-						}
+							[errorKey]: this._handleError(
+								res,
+								HttpError.create(
+									HttpError.INTERNAL_SERVER_ERROR,
+									'Redirect endpoint must return string data.',
+								),
+							),
+						};
 					} else {
 						res.redirect(data.data);
 						res.log();
@@ -1007,34 +1038,40 @@ class Application {
 						data.warning = 'This endpoint is deprecated. It can be removed in the future.';
 					}
 					if (meta.enabled && req.query.nometa === undefined) {
-						data._meta = _.merge({
-							took,
-							deprecated: deprecated || undefined,
-							rs: {
-								version: pkg.version,
-								module: `https://www.npmjs.com/package/${pkg.name}`,
+						data._meta = _.merge(
+							{
+								took,
+								deprecated: deprecated || undefined,
+								rs: {
+									version: pkg.version,
+									module: `https://www.npmjs.com/package/${pkg.name}`,
+								},
+								request: {
+									endpoint: `${req.method} ${req.path}`,
+									body,
+									query: req.query,
+									headers: req.headers,
+								},
+								app: {
+									name,
+									version: APP_PACKAGE.version,
+								},
+								benchmark,
 							},
-							request: {
-								endpoint: `${req.method} ${req.path}`,
-								body,
-								query: req.query,
-								headers: req.headers,
-							},
-							app: {
-								name,
-								version: APP_PACKAGE.version,
-							},
-							benchmark,
-						}, meta.data);
+							meta.data,
+						);
 						if (typeof res.__meta === 'object') {
-							Object.keys(res.__meta).forEach(key => data._meta[key] = res.__meta[key]);
+							Object.keys(res.__meta).forEach((key) => (data._meta[key] = res.__meta[key]));
 						}
 					}
 					// res.header('Content-Type', `application/json; charset=${charset}`);
 					// TODO check in what cases isn't endpoint set
-					const response = endpoint && endpoint.response
-						? data[errorKey] ? new JSONResponse() : endpoint.response
-						: new JSONResponse();
+					const response =
+						endpoint && endpoint.response
+							? data[errorKey]
+								? new JSONResponse()
+								: endpoint.response
+							: new JSONResponse();
 					res.header('Content-Type', response.getContentType(charset));
 					const responseHeaders = response.getHeaders() || {};
 					Object.keys(responseHeaders).forEach((key) => {
@@ -1050,10 +1087,7 @@ class Application {
 			};
 			next();
 		});
-		this._app.use(
-			compression(),
-			bodyParser.json({ limit: requestLimit }),
-		);
+		this._app.use(compression(), bodyParser.json({ limit: requestLimit }));
 	}
 
 	/**
@@ -1065,65 +1099,43 @@ class Application {
 			res.status(204);
 			res.end();
 		});
-		this.get('/ping', { hideDocs: true }, (req, res, next) => next(null, 'pong'));
+		this.get(
+			'/ping',
+			{ hideDocs: true, requireApiKey: false, response: new CustomResponse('text/plain') },
+			(req, res, next) => next(null, 'pong'),
+		);
 		if (docs.enabled) {
 			let requireAuth = false;
 			if (docs.auth) {
 				this._warn('Using auth on docs is deprecated. Use api key and its validation instead.');
 				requireAuth = true;
 			}
-			this.get(docs.route, {
-				requireAuth,
-				description: 'Documentation of this API.',
-				hideDocs: true,
-			}, ({ apiKey }) => this.docs(apiKey));
-			this.get(`${docs.route}-legacy.html`, {
-				requireAuth,
-				hideDocs: true,
-				response: new CustomResponse(`text/html; charset=${charset}`),
-			}, (req, res, next) => {
-				fs.readFile(path.resolve(__dirname, '../assets/docs-legacy.html'), (err, buffer) => {
-					if (err) {
-						next(err);
-						return;
-					}
-					let html = buffer.toString();
-					const vars = {
-						name,
-						apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
-						rsVersion: pkg.version,
-						version: APP_PACKAGE.version,
-						dataKey: this._options.dataKey,
-						errorKey: this._options.errorKey,
-						meta: this._options.meta.enabled,
-						authKey: this._options.auth.key,
-						authDescription: this._options.auth.description || '',
-						docsRoute: this._options.docs.route,
-					};
-					Object.keys(vars).forEach((key) => {
-						const r = new RegExp(`\\$\\{${key}\\}`, 'g');
-						html = html.replace(r, vars[key]);
-					});
-					next(null, html);
-				});
-			});
-			this.get(`${docs.route}.html`, {
-				requireAuth,
-				hideDocs: true,
-				response: new CustomResponse(`text/html; charset=${charset}`),
-			}, (req, res, next) => {
-				fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
-					if (err) {
-						next(err);
-						return;
-					}
-					let html = buffer.toString();
-					const vars = {
-						name,
-						apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
-						data: JSON.stringify({
+			this.get(
+				docs.route,
+				{
+					requireAuth,
+					description: 'Documentation of this API.',
+					hideDocs: true,
+				},
+				({ apiKey }) => this.docs(apiKey),
+			);
+			this.get(
+				`${docs.route}-legacy.html`,
+				{
+					requireAuth,
+					hideDocs: true,
+					response: new CustomResponse(`text/html; charset=${charset}`),
+				},
+				(req, res, next) => {
+					fs.readFile(path.resolve(__dirname, '../assets/docs-legacy.html'), (err, buffer) => {
+						if (err) {
+							next(err);
+							return;
+						}
+						let html = buffer.toString();
+						const vars = {
 							name,
-							apiKey: this._isApiKeyEnabled() ? req.query.api_key : null,
+							apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
 							rsVersion: pkg.version,
 							version: APP_PACKAGE.version,
 							dataKey: this._options.dataKey,
@@ -1132,39 +1144,89 @@ class Application {
 							authKey: this._options.auth.key,
 							authDescription: this._options.auth.description || '',
 							docsRoute: this._options.docs.route,
-						}),
-					};
-					Object.keys(vars).forEach((key) => {
-						const r = new RegExp(`\\$\\{${key}\\}`, 'g');
-						html = html.replace(r, vars[key]);
+						};
+						Object.keys(vars).forEach((key) => {
+							const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+							html = html.replace(r, vars[key]);
+						});
+						next(null, html);
 					});
-					next(null, html);
-				});
-			});
-			this.get(`${docs.route}.js`, {
-				hideDocs: true,
-				response: new CustomResponse(`text/javascript; charset=${charset}`),
-			}, (req, res, next) => {
-				fs.readFile(path.resolve(__dirname, '../assets/docs.js'), next);
-			});
-			this.get('/bundle.js', {
-				hideDocs: true,
-				response: new CustomResponse(`text/javascript; charset=${charset}`),
-			}, (req, res, next) => {
-				fs.readFile(path.resolve(__dirname, '../assets/bundle.js'), next);
-			});
-			this.get(`${docs.route}.css`, {
-				hideDocs: true,
-				response: new CustomResponse(`text/css; charset=${charset}`),
-			}, (req, res, next) => {
-				fs.readFile(path.resolve(__dirname, '../assets/docs.css'), next);
-			});
+				},
+			);
+			this.get(
+				`${docs.route}.html`,
+				{
+					requireAuth,
+					hideDocs: true,
+					response: new CustomResponse(`text/html; charset=${charset}`),
+				},
+				(req, res, next) => {
+					fs.readFile(path.resolve(__dirname, '../assets/docs.html'), (err, buffer) => {
+						if (err) {
+							next(err);
+							return;
+						}
+						let html = buffer.toString();
+						const vars = {
+							name,
+							apiKey: this._isApiKeyEnabled() ? req.query.api_key : '',
+							data: JSON.stringify({
+								name,
+								apiKey: this._isApiKeyEnabled() ? req.query.api_key : null,
+								rsVersion: pkg.version,
+								version: APP_PACKAGE.version,
+								dataKey: this._options.dataKey,
+								errorKey: this._options.errorKey,
+								meta: this._options.meta.enabled,
+								authKey: this._options.auth.key,
+								authDescription: this._options.auth.description || '',
+								docsRoute: this._options.docs.route,
+							}),
+						};
+						Object.keys(vars).forEach((key) => {
+							const r = new RegExp(`\\$\\{${key}\\}`, 'g');
+							html = html.replace(r, vars[key]);
+						});
+						next(null, html);
+					});
+				},
+			);
+			this.get(
+				`${docs.route}.js`,
+				{
+					hideDocs: true,
+					response: new CustomResponse(`text/javascript; charset=${charset}`),
+				},
+				(req, res, next) => {
+					fs.readFile(path.resolve(__dirname, '../assets/docs.js'), next);
+				},
+			);
+			this.get(
+				'/bundle.js',
+				{
+					hideDocs: true,
+					response: new CustomResponse(`text/javascript; charset=${charset}`),
+				},
+				(req, res, next) => {
+					fs.readFile(path.resolve(__dirname, '../assets/bundle.js'), next);
+				},
+			);
+			this.get(
+				`${docs.route}.css`,
+				{
+					hideDocs: true,
+					response: new CustomResponse(`text/css; charset=${charset}`),
+				},
+				(req, res, next) => {
+					fs.readFile(path.resolve(__dirname, '../assets/docs.css'), next);
+				},
+			);
 		}
 	}
 
 	/**
-	 * 
-	 * @param {Endpoint} endpoint 
+	 *
+	 * @param {Endpoint} endpoint
 	 */
 	_getDocsObject(endpoint) {
 		return {
@@ -1240,24 +1302,24 @@ class Application {
 }
 
 /**
- * 
- * @param {import('./').IAppOptions} options 
+ *
+ * @param {import('./').IAppOptions} options
  * @deprecated
  */
 const m = (options = {}) => new Application(options);
 
 export {
-	m as default,
 	Application,
-	HttpError,
+	m as default,
 	Endpoint,
 	Err as Error,
-	Param,
-	Type,
-	Model as TypeModel,
-	Field,
 	ErrorField,
+	Field,
+	HttpError,
+	Param,
 	Response,
 	RouteAuth,
 	RSError,
+	Type,
+	Model as TypeModel,
 };

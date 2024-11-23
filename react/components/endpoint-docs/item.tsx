@@ -1,36 +1,35 @@
-import * as React from 'react';
-import classnames from 'classnames';
 import {
-	Chip,
-	Paper,
-	Card,
 	Accordion,
-	AccordionSummary,
-	Typography,
 	AccordionDetails,
-	Table as MuiTable,
-	TableHead,
-	TableBody,
-	TableRow,
-	TableCell,
-	ButtonGroup,
-	Button,
-	Tooltip,
+	AccordionSummary,
 	Box,
-	TextField,
+	Button,
+	ButtonGroup,
+	Card,
+	Chip,
 	Dialog,
-	DialogTitle,
-	DialogContent,
 	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Table as MuiTable,
+	Paper,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	TextField,
+	Tooltip,
+	Typography,
 } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AppsIcon from '@material-ui/icons/Apps';
 import CodeIcon from '@material-ui/icons/Code';
-import LinkIcon from '@material-ui/icons/Link';
 import DescriptionIcon from '@material-ui/icons/Description';
-import CopyToClipboard from 'react-copy-to-clipboard';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import LinkIcon from '@material-ui/icons/Link';
 import camelCase from 'camelcase';
-import Type from 'runtime-type';
+import classnames from 'classnames';
+import * as React from 'react';
+import CopyToClipboard from 'react-copy-to-clipboard';
 const { Parser }: any = require('html-to-react');
 
 import { IDocsItem, IField, IParam } from '../../typings';
@@ -38,8 +37,9 @@ import Title from '../title';
 
 import Table from './table';
 
-import './item.scss';
 import Application from '../app';
+import './item.scss';
+import { getDocsProperty } from './utils';
 
 interface IProps {
 	item: IDocsItem;
@@ -50,17 +50,16 @@ interface IState {
 	tsDefinition: string;
 }
 
-const Panel = ({ title, children, button }: { title: string, children: React.ReactNode, button?: React.ReactNode }) => {
+const Panel = ({ title, children, button }: { title: string; children: React.ReactNode; button?: React.ReactNode }) => {
 	return (
 		<Accordion>
-			<AccordionSummary
-				expandIcon={<ExpandMoreIcon />}
-			>
-				<Title component="h6" variant="h6">{title}{button}</Title>
+			<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+				<Title component="h6" variant="h6">
+					{title}
+					{button}
+				</Title>
 			</AccordionSummary>
-			<AccordionDetails>
-				{children}
-			</AccordionDetails>
+			<AccordionDetails>{children}</AccordionDetails>
 		</Accordion>
 	);
 };
@@ -68,7 +67,6 @@ const Panel = ({ title, children, button }: { title: string, children: React.Rea
 const parser = new Parser();
 
 export default class Item extends React.Component<IProps, IState> {
-
 	public state: IState = {
 		tsDefinition: null,
 	};
@@ -86,26 +84,13 @@ export default class Item extends React.Component<IProps, IState> {
 				ref={(ref: React.Ref<any>) => Application.registerRef(name, ref)}
 			>
 				<Title>{name}</Title>
-				{
-					deprecated &&
-					<Chip size="small" label="deprecated" className="deprecated" />
-				}
-				{
-					auth === 'REQUIRED' &&
-					<Chip size="small" label="requires authorization" className="auth required" />
-				}
-				{
-					auth === 'OPTIONAL' &&
-					<Chip size="small" label="optional authorization" className="auth optional" />
-				}
+				{deprecated && <Chip size="small" label="deprecated" className="deprecated" />}
+				{auth === 'REQUIRED' && <Chip size="small" label="requires authorization" className="auth required" />}
+				{auth === 'OPTIONAL' && <Chip size="small" label="optional authorization" className="auth optional" />}
 				<Box>
 					<ButtonGroup>
 						<Tooltip title="Open in console">
-							<Button
-								variant="outlined"
-								color="primary"
-								onClick={() => Application.showConsole(name)}
-							>
+							<Button variant="outlined" color="primary" onClick={() => Application.showConsole(name)}>
 								<AppsIcon />
 							</Button>
 						</Tooltip>
@@ -116,13 +101,9 @@ export default class Item extends React.Component<IProps, IState> {
 								// @ts-ignore Hack for losing color of the button
 								className="MuiButton-outlinedPrimary"
 							>
-								<Button
-									variant="outlined"
-									color="primary"
-								>
+								<Button variant="outlined" color="primary">
 									<DescriptionIcon />
 								</Button>
-
 							</CopyToClipboard>
 						</Tooltip>
 						<Tooltip title="Copy endpoint link">
@@ -132,41 +113,32 @@ export default class Item extends React.Component<IProps, IState> {
 								// @ts-ignore Hack for losing color of the button
 								className="MuiButton-outlinedPrimary"
 							>
-								<Button
-									variant="outlined"
-									color="primary"
-								>
+								<Button variant="outlined" color="primary">
 									<LinkIcon />
 								</Button>
-
 							</CopyToClipboard>
 						</Tooltip>
 					</ButtonGroup>
 				</Box>
-				<Card className="p10 bg-light">
-					{parser.parse(description || '')}
-				</Card>
+				<Card className="p10 bg-light">{parser.parse(description || '')}</Card>
 				{this.renderFields('Arguments', args)}
 				{this.renderFields('Params', params, true)}
-				{
-					response
-						? response_type.indexOf('application/json') >= 0
-							? this.renderFields('Response', response)
-							: <Panel title="Response"><Typography>Non JSON response -{'>'} <code>{response_type}</code></Typography></Panel>
-						: null
-				}
+				{response ? (
+					response_type.indexOf('application/json') >= 0 ? (
+						this.renderFields('Response', response)
+					) : (
+						<Panel title="Response">
+							<Typography>
+								Non JSON response -{'>'} <code>{response_type}</code>
+							</Typography>
+						</Panel>
+					)
+				) : null}
 				{this.renderErrors(errors)}
-				<Dialog
-					open={!!tsDefinition}
-					onClose={() => this.setState({ tsDefinition: null })}
-					fullWidth
-				>
+				<Dialog open={!!tsDefinition} onClose={() => this.setState({ tsDefinition: null })} fullWidth>
 					<DialogTitle>TypeScript definition</DialogTitle>
 					<DialogContent>
-						<CopyToClipboard
-							text={tsDefinition}
-							onCopy={() => Application.showSnackbar('Copied')}
-						>
+						<CopyToClipboard text={tsDefinition} onCopy={() => Application.showSnackbar('Copied')}>
 							<TextField
 								InputProps={{
 									readOnly: true,
@@ -181,7 +153,7 @@ export default class Item extends React.Component<IProps, IState> {
 					<DialogActions>
 						<Button onClick={() => this.setState({ tsDefinition: null })} color="primary">
 							Close
-          				</Button>
+						</Button>
 					</DialogActions>
 				</Dialog>
 			</Paper>
@@ -212,17 +184,16 @@ export default class Item extends React.Component<IProps, IState> {
 							onClick={(e: any) => {
 								e.stopPropagation();
 								const interfaceName = camelCase(
-									[
-										'i',
-										name.replace(/\s/, '_').replace(/\//g, '_').replace(/\:/g, '_by_'),
-										title,
-									],
+									['i', name.replace(/\s/, '_').replace(/\//g, '_').replace(/\:/g, '_by_'), title],
 									{ pascalCase: true },
 								);
-								const props = Object.entries(fields).map(([key, field]) => {
-									const t = Type.fromString(field.type);
-									return `${key}: ${t.getTSType(true)};`;
-								}).join('\n').split('\n').map((row) => `\t${row}`);
+								const props = Object.entries(fields)
+									.map(([key, field]) => {
+										return getDocsProperty(key, field);
+									})
+									.join('\n')
+									.split('\n')
+									.map((row) => `\t${row}`);
 								this.setState({
 									tsDefinition: `export interface ${interfaceName} {\n${props.join('\n')}\n}`,
 								});
@@ -234,10 +205,7 @@ export default class Item extends React.Component<IProps, IState> {
 					</Tooltip>
 				}
 			>
-				<Table
-					items={entries.map(([_, item]) => item)}
-					params={params}
-				/>
+				<Table items={entries.map(([_, item]) => item)} params={params} />
 			</Panel>
 		);
 	}
@@ -260,17 +228,12 @@ export default class Item extends React.Component<IProps, IState> {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{
-							entries.map(([code, description]) => (
-								<TableRow
-									key={code}
-									hover
-								>
-									<TableCell>{code}</TableCell>
-									<TableCell>{parser.parse(description)}</TableCell>
-								</TableRow>
-							))
-						}
+						{entries.map(([code, description]) => (
+							<TableRow key={code} hover>
+								<TableCell>{code}</TableCell>
+								<TableCell>{parser.parse(description)}</TableCell>
+							</TableRow>
+						))}
 					</TableBody>
 				</MuiTable>
 			</Panel>
