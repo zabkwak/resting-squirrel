@@ -1102,7 +1102,7 @@ class Application {
 		this.get(
 			'/ping',
 			{ hideDocs: true, requireApiKey: false, response: new CustomResponse('text/plain') },
-			(req, res, next) => next(null, 'pong'),
+			async (req, res, next) => 'pong',
 		);
 		if (docs.enabled) {
 			let requireAuth = false;

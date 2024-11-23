@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.28.2
+
+### Fixes
+
+-   `/ping` is not using callbacks
+
 ## 2.28.1
 
 ### Fixes
