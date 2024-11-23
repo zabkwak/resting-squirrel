@@ -4,16 +4,14 @@ import { IField, IParam } from '../../typings';
 export const getDocsProperty = (key: string, field: IField | IParam): string => {
 	const t = Type.fromString(field.type);
 	const propertyKey = 'required' in field ? `${key}${field.required ? '' : '?'}` : key;
-	if (t instanceof Shape && key in field) {
-		// @ts-expect-error
-		const shape = field[key] as Record<string, IField | IParam>;
+	if (t instanceof Shape && 'shape' in field) {
 		// t.
 		return `/**
  * ${field.description}
  */
 ${propertyKey}: {
 ${prependTabs(
-	Object.entries(shape)
+	Object.entries(field.shape)
 		.map(([key, field]) => getDocsProperty(key, field))
 		.join('\n'),
 	1,
@@ -21,15 +19,13 @@ ${prependTabs(
 };`;
 	}
 	// @ts-expect-error
-	if (t instanceof ArrayOf && t._type instanceof Shape && key in field) {
-		// @ts-expect-error
-		const shapeArray = field[key] as Record<string, IField | IParam>;
+	if (t instanceof ArrayOf && t._type instanceof Shape && 'shape_array' in field) {
 		return `/**
  * ${field.description}
  */
 ${propertyKey}: {
 ${prependTabs(
-	Object.entries(shapeArray)
+	Object.entries(field.shape_array)
 		.map(([key, field]) => getDocsProperty(key, field))
 		.join('\n'),
 	1,

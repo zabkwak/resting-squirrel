@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.28.1
+
+### Fixes
+
+-   Shapes in types generations in docs.
+
 ## 2.28.0
 
 ### Features
