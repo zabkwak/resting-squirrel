@@ -49,7 +49,7 @@ declare class Application {
 	 */
 	public registerApiKeyHandler<R extends IRequest>(
 		handler: (apiKey: string, req: R) => Promise<boolean>,
-		extractor: (req: R) => string,
+		extractor: (req: R) => string | null,
 	): this;
 
 	/**
