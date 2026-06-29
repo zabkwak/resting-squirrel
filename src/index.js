@@ -100,6 +100,7 @@ class Application {
 	_afterExecution = [];
 
 	_apiKeyHandler = null;
+	_apiKeyExtractor = null;
 
 	_stats = {
 		error: 0,
@@ -194,8 +195,12 @@ class Application {
 
 	// #region Registers
 
-	registerApiKeyHandler(handler) {
+	registerApiKeyHandler(handler, extractor) {
 		this._apiKeyHandler = handler;
+		if (!extractor) {
+			this._warn('Using default api key extractor is deprecated. Using default.');
+		}
+		this._apiKeyExtractor = extractor;
 		return this;
 	}
 
@@ -563,14 +568,15 @@ class Application {
 			return;
 		}
 		if (typeof this._apiKeyHandler === 'function') {
-			if (!req.query.api_key) {
+			const apiKey = this._apiKeyExtractor ? this._apiKeyExtractor(req) : req.query.api_key;
+			if (!apiKey) {
 				throw new MissingApiKeyError();
 			}
-			if (!(await this._apiKeyHandler(req.query.api_key, req))) {
+			if (!(await this._apiKeyHandler(apiKey, req))) {
 				throw new InvalidApiKeyError();
 			}
-			req.apiKey = req.query.api_key;
-			if (req.__endpoint && (await req.__endpoint.isApiKeyExcluded(req.query.api_key))) {
+			req.apiKey = apiKey;
+			if (req.__endpoint && (await req.__endpoint.isApiKeyExcluded(apiKey))) {
 				throw new NotFoundError();
 			}
 			return;
